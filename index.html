@@ -1,0 +1,3134 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>PosterBoxd Studio — Cinema & TV Review Poster Generator</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+  <!-- SortableJS for drag-and-drop metadata reordering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            obsidian: '#0B0C0E',
+            slatepanel: '#131519',
+            cardbg: '#1A1D24',
+            elevated: '#222631',
+            lbgreen: '#00E054',
+            lborange: '#FF8000',
+            lbblue: '#40BCF4',
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            display: ['"Syne"', 'sans-serif'],
+            serif: ['"Instrument Serif"', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #131519;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #2E3340;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #40BCF4;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body { width: 100%; min-width: 0; margin: 0; }
+
+    body {
+      background-color: #0B0C0E;
+      color: #F3F4F6;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      overflow-x: clip;
+    }
+
+    main { min-width: 0; }
+    #poster-stage-section { min-width: 0; min-height: 0; width: 100%; }
+    #poster-stage-section > div { min-width: 0; }
+    #poster-canvas { display: block; flex: 0 1 auto; }
+
+    .stage-grid {
+      background-color: #0B0C0E;
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+        radial-gradient(circle at 50% 25%, rgba(64, 188, 244, 0.06), transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(0, 224, 84, 0.05), transparent 50%);
+      background-size: 24px 24px, 100% 100%, 100% 100%;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #252A36;
+      border-radius: 999px;
+      outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #00E054;
+      border: 2px solid #0B0C0E;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 224, 84, 0.4);
+      transition: transform 0.15s ease, background-color 0.15s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+      background: #24f572;
+    }
+
+    .sortable-ghost {
+      opacity: 0.35;
+      background: #222631 !important;
+      border: 1px dashed #40BCF4 !important;
+    }
+
+    #poster-canvas {
+      max-height: calc(100dvh - 190px);
+      max-width: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    @media (min-width: 1024px) {
+      body { height: 100dvh; min-height: 0; }
+      main { height: calc(100dvh - 3.5rem); min-height: 0; }
+      #poster-stage-section { height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+      #poster-canvas { max-height: calc(100dvh - 190px); }
+    }
+
+    @media (max-width: 1023px) {
+      #poster-stage-section { padding-left: max(12px, env(safe-area-inset-left)); padding-right: max(12px, env(safe-area-inset-right)); }
+      #poster-canvas {
+        max-height: min(72svh, 780px);
+        max-width: 100%;
+      }
+      input[type="text"],
+      input[type="date"],
+      textarea,
+      select {
+        font-size: 16px !important;
+      }
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    @media (max-width: 480px) {
+      #poster-canvas { border-radius: 10px; }
+      #poster-stage-section .ratio-pill { padding-left: 0.55rem; padding-right: 0.55rem; }
+      #api-modal > div { max-height: calc(100svh - 24px); overflow-y: auto; padding: 1rem; }
+    }
+
+    @media (max-width: 1023px) and (max-height: 650px) {
+      #poster-canvas { max-height: 58svh; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-lbgreen selection:text-obsidian">
+
+  <header class="h-14 bg-slatepanel/95 backdrop-blur-md border-b border-white/10 px-3 sm:px-4 lg:px-6 flex items-center justify-between gap-2 sticky top-0 z-40">
+    <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+      <div class="flex items-center -space-x-1.5 shrink-0">
+        <span class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-lborange inline-block ring-2 ring-obsidian"></span>
+        <span class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-lbgreen inline-block ring-2 ring-obsidian"></span>
+        <span class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-lbblue inline-block ring-2 ring-obsidian"></span>
+      </div>
+      <div class="flex items-baseline gap-1.5 sm:gap-2 truncate">
+        <span class="font-display font-extrabold text-base sm:text-lg tracking-tight text-white truncate">PosterBoxd</span>
+        <span class="hidden sm:inline-block text-[10px] font-mono uppercase tracking-widest px-2 py-0.5 rounded bg-white/5 text-lbblue border border-lbblue/20 shrink-0">Studio v2.5</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <button id="mobile-jump-preview-btn" type="button" class="lg:hidden flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold bg-lbgreen text-obsidian shadow-md shadow-lbgreen/20 active:scale-95 transition">
+        <i class="fa-solid fa-eye text-[11px]"></i>
+        <span>Poster</span>
+      </button>
+      <button id="open-api-modal-btn" type="button" class="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full text-xs font-medium bg-cardbg hover:bg-elevated border border-white/10 transition">
+        <span id="api-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0"></span>
+        <span id="api-status-text" class="text-gray-200 hidden sm:inline">Connect TMDB</span>
+        <span id="api-status-text-mobile" class="text-gray-200 sm:hidden font-mono text-[11px]">TMDB Key</span>
+        <i class="fa-solid fa-key text-gray-400 text-[11px]"></i>
+      </button>
+    </div>
+  </header>
+
+  <div id="mobile-live-dock" class="lg:hidden sticky top-14 z-30 bg-obsidian/95 backdrop-blur-md border-b border-white/10 px-3 py-2 flex items-center justify-between gap-2.5 shadow-xl">
+    <div class="flex items-center gap-2.5 min-w-0 cursor-pointer" id="mobile-dock-thumb-trigger" title="Tap to scroll to full poster">
+      <canvas id="mobile-mini-canvas" width="108" height="192" class="w-9 h-14 rounded border border-white/20 bg-slatepanel shrink-0 object-contain shadow-md"></canvas>
+      <div class="min-w-0">
+        <div class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-lbgreen"></span>
+          <span id="mobile-dock-title" class="text-xs font-display font-bold text-white truncate">Untitled Poster</span>
+        </div>
+        <div id="mobile-dock-meta" class="text-[11px] font-mono text-lbblue truncate">1. Classic · 9:16</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-1.5 shrink-0">
+      <button type="button" id="mobile-dock-cycle-btn" class="px-2.5 py-1.5 rounded-lg bg-cardbg hover:bg-elevated border border-white/10 text-[11px] font-mono text-gray-200 active:scale-95 transition">
+        <i class="fa-solid fa-wand-magic-sparkles text-lbgreen mr-1"></i>Style
+      </button>
+      <button type="button" id="mobile-dock-download-btn" class="px-2.5 py-1.5 rounded-lg bg-lbgreen text-obsidian font-bold text-[11px] flex items-center gap-1 active:scale-95 transition">
+        <i class="fa-solid fa-download"></i>
+        <span>Save</span>
+      </button>
+    </div>
+  </div>
+
+  <main class="flex-1 flex flex-col lg:flex-row overflow-x-hidden lg:overflow-hidden">
+
+    <!-- LEFT CONTROL DECK -->
+    <aside class="w-full lg:w-[440px] xl:w-[470px] bg-slatepanel border-b lg:border-b-0 lg:border-r border-white/10 flex flex-col lg:h-[calc(100vh-3.5rem)] shrink-0">
+      
+      <!-- 4-Tab Navigation -->
+      <nav class="grid grid-cols-4 border-b border-white/10 bg-obsidian/40 px-1.5 sm:px-2 pt-2 gap-1 sticky top-[112px] lg:static z-20 backdrop-blur-md" aria-label="Studio Controls">
+        <button type="button" data-tab="media" class="studio-tab active flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-t-lg text-[11px] sm:text-xs font-semibold border-b-2 border-lbgreen text-white bg-slatepanel transition">
+          <i class="fa-solid fa-clapperboard text-lbgreen text-sm"></i>
+          <span class="truncate">1. Media</span>
+        </button>
+        <button type="button" data-tab="style" class="studio-tab flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-t-lg text-[11px] sm:text-xs font-semibold border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition">
+          <i class="fa-solid fa-layer-group text-sm"></i>
+          <span class="truncate">2. Style</span>
+        </button>
+        <button type="button" data-tab="assets" class="studio-tab flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-t-lg text-[11px] sm:text-xs font-semibold border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition">
+          <i class="fa-solid fa-palette text-sm"></i>
+          <span class="truncate">3. Assets</span>
+        </button>
+        <button type="button" data-tab="layout" class="studio-tab flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-t-lg text-[11px] sm:text-xs font-semibold border-b-2 border-transparent text-gray-400 hover:text-gray-200 transition">
+          <i class="fa-solid fa-sliders text-sm"></i>
+          <span class="truncate">4. Layout</span>
+        </button>
+      </nav>
+
+      <!-- Scrollable Tab Content -->
+      <div class="flex-1 overflow-y-auto p-3.5 sm:p-4 lg:p-5 space-y-4 sm:space-y-5">
+
+        <!-- TAB 1: MEDIA & REVIEW -->
+        <section id="tab-media" class="tab-panel space-y-4 sm:space-y-5">
+
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <label for="search-input" class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">
+                <i class="fa-solid fa-magnifying-glass mr-1 text-lbblue"></i>Search Movie / TV or Letterboxd
+              </label>
+            </div>
+
+            <div class="flex gap-2">
+              <div class="relative flex-1">
+                <input id="search-input" type="text" placeholder="Search title or paste Letterboxd share/URL..." 
+                  class="w-full bg-obsidian border border-white/15 rounded-lg pl-3 pr-8 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-lbblue transition" />
+                <button id="clear-search-btn" type="button" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+              <button id="search-btn" type="button" class="px-4 py-2.5 bg-lbgreen hover:bg-[#1ed760] text-obsidian font-bold text-sm rounded-lg transition shrink-0 flex items-center gap-1.5">
+                <i class="fa-solid fa-bolt text-xs"></i>
+                <span>Fetch</span>
+              </button>
+            </div>
+
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+              Search live TMDB Movie & TV titles, or paste Letterboxd share text / URLs to bring over the title, rating, and reviewer handle.
+            </p>
+
+            <div id="search-results-container" class="hidden pt-2 border-t border-white/10 max-h-64 overflow-y-auto space-y-1.5"></div>
+          </div>
+
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-gray-400">Active Selection</span>
+              <span id="active-media-badge" class="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-lbgreen/15 text-lbgreen border border-lbgreen/30 font-semibold">MOVIE</span>
+            </div>
+
+            <div class="flex gap-3.5 items-center">
+              <div class="w-14 h-20 rounded-lg bg-obsidian border border-white/10 overflow-hidden shrink-0 flex items-center justify-center">
+                <img id="active-thumb" alt="Selected poster artwork" class="w-full h-full object-cover" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <input id="input-title" type="text" value="" placeholder="Title appears here after search" aria-label="Film or Series Title"
+                  class="w-full bg-transparent font-display font-bold text-base text-white border-b border-transparent hover:border-white/20 focus:border-lbblue focus:outline-none pb-0.5 truncate" />
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                  <div>
+                    <label class="text-[10px] font-mono uppercase text-gray-400 block">Year / Run</label>
+                    <input id="input-year" type="text" value="" 
+                      class="w-full bg-obsidian/70 border border-white/10 rounded px-2 py-1 text-xs text-gray-200 focus:border-lbblue focus:outline-none" />
+                  </div>
+                  <div>
+                    <label id="director-label" class="text-[10px] font-mono uppercase text-gray-400 block">Directed By</label>
+                    <input id="input-director" type="text" value="" 
+                      class="w-full bg-obsidian/70 border border-white/10 rounded px-2 py-1 text-xs text-gray-200 focus:border-lbblue focus:outline-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="tv-episode-box" class="hidden pt-3 border-t border-white/10 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-mono uppercase text-lbblue font-semibold">
+                  <i class="fa-solid fa-tv mr-1"></i>TV Series Episode Selector
+                </span>
+                <span id="tv-episode-status" class="text-[10px] text-gray-400 font-mono">Series Overview</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label for="tv-season-select" class="text-[10px] font-mono text-gray-400 block mb-1">Season</label>
+                  <select id="tv-season-select" class="w-full bg-obsidian border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-lbblue focus:outline-none">
+                    <option value="">All Seasons</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="tv-episode-select" class="text-[10px] font-mono text-gray-400 block mb-1">Episode</label>
+                  <select id="tv-episode-select" class="w-full bg-obsidian border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-lbblue focus:outline-none" disabled>
+                    <option value="">All Episodes</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label for="input-episode-title" class="text-[10px] font-mono text-gray-400 block mb-1">Episode Badge / Title Override</label>
+                <input id="input-episode-title" type="text" placeholder="e.g. S04E03 · Connor's Wedding" 
+                  class="w-full bg-obsidian border border-white/15 rounded-lg px-2.5 py-1.5 text-xs text-white focus:border-lbblue focus:outline-none" />
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">Rating & Reaction</label>
+              <div class="flex items-center gap-2">
+                <span id="rating-numeric-badge" class="text-xs font-mono font-bold text-lbgreen bg-lbgreen/10 px-2 py-0.5 rounded">0.0 ★</span>
+                <button type="button" id="clear-rating-btn" class="text-[11px] font-mono text-gray-400 hover:text-white px-1.5 py-0.5 rounded bg-white/5" title="Reset rating to 0 (unrated)">
+                  Reset (0★)
+                </button>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-3 pt-1">
+              <div id="interactive-stars" class="flex items-center gap-1.5 select-none cursor-pointer py-1" role="slider" aria-label="Star Rating" aria-valuemin="0" aria-valuemax="5" aria-valuenow="0"></div>
+              <button type="button" id="heart-toggle-btn" aria-pressed="true"
+                class="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-lborange/50 bg-lborange/15 text-lborange font-semibold text-xs transition hover:scale-105">
+                <i class="fa-solid fa-heart text-sm"></i>
+                <span id="heart-toggle-label">Liked</span>
+              </button>
+            </div>
+
+            <input id="rating-range" type="range" min="0" max="5" step="0.5" value="0" aria-label="Star Rating Slider" />
+          </div>
+
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-3.5">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label for="input-review" class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">Review Pull-Quote</label>
+                <span id="review-char-count" class="text-[10px] font-mono text-gray-400">0 / 220</span>
+              </div>
+              <textarea id="input-review" rows="2" maxlength="220" placeholder="Write a memorable 1–2 sentence pull-quote..."
+                class="w-full bg-obsidian border border-white/15 rounded-lg p-2.5 text-xs text-gray-100 placeholder-gray-500 focus:outline-none focus:border-lbblue leading-relaxed"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="input-username" class="text-[11px] font-mono uppercase text-gray-400 block mb-1">Reviewer Handle</label>
+                <input id="input-username" type="text" value="" placeholder="@username"
+                  class="w-full bg-obsidian border border-white/15 rounded-lg px-2.5 py-2 text-xs text-white focus:border-lbblue focus:outline-none" />
+              </div>
+              <div>
+                <label for="input-watched-date" class="text-[11px] font-mono uppercase text-gray-400 block mb-1">Watched Date</label>
+                <input id="input-watched-date" type="date" value=""
+                  class="w-full bg-obsidian border border-white/15 rounded-lg px-2.5 py-2 text-xs text-white focus:border-lbblue focus:outline-none" />
+              </div>
+            </div>
+
+            <div>
+              <label for="input-tags" class="text-[11px] font-mono uppercase text-gray-400 block mb-1">Hashtags (Comma Separated)</label>
+              <input id="input-tags" type="text" value="" placeholder="imax, favorites..."
+                class="w-full bg-obsidian border border-white/15 rounded-lg px-2.5 py-2 text-xs text-white focus:border-lbblue focus:outline-none" />
+            </div>
+
+            <details class="group pt-1 border-t border-white/10">
+              <summary class="text-xs font-mono uppercase tracking-wider text-lbblue cursor-pointer flex items-center justify-between py-1 list-none">
+                <span><i class="fa-solid fa-pen-to-square mr-1.5"></i>Fine-Tune Credits & Metadata</span>
+                <i class="fa-solid fa-chevron-down text-[10px] transition-transform group-open:rotate-180"></i>
+              </summary>
+              <div class="pt-3 space-y-2.5">
+                <div>
+                  <label class="text-[10px] font-mono uppercase text-gray-400 block mb-1">Top Cast (Comma Separated)</label>
+                  <input id="input-cast" type="text" value=""
+                    class="w-full bg-obsidian border border-white/15 rounded px-2.5 py-1.5 text-xs text-gray-200 focus:border-lbblue focus:outline-none" />
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-[10px] font-mono uppercase text-gray-400 block mb-1">Genres</label>
+                    <input id="input-genre" type="text" value=""
+                      class="w-full bg-obsidian border border-white/15 rounded px-2.5 py-1.5 text-xs text-gray-200 focus:border-lbblue focus:outline-none" />
+                  </div>
+                  <div>
+                    <label class="text-[10px] font-mono uppercase text-gray-400 block mb-1">Runtime / Seasons</label>
+                    <input id="input-runtime" type="text" value=""
+                      class="w-full bg-obsidian border border-white/15 rounded px-2.5 py-1.5 text-xs text-gray-200 focus:border-lbblue focus:outline-none" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-[10px] font-mono uppercase text-gray-400 block mb-1">Cinematography (DOP)</label>
+                    <input id="input-dop" type="text" value=""
+                      class="w-full bg-obsidian border border-white/15 rounded px-2.5 py-1.5 text-xs text-gray-200 focus:border-lbblue focus:outline-none" />
+                  </div>
+                  <div>
+                    <label class="text-[10px] font-mono uppercase text-gray-400 block mb-1">Original Score / Music</label>
+                    <input id="input-music" type="text" value=""
+                      class="w-full bg-obsidian border border-white/15 rounded px-2.5 py-1.5 text-xs text-gray-200 focus:border-lbblue focus:outline-none" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-[10px] font-mono uppercase text-gray-400 block mb-1">Screenplay / Writer</label>
+                    <input id="input-writer" type="text" value=""
+                      class="w-full bg-obsidian border border-white/15 rounded px-2.5 py-1.5 text-xs text-gray-200 focus:border-lbblue focus:outline-none" />
+                  </div>
+                  <div>
+                    <label class="text-[10px] font-mono uppercase text-gray-400 block mb-1">Catalog / Spine #</label>
+                    <input id="input-spine" type="text" value="#0001"
+                      class="w-full bg-obsidian border border-white/15 rounded px-2.5 py-1.5 text-xs text-gray-200 focus:border-lbblue focus:outline-none" />
+                  </div>
+                </div>
+              </div>
+            </details>
+          </div>
+        </section>
+
+        <!-- TAB 2: STYLE ARCHETYPES -->
+        <section id="tab-style" class="tab-panel hidden space-y-5">
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <h2 class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">Select Poster Archetype (5 Styles)</h2>
+              <span class="text-[11px] font-mono text-lbgreen">Instant Switch</span>
+            </div>
+
+            <div class="grid grid-cols-1 gap-2.5" id="archetype-grid">
+              <button type="button" data-archetype="classic" class="archetype-card active flex items-center gap-3.5 p-3 rounded-xl bg-elevated border-2 border-lbgreen text-left transition hover:bg-white/5">
+                <div class="w-12 h-16 rounded-lg bg-obsidian border border-white/15 flex flex-col items-center justify-center p-1.5 shrink-0">
+                  <div class="w-6 h-8 rounded-sm bg-lbgreen/30 border border-lbgreen mb-1"></div>
+                  <div class="w-8 h-1 bg-white/60 rounded mb-0.5"></div>
+                  <div class="w-5 h-1 bg-lbgreen rounded"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="font-display font-bold text-sm text-white">1. Classic Centered</span>
+                    <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-lbgreen/20 text-lbgreen">Signature</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">Floating rounded poster over blurred backdrop, centered typography, palette bar & vector stars.</p>
+                </div>
+              </button>
+
+              <button type="button" data-archetype="editorial" class="archetype-card flex items-center gap-3.5 p-3 rounded-xl bg-obsidian/60 border-2 border-white/10 text-left transition hover:border-white/30">
+                <div class="w-12 h-16 rounded-lg bg-gradient-to-t from-black via-slate-800 to-lbblue/30 border border-white/15 flex flex-col justify-end p-1.5 shrink-0">
+                  <div class="w-7 h-2 bg-white rounded-sm mb-1"></div>
+                  <div class="w-9 h-0.5 bg-gray-400 mb-0.5"></div>
+                  <div class="w-6 h-1 bg-lbgreen rounded"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="font-display font-bold text-sm text-white">2. Full-Bleed Editorial</span>
+                    <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-lbblue/20 text-lbblue">Logo + Crew</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">Edge-to-edge cinema still, official movie logo or bold display title, structured role/crew block.</p>
+                </div>
+              </button>
+
+              <button type="button" data-archetype="polaroid" class="archetype-card flex items-center gap-3.5 p-3 rounded-xl bg-obsidian/60 border-2 border-white/10 text-left transition hover:border-white/30">
+                <div class="w-12 h-16 rounded-lg bg-[#F4F1EA] border border-white/20 flex flex-col p-1.5 shrink-0">
+                  <div class="w-full h-9 bg-slate-800 rounded-sm mb-1"></div>
+                  <div class="flex gap-0.5 mb-1">
+                    <span class="flex-1 h-1 bg-amber-600"></span>
+                    <span class="flex-1 h-1 bg-emerald-700"></span>
+                    <span class="flex-1 h-1 bg-sky-700"></span>
+                  </div>
+                  <div class="w-7 h-1 bg-stone-800 rounded"></div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="font-display font-bold text-sm text-white">3. Polaroid Gallery Frame</span>
+                    <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">Light Stock</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">Warm alabaster gallery stock (#F4F1EA), crisp inset artwork, 5-color hex swatch bar & serif pull-quote.</p>
+                </div>
+              </button>
+
+              <button type="button" data-archetype="criterion" class="archetype-card flex items-center gap-3.5 p-3 rounded-xl bg-obsidian/60 border-2 border-white/10 text-left transition hover:border-white/30">
+                <div class="w-12 h-16 rounded-lg bg-obsidian border border-white/15 flex flex-col overflow-hidden shrink-0">
+                  <div class="w-full h-2 bg-lborange"></div>
+                  <div class="p-1 flex-1 flex flex-col justify-between">
+                    <div class="w-5 h-1 bg-white/80"></div>
+                    <div class="w-full h-7 bg-slate-700 rounded-sm"></div>
+                    <div class="w-8 h-1 bg-lborange"></div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="font-display font-bold text-sm text-white">4. Criterion Arthouse Split</span>
+                    <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300">Physical Media</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">Asymmetric modernist grid, spine number badge, top collection rule, and editorial essay layout.</p>
+                </div>
+              </button>
+
+              <button type="button" data-archetype="ticket" class="archetype-card flex items-center gap-3.5 p-3 rounded-xl bg-obsidian/60 border-2 border-white/10 text-left transition hover:border-white/30">
+                <div class="w-12 h-16 rounded-lg bg-obsidian border border-white/15 p-1 flex flex-col items-center justify-between shrink-0">
+                  <div class="w-9 h-12 bg-[#EFECE6] rounded-sm p-1 flex flex-col justify-between">
+                    <div class="w-full h-4 bg-stone-800"></div>
+                    <div class="w-full border-t border-dashed border-stone-400"></div>
+                    <div class="w-full h-2 bg-stone-900"></div>
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <span class="font-display font-bold text-sm text-white">5. Cinema Ticket Stub</span>
+                    <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300">Tactile Log</span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">Perforated admission ticket with notched edges, monospace metadata table, admit-one serial & barcode.</p>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-2.5">
+            <label class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold block">Footer Badge Style</label>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" data-brand="letterboxd" class="brand-btn active py-2 px-2.5 rounded-lg text-xs font-semibold bg-elevated border border-lbgreen text-white">
+                Letterboxd Dots
+              </button>
+              <button type="button" data-brand="posterboxd" class="brand-btn py-2 px-2.5 rounded-lg text-xs font-semibold bg-obsidian border border-white/10 text-gray-300">
+                PosterBoxd Studio
+              </button>
+              <button type="button" data-brand="minimal" class="brand-btn py-2 px-2.5 rounded-lg text-xs font-semibold bg-obsidian border border-white/10 text-gray-300">
+                Minimal Handle
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 3: ASSETS & PALETTE -->
+        <section id="tab-assets" class="tab-panel hidden space-y-5">
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">
+                <i class="fa-solid fa-eye-dropper mr-1 text-lbgreen"></i>Extracted 5-Color Palette
+              </span>
+              <button type="button" id="reextract-palette-btn" class="text-[11px] font-mono text-lbblue hover:underline">
+                Re-sample Poster
+              </button>
+            </div>
+
+            <div id="palette-swatch-bar" class="grid grid-cols-5 gap-2 pt-1"></div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-white/10">
+              <label class="flex items-center gap-2 text-xs text-gray-200 cursor-pointer">
+                <input type="checkbox" id="toggle-tint-backdrop" checked class="rounded accent-lbgreen w-4 h-4" />
+                <span>Tint background gradient with dominant color</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">Poster Artwork</span>
+              <span id="poster-count-badge" class="text-[10px] font-mono text-gray-400">Deduplicated</span>
+            </div>
+            <div id="poster-picker-strip" class="flex gap-2.5 overflow-x-auto pb-2 pt-1"></div>
+          </div>
+
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">Backdrop / Scene Still</span>
+              <button type="button" id="use-poster-as-bg-btn" class="text-[11px] font-mono text-lbgreen hover:underline">
+                Use Active Poster as Backdrop
+              </button>
+            </div>
+            <div id="backdrop-picker-strip" class="flex gap-2.5 overflow-x-auto pb-2 pt-1"></div>
+          </div>
+
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">Official Title Logos (TMDB)</span>
+              <label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer">
+                <input type="checkbox" id="toggle-use-logo" checked class="rounded accent-lbgreen" />
+                <span>Prefer Image Logo</span>
+              </label>
+            </div>
+            <div id="logo-picker-strip" class="flex gap-2.5 overflow-x-auto pb-2 pt-1"></div>
+          </div>
+        </section>
+
+        <!-- TAB 4: METADATA & SLIDERS -->
+        <section id="tab-layout" class="tab-panel hidden space-y-4 sm:space-y-5">
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">
+                <i class="fa-solid fa-bars-staggered mr-1 text-lbgreen"></i>Reorder & Toggle Fields
+              </span>
+              <span class="text-[10px] font-mono text-gray-400">Drag or tap ↑↓</span>
+            </div>
+
+            <ul id="metadata-sortable-list" class="space-y-1.5">
+              <li data-field="title" class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-obsidian border border-white/10 text-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <i class="fa-solid fa-grip-vertical text-gray-500 cursor-grab drag-handle p-1"></i>
+                  <input type="checkbox" id="chk-title" checked class="accent-lbgreen rounded w-4 h-4 shrink-0" />
+                  <label for="chk-title" class="text-gray-200 font-medium cursor-pointer truncate">Title & Release Year</label>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-move="up" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                  <button type="button" data-move="down" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                </div>
+              </li>
+              <li data-field="director" class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-obsidian border border-white/10 text-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <i class="fa-solid fa-grip-vertical text-gray-500 cursor-grab drag-handle p-1"></i>
+                  <input type="checkbox" id="chk-director" checked class="accent-lbgreen rounded w-4 h-4 shrink-0" />
+                  <label for="chk-director" class="text-gray-200 font-medium cursor-pointer truncate">Director / Creator & Crew</label>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-move="up" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                  <button type="button" data-move="down" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                </div>
+              </li>
+              <li data-field="rating" class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-obsidian border border-white/10 text-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <i class="fa-solid fa-grip-vertical text-gray-500 cursor-grab drag-handle p-1"></i>
+                  <input type="checkbox" id="chk-rating" checked class="accent-lbgreen rounded w-4 h-4 shrink-0" />
+                  <label for="chk-rating" class="text-gray-200 font-medium cursor-pointer truncate">Star Rating & Liked Heart</label>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-move="up" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                  <button type="button" data-move="down" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                </div>
+              </li>
+              <li data-field="review" class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-obsidian border border-white/10 text-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <i class="fa-solid fa-grip-vertical text-gray-500 cursor-grab drag-handle p-1"></i>
+                  <input type="checkbox" id="chk-review" checked class="accent-lbgreen rounded w-4 h-4 shrink-0" />
+                  <label for="chk-review" class="text-gray-200 font-medium cursor-pointer truncate">Review Pull-Quote</label>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-move="up" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                  <button type="button" data-move="down" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                </div>
+              </li>
+              <li data-field="cast" class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-obsidian border border-white/10 text-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <i class="fa-solid fa-grip-vertical text-gray-500 cursor-grab drag-handle p-1"></i>
+                  <input type="checkbox" id="chk-cast" checked class="accent-lbgreen rounded w-4 h-4 shrink-0" />
+                  <label for="chk-cast" class="text-gray-200 font-medium cursor-pointer truncate">Starring Cast</label>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-move="up" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                  <button type="button" data-move="down" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                </div>
+              </li>
+              <li data-field="genre" class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-obsidian border border-white/10 text-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <i class="fa-solid fa-grip-vertical text-gray-500 cursor-grab drag-handle p-1"></i>
+                  <input type="checkbox" id="chk-genre" checked class="accent-lbgreen rounded w-4 h-4 shrink-0" />
+                  <label for="chk-genre" class="text-gray-200 font-medium cursor-pointer truncate">Genre & Runtime / Episode</label>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-move="up" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                  <button type="button" data-move="down" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                </div>
+              </li>
+              <li data-field="palette" class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-obsidian border border-white/10 text-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <i class="fa-solid fa-grip-vertical text-gray-500 cursor-grab drag-handle p-1"></i>
+                  <input type="checkbox" id="chk-palette" checked class="accent-lbgreen rounded w-4 h-4 shrink-0" />
+                  <label for="chk-palette" class="text-gray-200 font-medium cursor-pointer truncate">5-Color Swatch Bar</label>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-move="up" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                  <button type="button" data-move="down" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                </div>
+              </li>
+              <li data-field="tags" class="flex items-center justify-between px-3 py-2.5 rounded-lg bg-obsidian border border-white/10 text-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <i class="fa-solid fa-grip-vertical text-gray-500 cursor-grab drag-handle p-1"></i>
+                  <input type="checkbox" id="chk-tags" checked class="accent-lbgreen rounded w-4 h-4 shrink-0" />
+                  <label for="chk-tags" class="text-gray-200 font-medium cursor-pointer truncate">Hashtags & Watched Date</label>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" data-move="up" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Up"><i class="fa-solid fa-chevron-up text-[10px]"></i></button>
+                  <button type="button" data-move="down" class="w-6 h-6 rounded bg-white/5 hover:bg-white/15 text-gray-400 hover:text-white flex items-center justify-center" title="Move Down"><i class="fa-solid fa-chevron-down text-[10px]"></i></button>
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">Visual & Typography Controls</span>
+              <button type="button" id="reset-sliders-btn" class="text-[11px] font-mono text-gray-400 hover:text-white">Reset Defaults</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-1">
+              <label class="flex items-center gap-2 text-xs text-gray-200 cursor-pointer bg-obsidian p-2.5 rounded-lg border border-white/10">
+                <input type="checkbox" id="chk-gradient" checked class="accent-lbgreen rounded" />
+                <span>Vignette Gradient</span>
+              </label>
+              <label class="flex items-center gap-2 text-xs text-gray-200 cursor-pointer bg-obsidian p-2.5 rounded-lg border border-white/10">
+                <input type="checkbox" id="chk-grain" checked class="accent-lbgreen rounded" />
+                <span>35mm Film Grain</span>
+              </label>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-gray-300">Backdrop Brightness</span>
+                  <span id="val-brightness" class="font-mono text-lbgreen">55%</span>
+                </div>
+                <input id="slider-brightness" type="range" min="10" max="100" value="55" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-gray-300">Backdrop Blur Radius</span>
+                  <span id="val-blur" class="font-mono text-lbgreen">14px</span>
+                </div>
+                <input id="slider-blur" type="range" min="0" max="40" value="14" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-gray-300">Artwork / Logo Scale</span>
+                  <span id="val-poster-scale" class="font-mono text-lbgreen">1.00x</span>
+                </div>
+                <input id="slider-poster-scale" type="range" min="0.65" max="1.35" step="0.05" value="1.00" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-gray-300">Poster Corner Radius</span>
+                  <span id="val-radius" class="font-mono text-lbgreen">20px</span>
+                </div>
+                <input id="slider-radius" type="range" min="0" max="48" step="2" value="20" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-gray-300">Typography Scale</span>
+                  <span id="val-font-scale" class="font-mono text-lbgreen">1.00x</span>
+                </div>
+                <input id="slider-font-scale" type="range" min="0.75" max="1.30" step="0.05" value="1.00" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-gray-300">Vertical Section Spacing</span>
+                  <span id="val-spacing" class="font-mono text-lbgreen">1.00x</span>
+                </div>
+                <input id="slider-spacing" type="range" min="0.65" max="1.45" step="0.05" value="1.00" />
+              </div>
+
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-gray-300">Footer Badge Scale</span>
+                  <span id="val-footer-scale" class="font-mono text-lbgreen">1.00x</span>
+                </div>
+                <input id="slider-footer-scale" type="range" min="0.6" max="1.6" step="0.05" value="1.00" />
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </aside>
+
+    <!-- RIGHT CANVAS STAGE -->
+    <section id="poster-stage-section" class="flex-1 stage-grid flex flex-col justify-between p-3.5 sm:p-4 lg:p-6 overflow-y-auto">
+      <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 max-w-4xl mx-auto w-full">
+        <div class="flex items-center justify-between sm:justify-start gap-1 bg-slatepanel/90 backdrop-blur p-1.5 rounded-xl border border-white/10 overflow-x-auto no-scrollbar">
+          <span class="hidden sm:inline text-[11px] font-mono uppercase text-gray-400 px-2 shrink-0">Ratio:</span>
+          <button type="button" data-ratio="9:16" class="ratio-pill active flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-mono font-semibold bg-lbgreen text-obsidian transition whitespace-nowrap">
+            9:16 Story
+          </button>
+          <button type="button" data-ratio="4:5" class="ratio-pill flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-mono font-semibold text-gray-300 hover:bg-white/10 transition whitespace-nowrap">
+            4:5 Feed
+          </button>
+          <button type="button" data-ratio="2:3" class="ratio-pill flex-1 sm:flex-initial px-2.5 sm:px-3 py-1.5 rounded-lg text-[11px] sm:text-xs font-mono font-semibold text-gray-300 hover:bg-white/10 transition whitespace-nowrap">
+            2:3 Print
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between sm:justify-end gap-2 bg-slatepanel/90 backdrop-blur px-3 py-1.5 rounded-xl border border-white/10">
+          <span id="stage-archetype-label" class="text-xs font-mono text-lbblue truncate">Style: 1. Classic Centered</span>
+          <button type="button" id="cycle-style-btn" class="text-xs px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white font-mono transition shrink-0" title="Cycle through poster styles">
+            Next <i class="fa-solid fa-forward-step ml-1"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="my-3 sm:my-4 flex-1 flex items-center justify-center relative">
+        <canvas id="poster-canvas" width="1080" height="1920" class="rounded-xl"></canvas>
+      </div>
+
+      <div class="max-w-xl mx-auto w-full bg-slatepanel/95 backdrop-blur-md p-3 rounded-2xl border border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 shadow-2xl">
+        <div class="flex items-center justify-between sm:justify-start gap-2.5 px-1">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-lbgreen shrink-0"></span>
+            <div>
+              <div class="text-xs font-semibold text-white">High-Resolution Canvas Engine</div>
+              <div id="export-dimensions-label" class="text-[10px] font-mono text-gray-400">PNG · 1080 × 1920 px · Zero Server Lag</div>
+            </div>
+          </div>
+          <button type="button" id="mobile-back-to-top-btn" class="lg:hidden text-[11px] font-mono text-lbblue bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+            <i class="fa-solid fa-arrow-up mr-1"></i>Edit
+          </button>
+        </div>
+
+        <div class="grid grid-cols-3 sm:flex items-center gap-2">
+          <button type="button" id="copy-poster-btn" class="justify-center px-3 py-2.5 sm:py-2 rounded-xl bg-cardbg hover:bg-elevated border border-white/15 text-xs font-semibold text-gray-100 flex items-center gap-1.5 transition">
+            <i class="fa-regular fa-copy text-lbblue"></i>
+            <span id="copy-btn-text">Copy</span>
+          </button>
+          <button type="button" id="share-poster-btn" class="justify-center px-3 py-2.5 sm:py-2 rounded-xl bg-cardbg hover:bg-elevated border border-white/15 text-xs font-semibold text-gray-100 flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-arrow-up-from-bracket text-lborange"></i>
+            <span>Share</span>
+          </button>
+          <button type="button" id="download-poster-btn" class="justify-center px-3.5 py-2.5 sm:py-2 rounded-xl bg-lbgreen hover:bg-[#1ed760] text-obsidian font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-lbgreen/20 transition">
+            <i class="fa-solid fa-download"></i>
+            <span>Save PNG</span>
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- TMDB API MODAL -->
+  <div id="api-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-slatepanel border border-white/15 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-lbblue/15 border border-lbblue/30 flex items-center justify-center text-lbblue">
+            <i class="fa-solid fa-key"></i>
+          </div>
+          <div>
+            <h3 class="font-display font-bold text-base text-white">Configure TMDB API Key</h3>
+            <p class="text-[11px] text-gray-400">Unlock live Movie, TV Series & Logo fetching</p>
+          </div>
+        </div>
+        <button type="button" id="close-api-modal-btn" class="text-gray-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-2">
+        <label for="tmdb-key-input" class="text-xs font-mono uppercase text-gray-300 block">TMDB v3 API Key (or Read Access Token)</label>
+        <input id="tmdb-key-input" type="password" placeholder="Paste your 32-character TMDB v3 API key..." 
+          class="w-full bg-obsidian border border-white/15 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-lbblue" />
+        <p id="api-modal-feedback" class="text-xs font-mono text-gray-400">
+          Your credential is stored in this browser (<code class="text-gray-300">localStorage</code>) and sent directly to TMDB to authenticate requests. PosterBoxd has no app server.
+        </p>
+      </div>
+
+      <div class="bg-cardbg p-3 rounded-xl border border-white/10 text-xs text-gray-300 space-y-2">
+        <div class="font-semibold text-white"><i class="fa-solid fa-circle-info text-lbblue mr-1"></i>Get a TMDB key in a few minutes</div>
+        <ol class="list-decimal pl-4 space-y-1 text-gray-400 leading-relaxed">
+          <li><a href="https://www.themoviedb.org/signup" target="_blank" rel="noopener noreferrer" class="text-lbblue hover:underline">Create a free TMDB account</a> or sign in.</li>
+          <li>Open your profile <strong class="text-gray-300">Settings → API</strong>, then choose <strong class="text-gray-300">Request an API Key → Developer</strong>.</li>
+          <li>Accept the terms and copy the <strong class="text-gray-300">API Key (v3)</strong> or <strong class="text-gray-300">API Read Access Token</strong> into the field above.</li>
+        </ol>
+        <a href="https://developer.themoviedb.org/docs/getting-started" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-lbblue hover:underline font-semibold">Official TMDB instructions <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i></a>
+        <p class="text-[11px] text-gray-500">Best completed in a desktop browser. Your credential is saved in this browser and used to make requests directly to TMDB.</p>
+      </div>
+
+      <div class="flex items-center justify-between gap-2 pt-2">
+        <button type="button" id="clear-api-key-btn" class="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-red-500/20 text-xs text-gray-300 hover:text-red-300 font-semibold transition">
+          Remove Saved Key
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" id="cancel-api-modal-btn" class="px-4 py-2 rounded-xl bg-cardbg hover:bg-elevated text-xs text-gray-200 font-semibold">
+            Close
+          </button>
+          <button type="button" id="save-api-key-btn" class="px-4 py-2 rounded-xl bg-lbgreen hover:bg-[#1ed760] text-obsidian font-bold text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-check"></i>
+            <span>Test & Save Key</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-banner" class="fixed bottom-5 right-5 z-50 pointer-events-none opacity-0 translate-y-2 transition-all duration-200 bg-elevated border border-white/15 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-medium">
+    <i id="toast-icon" class="fa-solid fa-circle-check text-lbgreen"></i>
+    <span id="toast-message">Poster updated</span>
+  </div>
+
+  <!-- APPLICATION SCRIPT -->
+  <script>
+    const state = {
+      tmdbApiKey: localStorage.getItem('posterboxd_tmdb_key') || '',
+      archetype: 'classic',
+      aspectRatio: '9:16',
+      brandMode: 'letterboxd',
+      mediaType: 'movie',
+      tmdbId: null,
+      title: '',
+      year: '',
+      director: '',
+      writer: '',
+      dop: '',
+      music: '',
+      cast: '',
+      genre: '',
+      runtime: '',
+      spine: '#0001',
+      episodeTitle: '',
+      rating: 0,
+      isLiked: false,
+      review: '',
+      username: '',
+      watchedDate: '',
+      tags: '',
+      posters: [],
+      backdrops: [],
+      logos: [],
+      selectedPosterIndex: 0,
+      selectedBackdropIndex: 0,
+      selectedLogoIndex: 0,
+      useLogoImage: true,
+      posterImg: null,
+      backdropImg: null,
+      logoImg: null,
+      palette: ['#17191F', '#303541', '#596171', '#98A0AE', '#E5E7EB'],
+      tintBackdropWithPalette: true,
+      fieldOrder: ['title', 'director', 'rating', 'review', 'cast', 'genre', 'palette', 'tags'],
+      visibleFields: { title: true, director: true, rating: true, review: true, cast: true, genre: true, palette: true, tags: true },
+      gradientOverlay: true,
+      filmGrain: true,
+      backdropBrightness: 55,
+      backdropBlur: 14,
+      posterScale: 1.0,
+      posterRadius: 20,
+      fontScale: 1.0,
+      sectionSpacing: 1.0,
+      footerScale: 1.0
+    };
+
+    let grainPatternCanvas = null;
+
+    function initGrainPattern() {
+      grainPatternCanvas = document.createElement('canvas');
+      grainPatternCanvas.width = 180;
+      grainPatternCanvas.height = 180;
+      const gctx = grainPatternCanvas.getContext('2d');
+      const imgData = gctx.createImageData(180, 180);
+      const data = imgData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const v = (Math.random() * 255) | 0;
+        data[i] = v;
+        data[i + 1] = v;
+        data[i + 2] = v;
+        data[i + 3] = 16;
+      }
+      gctx.putImageData(imgData, 0, 0);
+    }
+
+    function showToast(message, isError = false) {
+      const banner = document.getElementById('toast-banner');
+      const icon = document.getElementById('toast-icon');
+      const msg = document.getElementById('toast-message');
+      msg.textContent = message;
+      icon.className = isError
+        ? 'fa-solid fa-triangle-exclamation text-amber-400'
+        : 'fa-solid fa-circle-check text-lbgreen';
+      banner.classList.remove('opacity-0', 'translate-y-2');
+      banner.classList.add('opacity-100', 'translate-y-0');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        banner.classList.add('opacity-0', 'translate-y-2');
+        banner.classList.remove('opacity-100', 'translate-y-0');
+      }, 2800);
+    }
+
+    function formatSafeDate(dateStr) {
+      if (!dateStr) return '';
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        if (m >= 1 && m <= 12) {
+          return `${d} ${months[m - 1]} ${y}`;
+        }
+      }
+      return dateStr;
+    }
+
+    async function loadCorsImage(url) {
+      if (!url) return null;
+      if (url.startsWith('data:') || url.startsWith('blob:')) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = url;
+        });
+      }
+
+      const candidateUrls = [
+        url + (url.includes('?') ? '&' : '?') + 'cors=1',
+        `https://wsrv.nl/?url=${encodeURIComponent(url)}&output=png`
+      ];
+
+      for (const candidate of candidateUrls) {
+        const loaded = await new Promise((resolve) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = candidate;
+        });
+        if (loaded) return loaded;
+      }
+      return null;
+    }
+
+    function extractDominantPalette(img) {
+      if (!img) return state.palette;
+      try {
+        const sampleCanvas = document.createElement('canvas');
+        const size = 64;
+        sampleCanvas.width = size;
+        sampleCanvas.height = size;
+        const sctx = sampleCanvas.getContext('2d');
+        sctx.drawImage(img, 0, 0, size, size);
+        const { data } = sctx.getImageData(0, 0, size, size);
+
+        const buckets = new Map();
+        for (let i = 0; i < data.length; i += 16) {
+          const a = data[i + 3];
+          if (a < 128) continue;
+          const r = data[i], g = data[i + 1], b = data[i + 2];
+          const qr = Math.min(255, Math.round(r / 24) * 24);
+          const qg = Math.min(255, Math.round(g / 24) * 24);
+          const qb = Math.min(255, Math.round(b / 24) * 24);
+          const key = `${qr},${qg},${qb}`;
+          buckets.set(key, (buckets.get(key) || 0) + 1);
+        }
+
+        const sorted = Array.from(buckets.entries())
+          .map(([key, count]) => {
+            const [r, g, b] = key.split(',').map(Number);
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            const sat = max === 0 ? 0 : (max - min) / max;
+            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+            const score = count * (1 + sat * 1.4) * (lum > 18 && lum < 245 ? 1.2 : 0.5);
+            return { r, g, b, score };
+          })
+          .sort((a, b) => b.score - a.score);
+
+        const chosen = [];
+        const colorDist = (c1, c2) => Math.hypot(c1.r - c2.r, c1.g - c2.g, c1.b - c2.b);
+
+        for (const cand of sorted) {
+          if (chosen.length >= 5) break;
+          if (chosen.every(c => colorDist(c, cand) > 52)) {
+            chosen.push(cand);
+          }
+        }
+        for (const cand of sorted) {
+          if (chosen.length >= 5) break;
+          if (!chosen.includes(cand)) chosen.push(cand);
+        }
+
+        const toHex = ({ r, g, b }) => '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('').toUpperCase();
+        const hexes = chosen.slice(0, 5).map(toHex);
+        while (hexes.length < 5) hexes.push('#2A2F3D');
+        return hexes;
+      } catch (e) {
+        return state.palette;
+      }
+    }
+
+    function renderPaletteSwatchesUI() {
+      const container = document.getElementById('palette-swatch-bar');
+      container.innerHTML = state.palette.map((hex, idx) => `
+        <label class="group flex flex-col items-center gap-1 cursor-pointer">
+          <div class="w-full h-9 rounded-lg border border-white/20 shadow-inner relative overflow-hidden transition transform group-hover:scale-105" style="background-color: ${hex};">
+            <input type="color" data-swatch-idx="${idx}" value="${hex}" class="opacity-0 absolute inset-0 w-full h-full cursor-pointer" />
+          </div>
+          <span class="text-[10px] font-mono text-gray-400 group-hover:text-white">${hex}</span>
+        </label>
+      `).join('');
+
+      container.querySelectorAll('input[type="color"]').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.dataset.swatchIdx, 10);
+          state.palette[idx] = e.target.value.toUpperCase();
+          e.target.parentElement.style.backgroundColor = state.palette[idx];
+          e.target.parentElement.nextElementSibling.textContent = state.palette[idx];
+          scheduleCanvasRender();
+        });
+      });
+    }
+
+    function drawRoundedRectPath(ctx, x, y, w, h, r) {
+      const radius = Math.max(0, Math.min(r, w / 2, h / 2));
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.arcTo(x + w, y, x + w, y + h, radius);
+      ctx.arcTo(x + w, y + h, x, y + h, radius);
+      ctx.arcTo(x, y + h, x, y, radius);
+      ctx.arcTo(x, y, x + w, y, radius);
+      ctx.closePath();
+    }
+
+    function drawImageCover(ctx, img, x, y, w, h) {
+      if (!img) return;
+      const imgRatio = img.width / img.height;
+      const boxRatio = w / h;
+      let sx = 0, sy = 0, sw = img.width, sh = img.height;
+      if (imgRatio > boxRatio) {
+        sw = img.height * boxRatio;
+        sx = (img.width - sw) / 2;
+      } else {
+        sh = img.width / boxRatio;
+        sy = (img.height - sh) / 2;
+      }
+      ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+    }
+
+    function traceStarPath(ctx, cx, cy, outerR, innerR) {
+      ctx.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 === 0 ? outerR : innerR;
+        const angle = (Math.PI / 5) * i - Math.PI / 2;
+        const x = cx + Math.cos(angle) * r;
+        const y = cy + Math.sin(angle) * r;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+    }
+
+    function drawVectorHeart(ctx, cx, cy, size, color = '#FF8000') {
+      ctx.save();
+      ctx.translate(cx, cy - size * 0.38);
+      const s = size / 32;
+      ctx.scale(s, s);
+      ctx.beginPath();
+      ctx.moveTo(0, 8);
+      ctx.bezierCurveTo(0, 5, -5, 0, -11, 0);
+      ctx.bezierCurveTo(-19, 0, -19, 10, -19, 10);
+      ctx.bezierCurveTo(-19, 18, -11, 24, 0, 31);
+      ctx.bezierCurveTo(11, 24, 19, 18, 19, 10);
+      ctx.bezierCurveTo(19, 10, 19, 0, 11, 0);
+      ctx.bezierCurveTo(5, 0, 0, 5, 0, 8);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawRatingAndHeartRow(ctx, {
+      x, y, rating, isLiked, starSize = 24, gap = 12, align = 'center',
+      starColor = '#00E054', emptyColor = 'rgba(255,255,255,0.2)', heartColor = '#FF8000'
+    }) {
+      const hasRating = rating > 0;
+      if (!hasRating && !isLiked) return 0;
+
+      const numStars = hasRating ? 5 : 0;
+      const starsWidth = hasRating ? (numStars * starSize * 2 + (numStars - 1) * gap) : 0;
+      const heartSpace = isLiked ? (hasRating ? gap * 1.8 + starSize * 1.9 : starSize * 1.9) : 0;
+      const totalWidth = starsWidth + heartSpace;
+
+      let startX = x;
+      if (align === 'center') startX = x - totalWidth / 2;
+      else if (align === 'right') startX = x - totalWidth;
+
+      const cy = y + starSize;
+
+      if (hasRating) {
+        for (let i = 0; i < 5; i++) {
+          const cx = startX + starSize + i * (starSize * 2 + gap);
+          const starVal = rating - i;
+          traceStarPath(ctx, cx, cy, starSize, starSize * 0.44);
+          ctx.fillStyle = emptyColor;
+          ctx.fill();
+
+          if (starVal >= 1) {
+            traceStarPath(ctx, cx, cy, starSize, starSize * 0.44);
+            ctx.fillStyle = starColor;
+            ctx.fill();
+          } else if (starVal >= 0.5) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(cx - starSize - 2, cy - starSize - 2, starSize + 2, starSize * 2 + 4);
+            ctx.clip();
+            traceStarPath(ctx, cx, cy, starSize, starSize * 0.44);
+            ctx.fillStyle = starColor;
+            ctx.fill();
+            ctx.restore();
+          }
+        }
+      }
+
+      if (isLiked) {
+        const heartCx = startX + starsWidth + (hasRating ? gap * 1.8 + starSize * 0.95 : starSize * 0.95);
+        drawVectorHeart(ctx, heartCx, cy, starSize * 1.65, heartColor);
+      }
+
+      return starSize * 2;
+    }
+
+    function getWrappedLines(ctx, text, maxWidth, maxLines = 3) {
+      if (!text) return [];
+      const words = String(text).trim().split(/\s+/);
+      const lines = [];
+      let current = '';
+
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const test = current ? `${current} ${word}` : word;
+        if (ctx.measureText(test).width <= maxWidth) {
+          current = test;
+        } else {
+          if (lines.length === maxLines - 1) {
+            let truncated = test;
+            while (truncated.length > 3 && ctx.measureText(truncated + '…').width > maxWidth) {
+              truncated = truncated.slice(0, -1);
+            }
+            lines.push(truncated.trim() + '…');
+            return lines;
+          }
+          if (current) {
+            lines.push(current);
+            current = word;
+          } else {
+            lines.push(word);
+            current = '';
+          }
+        }
+      }
+      if (current && lines.length < maxLines) {
+        lines.push(current);
+      }
+      return lines;
+    }
+
+    function drawFooterBrand(ctx, cx, bottomY, isLightMode = false) {
+      const scale = state.footerScale;
+      const textPrimary = isLightMode ? '#18181B' : '#F3F4F6';
+      const textMuted = isLightMode ? '#71717A' : '#9CA3AF';
+      const handle = state.username ? `@${state.username.replace(/^@/, '')}` : '';
+
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+
+      if (state.brandMode === 'minimal') {
+        ctx.font = `600 ${Math.round(22 * scale)}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = textPrimary;
+        if (handle) ctx.fillText(handle, cx, bottomY - 12);
+        ctx.restore();
+        return;
+      }
+
+      ctx.font = `700 ${Math.round(24 * scale)}px "Plus Jakarta Sans", sans-serif`;
+      ctx.fillStyle = textPrimary;
+      if (handle) ctx.fillText(handle, cx, bottomY - Math.round(48 * scale));
+
+      const dotR = Math.round(9 * scale);
+      const dotGap = Math.round(21 * scale);
+      const badgeY = bottomY - Math.round(18 * scale);
+
+      const brandText = state.brandMode === 'letterboxd' ? 'Letterboxd' : 'PosterBoxd';
+      ctx.font = `800 ${Math.round(22 * scale)}px "Syne", sans-serif`;
+      const textW = ctx.measureText(brandText).width;
+      const dotsW = dotR * 2 + dotGap * 2;
+      const totalW = dotsW + Math.round(14 * scale) + textW;
+      const startX = cx - totalW / 2;
+
+      const colors = ['#FF8000', '#00E054', '#40BCF4'];
+      colors.forEach((col, i) => {
+        ctx.beginPath();
+        ctx.arc(startX + dotR + i * dotGap, badgeY - dotR * 0.75, dotR, 0, Math.PI * 2);
+        ctx.fillStyle = col;
+        ctx.fill();
+      });
+
+      ctx.textAlign = 'left';
+      ctx.fillStyle = textMuted;
+      ctx.fillText(brandText, startX + dotsW + Math.round(14 * scale), badgeY);
+      ctx.restore();
+    }
+
+    function drawPaletteBar(ctx, cx, y, width, height, showHex = false, isLightMode = false) {
+      const startX = cx - width / 2;
+      const segW = width / 5;
+      ctx.save();
+      drawRoundedRectPath(ctx, startX, y, width, height, height / 2);
+      ctx.clip();
+      state.palette.forEach((hex, i) => {
+        ctx.fillStyle = hex;
+        ctx.fillRect(startX + i * segW, y, Math.ceil(segW), height);
+      });
+      ctx.restore();
+
+      ctx.save();
+      drawRoundedRectPath(ctx, startX, y, width, height, height / 2);
+      ctx.strokeStyle = isLightMode ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.18)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+      return height;
+    }
+
+    function drawProcessedBackdrop(ctx, w, h, img, customBlur = null, customBrightness = null) {
+      const blurPx = customBlur !== null ? customBlur : state.backdropBlur;
+      const brightPct = customBrightness !== null ? customBrightness : state.backdropBrightness;
+
+      ctx.save();
+      ctx.fillStyle = '#090A0D';
+      ctx.fillRect(0, 0, w, h);
+
+      if (img) {
+        const bleed = blurPx * 2.5;
+        ctx.filter = `blur(${blurPx}px) brightness(${brightPct}%)`;
+        drawImageCover(ctx, img, -bleed, -bleed, w + bleed * 2, h + bleed * 2);
+        ctx.filter = 'none';
+      }
+
+      if (state.tintBackdropWithPalette && state.palette[0]) {
+        const tintGrad = ctx.createLinearGradient(0, 0, 0, h);
+        tintGrad.addColorStop(0, `${state.palette[1] || '#0B0C0E'}55`);
+        tintGrad.addColorStop(0.55, `${state.palette[0]}33`);
+        tintGrad.addColorStop(1, '#07080AEE');
+        ctx.fillStyle = tintGrad;
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      if (state.gradientOverlay) {
+        const vig = ctx.createLinearGradient(0, 0, 0, h);
+        vig.addColorStop(0, 'rgba(7, 8, 10, 0.25)');
+        vig.addColorStop(0.45, 'rgba(7, 8, 10, 0.55)');
+        vig.addColorStop(0.8, 'rgba(7, 8, 10, 0.88)');
+        vig.addColorStop(1, 'rgba(7, 8, 10, 0.97)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, w, h);
+      }
+      ctx.restore();
+    }
+
+    function renderClassicPoster(ctx, w, h) {
+      const bgImg = state.backdropImg || state.posterImg;
+      drawProcessedBackdrop(ctx, w, h, bgImg);
+
+      const isCompactRatio = h < 1500;
+      const basePosterH = isCompactRatio ? h * 0.39 : h * 0.42;
+      const posterH = Math.round(basePosterH * state.posterScale);
+      const posterW = Math.round(posterH * (2 / 3));
+      const posterX = Math.round((w - posterW) / 2);
+      const posterY = Math.round(isCompactRatio ? h * 0.055 : h * 0.075);
+
+      if (state.posterImg) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.72)';
+        ctx.shadowBlur = 48;
+        ctx.shadowOffsetY = 22;
+        drawRoundedRectPath(ctx, posterX, posterY, posterW, posterH, state.posterRadius);
+        ctx.fillStyle = '#111';
+        ctx.fill();
+        ctx.clip();
+        drawImageCover(ctx, state.posterImg, posterX, posterY, posterW, posterH);
+        ctx.restore();
+
+        ctx.save();
+        drawRoundedRectPath(ctx, posterX, posterY, posterW, posterH, state.posterRadius);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      const footerReserve = Math.round(125 * state.footerScale);
+      const startY = posterY + posterH + Math.round(48 * state.sectionSpacing);
+      const maxAvailableH = h - footerReserve - startY;
+
+      let fScale = state.fontScale * (isCompactRatio ? 0.88 : 1.0);
+      let sScale = state.sectionSpacing * (isCompactRatio ? 0.82 : 1.0);
+
+      const drawMetadataPass = (dryRun = false, scaleMult = 1.0) => {
+        const fs = fScale * scaleMult;
+        const gap = Math.round(28 * sScale * scaleMult);
+        let curY = startY;
+        const cx = w / 2;
+        const maxW = w - 150;
+
+        for (const field of state.fieldOrder) {
+          if (!state.visibleFields[field]) continue;
+
+          if (field === 'title' && state.title) {
+            const titleFontPx = Math.round(52 * fs);
+            ctx.font = `800 ${titleFontPx}px "Syne", sans-serif`;
+            const lines = getWrappedLines(ctx, state.title, maxW, 2);
+            lines.forEach((line) => {
+              curY += titleFontPx;
+              if (!dryRun) {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.textAlign = 'center';
+                ctx.fillText(line, cx, curY);
+              }
+              curY += 6;
+            });
+            if (state.year) {
+              const yearPx = Math.round(26 * fs);
+              curY += yearPx + 4;
+              if (!dryRun) {
+                ctx.font = `500 ${yearPx}px "JetBrains Mono", monospace`;
+                ctx.fillStyle = '#9CA3AF';
+                ctx.textAlign = 'center';
+                ctx.fillText(state.year, cx, curY);
+              }
+            }
+            curY += gap;
+          } else if (field === 'director' && state.director) {
+            const dirPx = Math.round(26 * fs);
+            curY += dirPx;
+            if (!dryRun) {
+              const prefix = state.mediaType === 'tv' ? 'created by ' : 'directed by ';
+              ctx.font = `400 ${dirPx}px "Plus Jakarta Sans", sans-serif`;
+              const pW = ctx.measureText(prefix).width;
+              ctx.font = `700 ${dirPx}px "Plus Jakarta Sans", sans-serif`;
+              const dW = ctx.measureText(state.director).width;
+              const sx = cx - (pW + dW) / 2;
+
+              ctx.textAlign = 'left';
+              ctx.font = `400 ${dirPx}px "Plus Jakarta Sans", sans-serif`;
+              ctx.fillStyle = '#9CA3AF';
+              ctx.fillText(prefix, sx, curY);
+
+              ctx.font = `700 ${dirPx}px "Plus Jakarta Sans", sans-serif`;
+              ctx.fillStyle = '#F3F4F6';
+              ctx.fillText(state.director, sx + pW, curY);
+            }
+            curY += gap;
+          } else if (field === 'rating' && (state.rating > 0 || state.isLiked)) {
+            const starR = Math.round(22 * fs);
+            if (!dryRun) {
+              drawRatingAndHeartRow(ctx, { x: cx, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: Math.round(10 * fs), align: 'center' });
+            }
+            curY += starR * 2 + gap;
+          } else if (field === 'review' && state.review) {
+            const revPx = Math.round(31 * fs);
+            ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
+            const lines = getWrappedLines(ctx, `“${state.review}”`, maxW - 40, 3);
+            lines.forEach(line => {
+              curY += revPx + 4;
+              if (!dryRun) {
+                ctx.fillStyle = '#E5E7EB';
+                ctx.textAlign = 'center';
+                ctx.fillText(line, cx, curY);
+              }
+            });
+            curY += gap;
+          } else if (field === 'cast' && state.cast) {
+            const castPx = Math.round(22 * fs);
+            ctx.font = `500 ${castPx}px "Plus Jakarta Sans", sans-serif`;
+            const lines = getWrappedLines(ctx, state.cast, maxW, 2);
+            lines.forEach(line => {
+              curY += castPx + 4;
+              if (!dryRun) {
+                ctx.fillStyle = '#D1D5DB';
+                ctx.textAlign = 'center';
+                ctx.fillText(line, cx, curY);
+              }
+            });
+            curY += gap;
+          } else if (field === 'genre' && (state.genre || state.runtime || state.episodeTitle)) {
+            const metaPx = Math.round(20 * fs);
+            curY += metaPx;
+            if (!dryRun) {
+              ctx.font = `600 ${metaPx}px "JetBrains Mono", monospace`;
+              ctx.fillStyle = '#9CA3AF';
+              ctx.textAlign = 'center';
+              const metaParts = [state.episodeTitle || state.genre, state.runtime].filter(Boolean);
+              ctx.fillText(metaParts.join('  •  ').toUpperCase(), cx, curY);
+            }
+            curY += gap;
+          } else if (field === 'palette') {
+            const barH = Math.round(16 * fs);
+            const barW = Math.round(320 * fs);
+            if (!dryRun) {
+              drawPaletteBar(ctx, cx, curY, barW, barH, false, false);
+            }
+            curY += barH + gap;
+          } else if (field === 'tags' && (state.tags || state.watchedDate)) {
+            const tagPx = Math.round(19 * fs);
+            curY += tagPx;
+            if (!dryRun) {
+              ctx.font = `500 ${tagPx}px "JetBrains Mono", monospace`;
+              ctx.fillStyle = '#9CA3AF';
+              ctx.textAlign = 'center';
+              const tagList = state.tags
+                ? state.tags.split(',').map(t => t.trim()).filter(Boolean).map(t => `#${t.replace(/^#/, '')}`).join('  ')
+                : '';
+              const dateText = state.watchedDate ? `Watched ${formatSafeDate(state.watchedDate)}` : '';
+              const combined = [tagList, dateText].filter(Boolean).join('   ·   ');
+              const lines = getWrappedLines(ctx, combined, maxW, 1);
+              if (lines[0]) ctx.fillText(lines[0], cx, curY);
+            }
+            curY += gap;
+          }
+        }
+        return curY - startY;
+      };
+
+      const neededH = drawMetadataPass(true, 1.0);
+      const fitMultiplier = neededH > maxAvailableH ? Math.max(0.62, maxAvailableH / neededH) : 1.0;
+      drawMetadataPass(false, fitMultiplier);
+
+      drawFooterBrand(ctx, w / 2, h - 28, false);
+    }
+
+    function renderEditorialPoster(ctx, w, h) {
+      const bgImg = state.backdropImg || state.posterImg;
+      const effectiveBlur = Math.max(0, state.backdropBlur - 10);
+      drawProcessedBackdrop(ctx, w, h, bgImg, effectiveBlur, Math.min(100, state.backdropBrightness + 18));
+
+      const grad = ctx.createLinearGradient(0, h * 0.25, 0, h);
+      grad.addColorStop(0, 'rgba(8, 9, 12, 0)');
+      grad.addColorStop(0.35, 'rgba(8, 9, 12, 0.62)');
+      grad.addColorStop(0.7, 'rgba(8, 9, 12, 0.92)');
+      grad.addColorStop(1, 'rgba(8, 9, 12, 0.98)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      const leftX = 84;
+      const maxW = w - leftX * 2;
+      const fs = state.fontScale * (h < 1500 ? 0.88 : 1.0);
+      const footerReserve = Math.round(135 * state.footerScale);
+      let cursorBottom = h - footerReserve - 24;
+
+      if (state.visibleFields.palette) {
+        cursorBottom -= 16;
+        drawPaletteBar(ctx, leftX + 140, cursorBottom, 280, 14, false, false);
+        cursorBottom -= Math.round(24 * state.sectionSpacing);
+      }
+
+      if (state.visibleFields.tags && (state.tags || state.watchedDate)) {
+        const tagPx = Math.round(20 * fs);
+        ctx.font = `500 ${tagPx}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = '#9CA3AF';
+        ctx.textAlign = 'left';
+        const tagStr = state.tags
+          ? state.tags.split(',').map(t => t.trim()).filter(Boolean).map(t => `#${t.replace(/^#/, '')}`).join('  ')
+          : '';
+        const dateStr = state.watchedDate ? `Watched on ${formatSafeDate(state.watchedDate)}` : '';
+        const line = [dateStr, tagStr].filter(Boolean).join('   •   ');
+        const clamped = getWrappedLines(ctx, line, maxW, 1)[0] || '';
+        ctx.fillText(clamped, leftX, cursorBottom);
+        cursorBottom -= (tagPx + Math.round(26 * state.sectionSpacing));
+      }
+
+      if (state.visibleFields.rating && (state.rating > 0 || state.isLiked)) {
+        const starR = Math.round(24 * fs);
+        cursorBottom -= starR * 2;
+        drawRatingAndHeartRow(ctx, { x: leftX, y: cursorBottom, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: Math.round(12 * fs), align: 'left' });
+        cursorBottom -= Math.round(28 * state.sectionSpacing);
+      }
+
+      if (state.visibleFields.review && state.review) {
+        const revPx = Math.round(30 * fs);
+        ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
+        const lines = getWrappedLines(ctx, `“${state.review}”`, maxW, 2);
+        for (let i = lines.length - 1; i >= 0; i--) {
+          ctx.fillStyle = '#E5E7EB';
+          ctx.textAlign = 'left';
+          ctx.fillText(lines[i], leftX, cursorBottom);
+          cursorBottom -= (revPx + 8);
+        }
+        cursorBottom -= Math.round(16 * state.sectionSpacing);
+      }
+
+      if (state.visibleFields.director || state.visibleFields.cast || state.visibleFields.genre) {
+        const credPx = Math.round(25 * fs);
+        const lineGap = Math.round(38 * fs * state.sectionSpacing);
+        const rows = [];
+
+        if (state.visibleFields.director) {
+          if (state.director && state.writer && state.director === state.writer) {
+            rows.push({ role: 'Director / Writer', val: state.director });
+          } else {
+            if (state.director) rows.push({ role: state.mediaType === 'tv' ? 'Created by' : 'Director', val: state.director });
+            if (state.writer) rows.push({ role: 'Screenplay', val: state.writer });
+          }
+          if (state.dop) rows.push({ role: 'Cinematography', val: state.dop });
+          if (state.music) rows.push({ role: 'Original Score', val: state.music });
+        }
+        if (state.visibleFields.cast && state.cast) {
+          rows.push({ role: 'Cast', val: state.cast });
+        }
+        if (state.visibleFields.genre && (state.episodeTitle || state.genre || state.runtime)) {
+          rows.push({
+            role: state.episodeTitle ? 'Episode' : 'Format',
+            val: [state.episodeTitle || state.genre, state.runtime].filter(Boolean).join(' · ')
+          });
+        }
+
+        for (let i = rows.length - 1; i >= 0; i--) {
+          const r = rows[i];
+          const label = `${r.role}: `;
+          ctx.font = `400 ${credPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#9CA3AF';
+          ctx.textAlign = 'left';
+          ctx.fillText(label, leftX, cursorBottom);
+          const lw = ctx.measureText(label).width;
+
+          ctx.font = `700 ${credPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#FFFFFF';
+          const clampedVal = getWrappedLines(ctx, r.val, maxW - lw, 1)[0] || '';
+          ctx.fillText(clampedVal, leftX + lw, cursorBottom);
+          cursorBottom -= lineGap;
+        }
+        cursorBottom -= Math.round(14 * state.sectionSpacing);
+      }
+
+      if (state.visibleFields.title) {
+        if (state.useLogoImage && state.logoImg) {
+          const maxLogoW = Math.round(580 * state.posterScale);
+          const maxLogoH = Math.round(150 * state.posterScale);
+          const ratio = Math.min(maxLogoW / state.logoImg.width, maxLogoH / state.logoImg.height);
+          const lw = Math.round(state.logoImg.width * ratio);
+          const lh = Math.round(state.logoImg.height * ratio);
+          cursorBottom -= lh;
+          ctx.drawImage(state.logoImg, leftX, cursorBottom, lw, lh);
+        } else {
+          const titlePx = Math.round(62 * fs);
+          ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+          const lines = getWrappedLines(ctx, state.title, maxW, 3);
+          for (let i = lines.length - 1; i >= 0; i--) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.textAlign = 'left';
+            let lineText = lines[i];
+            ctx.fillText(lineText, leftX, cursorBottom);
+            if (i === lines.length - 1 && state.year) {
+              const tw = ctx.measureText(lineText + ' ').width;
+              ctx.font = `400 ${Math.round(34 * fs)}px "JetBrains Mono", monospace`;
+              ctx.fillStyle = '#9CA3AF';
+              ctx.fillText(`(${state.year})`, leftX + tw, cursorBottom);
+              ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+            }
+            cursorBottom -= (titlePx + 10);
+          }
+        }
+      }
+
+      drawFooterBrand(ctx, w / 2, h - 28, false);
+    }
+
+    function renderPolaroidPoster(ctx, w, h) {
+      ctx.fillStyle = '#F4F1EA';
+      ctx.fillRect(0, 0, w, h);
+
+      const pad = 64;
+      const isCompact = h < 1500;
+      const artW = w - pad * 2;
+      const artH = Math.round((isCompact ? h * 0.50 : h * 0.54) * Math.min(1.12, state.posterScale));
+
+      const artImg = state.posterImg || state.backdropImg;
+      if (artImg) {
+        ctx.save();
+        drawRoundedRectPath(ctx, pad, pad, artW, artH, Math.min(24, state.posterRadius));
+        ctx.clip();
+        drawImageCover(ctx, artImg, pad, pad, artW, artH);
+        ctx.restore();
+      }
+
+      let curY = pad + artH + 22;
+      if (state.visibleFields.palette) {
+        const swatchH = 22;
+        const segW = artW / 5;
+        state.palette.forEach((hex, idx) => {
+          ctx.fillStyle = hex;
+          ctx.fillRect(pad + idx * segW, curY, Math.ceil(segW), swatchH);
+        });
+        curY += swatchH + 18;
+
+        ctx.font = '600 15px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#57534E';
+        state.palette.forEach((hex, idx) => {
+          ctx.textAlign = 'center';
+          ctx.fillText(hex, pad + (idx + 0.5) * segW, curY);
+        });
+        curY += 34;
+      } else {
+        curY += 20;
+      }
+
+      const fs = state.fontScale * (isCompact ? 0.9 : 1.0);
+
+      if (state.visibleFields.title) {
+        const titlePx = Math.round(48 * fs);
+        ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+        ctx.fillStyle = '#18181B';
+        ctx.textAlign = 'left';
+        const lines = getWrappedLines(ctx, state.title.toUpperCase(), artW * 0.68, 2);
+        lines.forEach((line, idx) => {
+          ctx.fillText(line, pad, curY + titlePx);
+          if (idx < lines.length - 1) curY += titlePx + 6;
+        });
+
+        if (state.visibleFields.rating && (state.rating > 0 || state.isLiked)) {
+          drawRatingAndHeartRow(ctx, { x: w - pad, y: curY + 8, rating: state.rating, isLiked: state.isLiked, starSize: Math.round(18 * fs), gap: 8, align: 'right', starColor: '#15803D', emptyColor: 'rgba(24,24,27,0.16)', heartColor: '#EA580C' });
+        }
+        curY += titlePx + 24;
+      }
+
+      if (state.visibleFields.director || state.visibleFields.genre) {
+        const subPx = Math.round(22 * fs);
+        ctx.font = `600 ${subPx}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = '#57534E';
+        ctx.textAlign = 'left';
+        const parts = [
+          state.year,
+          state.director ? `DIR. ${state.director.toUpperCase()}` : '',
+          state.episodeTitle || state.runtime,
+          state.genre
+        ].filter(Boolean);
+        const line = getWrappedLines(ctx, parts.join('   /   '), artW, 1)[0] || '';
+        ctx.fillText(line, pad, curY);
+        curY += subPx + 22;
+      }
+
+      ctx.fillStyle = '#D6D3CD';
+      ctx.fillRect(pad, curY, artW, 2);
+      curY += 32;
+
+      if (state.visibleFields.review && state.review) {
+        const revPx = Math.round(34 * fs);
+        ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
+        ctx.fillStyle = '#27272A';
+        ctx.textAlign = 'left';
+        const lines = getWrappedLines(ctx, `“${state.review}”`, artW, 3);
+        lines.forEach(l => {
+          curY += revPx;
+          ctx.fillText(l, pad, curY);
+          curY += 8;
+        });
+        curY += 16;
+      }
+
+      if (state.visibleFields.cast && state.cast) {
+        const castPx = Math.round(20 * fs);
+        ctx.font = `500 ${castPx}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = '#52525B';
+        ctx.textAlign = 'left';
+        const line = getWrappedLines(ctx, `Starring: ${state.cast}`, artW, 1)[0] || '';
+        curY += castPx;
+        ctx.fillText(line, pad, curY);
+        curY += 22;
+      }
+
+      if (state.visibleFields.tags && (state.tags || state.watchedDate)) {
+        const tagPx = Math.round(18 * fs);
+        ctx.font = `500 ${tagPx}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = '#78716C';
+        ctx.textAlign = 'left';
+        const tagStr = state.tags
+          ? state.tags.split(',').map(t => `#${t.trim().replace(/^#/, '')}`).join(' ')
+          : '';
+        const dateStr = state.watchedDate ? `LOGGED ${formatSafeDate(state.watchedDate).toUpperCase()}` : '';
+        curY += tagPx;
+        ctx.fillText([dateStr, tagStr].filter(Boolean).join('  ·  '), pad, curY);
+      }
+
+      drawFooterBrand(ctx, w / 2, h - 28, true);
+    }
+
+    function renderCriterionPoster(ctx, w, h) {
+      ctx.fillStyle = '#0E1014';
+      ctx.fillRect(0, 0, w, h);
+
+      const accentColor = state.palette[0] || '#00E054';
+      const secondaryColor = state.palette[2] || '#40BCF4';
+      const pad = 72;
+      const fs = state.fontScale * (h < 1500 ? 0.88 : 1.0);
+
+      ctx.fillStyle = accentColor;
+      ctx.fillRect(0, 0, w, 18);
+
+      let topY = 74;
+      ctx.font = '700 20px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#E5E7EB';
+      ctx.textAlign = 'left';
+      ctx.fillText('THE POSTERBOXD ARCHIVE EDITION', pad, topY);
+
+      ctx.textAlign = 'right';
+      ctx.fillStyle = accentColor;
+      ctx.fillText(`SPINE ${state.spine || '#1001'}`, w - pad, topY);
+
+      topY += 20;
+      ctx.fillStyle = 'rgba(255,255,255,0.22)';
+      ctx.fillRect(pad, topY, w - pad * 2, 2);
+
+      topY += 56;
+      if (state.visibleFields.director && state.director) {
+        const dirPx = Math.round(22 * fs);
+        ctx.font = `600 ${dirPx}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = secondaryColor;
+        ctx.textAlign = 'left';
+        const prefix = state.mediaType === 'tv' ? 'A SERIES CREATED BY ' : 'A FILM BY ';
+        ctx.fillText((prefix + state.director).toUpperCase(), pad, topY);
+        topY += dirPx + 16;
+      }
+
+      if (state.visibleFields.title && state.title) {
+        const titlePx = Math.round(58 * fs);
+        ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'left';
+        const lines = getWrappedLines(ctx, state.title, w - pad * 2, 2);
+        lines.forEach(line => {
+          topY += titlePx - 8;
+          ctx.fillText(line, pad, topY);
+          topY += 14;
+        });
+      }
+
+      topY += 16;
+      const artH = Math.round((h < 1500 ? h * 0.42 : h * 0.46) * Math.min(1.1, state.posterScale));
+      const artW = w - pad * 2;
+      const artImg = state.backdropImg || state.posterImg;
+
+      if (artImg) {
+        ctx.save();
+        drawRoundedRectPath(ctx, pad, topY, artW, artH, Math.min(12, state.posterRadius));
+        ctx.clip();
+        drawImageCover(ctx, artImg, pad, topY, artW, artH);
+        ctx.restore();
+
+        if (state.posterImg && state.backdropImg) {
+          const miniW = Math.min(Math.round(artH * 0.42), Math.round(artW * 0.36));
+          const miniH = Math.round(miniW * 1.5); // Preserve the standard 2:3 movie-poster ratio.
+          const miniInsetRight = Math.max(24, Math.round(pad * 0.38));
+          const miniOverlap = Math.max(20, Math.round(pad * 0.34));
+          const miniX = pad + artW - miniW - miniInsetRight;
+          const miniY = Math.max(topY + 12, topY + artH - miniH + miniOverlap);
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.8)';
+          ctx.shadowBlur = 30;
+          drawRoundedRectPath(ctx, miniX, miniY, miniW, miniH, 10);
+          ctx.clip();
+          drawImageCover(ctx, state.posterImg, miniX, miniY, miniW, miniH);
+          ctx.restore();
+          ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+          ctx.lineWidth = 2;
+          drawRoundedRectPath(ctx, miniX, miniY, miniW, miniH, 10);
+          ctx.stroke();
+        }
+      }
+
+      let botY = topY + artH + 78;
+      const colLeftW = Math.round(artW * 0.36);
+      const colRightX = pad + colLeftW + 44;
+      const colRightW = artW - colLeftW - 44;
+
+      let leftCursor = botY;
+      ctx.font = `600 ${Math.round(18 * fs)}px "JetBrains Mono", monospace`;
+      ctx.textAlign = 'left';
+
+      const specs = [
+        ['YEAR', state.year],
+        ['RUNTIME', state.runtime],
+        ['GENRE', state.episodeTitle || state.genre],
+        ['DOP', state.dop],
+        ['SCORE', state.music]
+      ].filter(s => s[1]);
+
+      specs.forEach(([k, v]) => {
+        ctx.fillStyle = '#6B7280';
+        ctx.fillText(k, pad, leftCursor);
+        ctx.fillStyle = '#F3F4F6';
+        const clamped = getWrappedLines(ctx, v, colLeftW - 105, 1)[0] || '';
+        ctx.fillText(clamped, pad + 100, leftCursor);
+        leftCursor += Math.round(30 * fs);
+      });
+
+      if (state.visibleFields.palette) {
+        leftCursor += 10;
+        drawPaletteBar(ctx, pad + (colLeftW - 20) / 2, leftCursor, colLeftW - 20, 14, false, false);
+      }
+
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      ctx.fillRect(colRightX - 24, botY - 18, 1.5, Math.min(260, h - botY - 150));
+
+      let rightCursor = botY;
+      if (state.visibleFields.rating && (state.rating > 0 || state.isLiked)) {
+        const starR = Math.round(20 * fs);
+        drawRatingAndHeartRow(ctx, { x: colRightX, y: rightCursor - 18, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: 10, align: 'left' });
+        rightCursor += starR * 2 + 18;
+      }
+
+      if (state.visibleFields.review && state.review) {
+        const revPx = Math.round(30 * fs);
+        ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
+        ctx.fillStyle = '#F3F4F6';
+        ctx.textAlign = 'left';
+        const lines = getWrappedLines(ctx, `“${state.review}”`, colRightW, 3);
+        lines.forEach(l => {
+          rightCursor += revPx;
+          ctx.fillText(l, colRightX, rightCursor);
+          rightCursor += 6;
+        });
+        rightCursor += 16;
+      }
+
+      if (state.visibleFields.cast && state.cast) {
+        const castPx = Math.round(19 * fs);
+        ctx.font = `500 ${castPx}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = '#9CA3AF';
+        const lines = getWrappedLines(ctx, `FEATURING: ${state.cast.toUpperCase()}`, colRightW, 2);
+        lines.forEach(l => {
+          rightCursor += castPx + 4;
+          ctx.fillText(l, colRightX, rightCursor);
+        });
+      }
+
+      drawFooterBrand(ctx, w / 2, h - 28, false);
+    }
+
+    function renderTicketPoster(ctx, w, h) {
+      const bgImg = state.backdropImg || state.posterImg;
+      drawProcessedBackdrop(ctx, w, h, bgImg, Math.max(18, state.backdropBlur), Math.min(45, state.backdropBrightness));
+
+      const marginX = 96;
+      const marginY = h < 1500 ? 70 : 110;
+      const ticketW = w - marginX * 2;
+      const ticketH = h - marginY * 2 - 70;
+      const tx = marginX, ty = marginY;
+      const stubSplitY = ty + Math.round(ticketH * 0.74);
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+      ctx.shadowBlur = 50;
+      ctx.shadowOffsetY = 24;
+      drawRoundedRectPath(ctx, tx, ty, ticketW, ticketH, 28);
+      ctx.fillStyle = '#F2EFE9';
+      ctx.fill();
+      ctx.restore();
+
+      const drawNotch = (nx, ny, nr) => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(nx, ny, nr, 0, Math.PI * 2);
+        ctx.fillStyle = '#0D0F14';
+        ctx.fill();
+        ctx.restore();
+      };
+      drawNotch(tx, stubSplitY, 26);
+      drawNotch(tx + ticketW, stubSplitY, 26);
+      drawNotch(w / 2, ty, 22);
+      drawNotch(w / 2, ty + ticketH, 22);
+
+      ctx.save();
+      ctx.strokeStyle = '#A8A29E';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([12, 10]);
+      ctx.beginPath();
+      ctx.moveTo(tx + 36, stubSplitY);
+      ctx.lineTo(tx + ticketW - 36, stubSplitY);
+      ctx.stroke();
+      ctx.restore();
+
+      const innerPad = tx + 52;
+      const innerW = ticketW - 104;
+      const fs = state.fontScale * (h < 1500 ? 0.86 : 1.0);
+
+      let curY = ty + 56;
+      ctx.font = '700 20px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#57534E';
+      ctx.textAlign = 'left';
+      ctx.fillText('ADMIT ONE  ·  CINEMA DIARY LOG', innerPad, curY);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#18181B';
+      ctx.fillText(`NO. ${state.spine.replace('#', '') || '02049'}`, tx + ticketW - 52, curY);
+
+      curY += 18;
+      ctx.fillStyle = '#18181B';
+      ctx.fillRect(innerPad, curY, innerW, 3);
+
+      curY += 24;
+      const artH = Math.round((h < 1500 ? ticketH * 0.30 : ticketH * 0.34) * Math.min(1.1, state.posterScale));
+      const artImg = state.backdropImg || state.posterImg;
+      if (artImg) {
+        ctx.save();
+        drawRoundedRectPath(ctx, innerPad, curY, innerW, artH, 14);
+        ctx.clip();
+        drawImageCover(ctx, artImg, innerPad, curY, innerW, artH);
+        ctx.restore();
+      }
+
+      curY += artH + 14;
+      if (state.visibleFields.palette) {
+        const segW = innerW / 5;
+        state.palette.forEach((hex, idx) => {
+          ctx.fillStyle = hex;
+          ctx.fillRect(innerPad + idx * segW, curY, Math.ceil(segW), 12);
+        });
+        curY += 28;
+      }
+
+      if (state.visibleFields.title) {
+        const titlePx = Math.round(46 * fs);
+        ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+        ctx.fillStyle = '#18181B';
+        ctx.textAlign = 'left';
+        const lines = getWrappedLines(ctx, state.title.toUpperCase(), innerW, 2);
+        lines.forEach(line => {
+          curY += titlePx - 4;
+          ctx.fillText(line, innerPad, curY);
+          curY += 8;
+        });
+      }
+
+      curY += 14;
+      ctx.fillStyle = '#D6D3CD';
+      ctx.fillRect(innerPad, curY, innerW, 2);
+      curY += 30;
+
+      const colW = innerW / 2;
+      const drawReceiptCell = (label, val, cx, cy) => {
+        ctx.font = '600 15px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#78716C';
+        ctx.textAlign = 'left';
+        ctx.fillText(label, cx, cy);
+        ctx.font = '700 21px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#18181B';
+        const clamped = getWrappedLines(ctx, val || '—', colW - 16, 1)[0] || '—';
+        ctx.fillText(clamped, cx, cy + 26);
+      };
+
+      drawReceiptCell('DIRECTED / CREATED BY', state.director, innerPad, curY);
+      drawReceiptCell('WATCHED DATE', formatSafeDate(state.watchedDate) || state.year, innerPad + colW, curY);
+      curY += 64;
+      drawReceiptCell('RUNTIME / EPISODE', state.episodeTitle || state.runtime, innerPad, curY);
+      drawReceiptCell('REVIEWER HANDLE', `@${state.username.replace(/^@/, '')}`, innerPad + colW, curY);
+      curY += 46;
+
+      ctx.fillStyle = '#D6D3CD';
+      ctx.fillRect(innerPad, curY, innerW, 2);
+      curY += 26;
+
+      if (state.visibleFields.review && state.review && curY < stubSplitY - 40) {
+        const revPx = Math.round(27 * fs);
+        ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
+        ctx.fillStyle = '#27272A';
+        ctx.textAlign = 'left';
+        const lines = getWrappedLines(ctx, `“${state.review}”`, innerW, 2);
+        lines.forEach(l => {
+          if (curY + revPx < stubSplitY - 12) {
+            curY += revPx;
+            ctx.fillText(l, innerPad, curY);
+          }
+        });
+      }
+
+      let stubY = stubSplitY + 42;
+      if (state.visibleFields.rating && (state.rating > 0 || state.isLiked)) {
+        drawRatingAndHeartRow(ctx, { x: w / 2, y: stubY - 10, rating: state.rating, isLiked: state.isLiked, starSize: Math.round(22 * fs), gap: 12, align: 'center', starColor: '#18181B', emptyColor: 'rgba(24,24,27,0.18)', heartColor: '#EA580C' });
+        stubY += Math.round(58 * fs);
+      }
+
+      const barW = innerW;
+      const barH = Math.min(78, Math.max(40, (ty + ticketH) - stubY - 46));
+      if (barH > 24) {
+        let bx = innerPad;
+        const seedStr = `${state.title}-${state.year}-${state.rating}-${state.username}`;
+        let idx = 0;
+        ctx.fillStyle = '#18181B';
+        while (bx < innerPad + barW - 8) {
+          const code = seedStr.charCodeAt(idx % seedStr.length);
+          const lineW = (code % 3 === 0) ? 6 : (code % 2 === 0 ? 3 : 2);
+          const gapW = ((code >> 2) % 3) + 2;
+          if (bx + lineW <= innerPad + barW) {
+            ctx.fillRect(bx, stubY, lineW, barH);
+          }
+          bx += lineW + gapW;
+          idx++;
+        }
+
+        ctx.font = '600 15px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#57534E';
+        ctx.textAlign = 'center';
+        const serial = `PBXD · ${state.year || '—'} · ${(state.rating || 0).toFixed(1)}★${state.username ? ` · ${state.username.toUpperCase()}` : ''}`;
+        ctx.fillText(serial, w / 2, stubY + barH + 22);
+      }
+
+      drawFooterBrand(ctx, w / 2, h - 22, false);
+    }
+
+    let renderPending = false;
+
+    function scheduleCanvasRender() {
+      if (renderPending) return;
+      renderPending = true;
+      requestAnimationFrame(() => {
+        renderPending = false;
+        renderPosterToCanvas();
+      });
+    }
+
+    function renderPosterToCanvas() {
+      const canvas = document.getElementById('poster-canvas');
+      if (!canvas) return;
+
+      let targetW = 1080, targetH = 1920;
+      if (state.aspectRatio === '4:5') {
+        targetW = 1080;
+        targetH = 1350;
+      } else if (state.aspectRatio === '2:3') {
+        targetW = 1200;
+        targetH = 1800;
+      }
+
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
+      }
+
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, targetW, targetH);
+
+      if (state.archetype === 'classic') {
+        renderClassicPoster(ctx, targetW, targetH);
+      } else if (state.archetype === 'editorial') {
+        renderEditorialPoster(ctx, targetW, targetH);
+      } else if (state.archetype === 'polaroid') {
+        renderPolaroidPoster(ctx, targetW, targetH);
+      } else if (state.archetype === 'criterion') {
+        renderCriterionPoster(ctx, targetW, targetH);
+      } else if (state.archetype === 'ticket') {
+        renderTicketPoster(ctx, targetW, targetH);
+      }
+
+      if (state.filmGrain && grainPatternCanvas) {
+        ctx.save();
+        const pattern = ctx.createPattern(grainPatternCanvas, 'repeat');
+        if (pattern) {
+          ctx.fillStyle = pattern;
+          ctx.fillRect(0, 0, targetW, targetH);
+        }
+        ctx.restore();
+      }
+
+      const miniCanvas = document.getElementById('mobile-mini-canvas');
+      if (miniCanvas) {
+        const mctx = miniCanvas.getContext('2d');
+        mctx.clearRect(0, 0, miniCanvas.width, miniCanvas.height);
+        mctx.drawImage(canvas, 0, 0, miniCanvas.width, miniCanvas.height);
+      }
+      const dockTitle = document.getElementById('mobile-dock-title');
+      const dockMeta = document.getElementById('mobile-dock-meta');
+      if (dockTitle) dockTitle.textContent = state.title || 'Untitled Poster';
+      if (dockMeta) {
+        const shortArch = {
+          classic: '1. Classic',
+          editorial: '2. Editorial',
+          polaroid: '3. Polaroid',
+          criterion: '4. Criterion',
+          ticket: '5. Ticket Stub'
+        }[state.archetype] || state.archetype;
+        dockMeta.textContent = `${shortArch} · ${state.aspectRatio}`;
+      }
+    }
+
+    async function selectAndLoadAsset(type, index) {
+      if (type === 'poster') {
+        state.selectedPosterIndex = index;
+        const url = state.posters[index];
+        const img = await loadCorsImage(url);
+        if (img) {
+          state.posterImg = img;
+          state.palette = extractDominantPalette(img);
+          renderPaletteSwatchesUI();
+        }
+      } else if (type === 'backdrop') {
+        state.selectedBackdropIndex = index;
+        const url = state.backdrops[index];
+        const img = await loadCorsImage(url);
+        if (img) {
+          state.backdropImg = img;
+        }
+      } else if (type === 'logo') {
+        state.selectedLogoIndex = index;
+        const url = state.logos[index];
+        const img = await loadCorsImage(url);
+        state.logoImg = img;
+      }
+      renderAssetPickerStrips();
+      scheduleCanvasRender();
+    }
+
+    function renderAssetPickerStrips() {
+      const posterStrip = document.getElementById('poster-picker-strip');
+      const backdropStrip = document.getElementById('backdrop-picker-strip');
+      const logoStrip = document.getElementById('logo-picker-strip');
+      const posterCount = document.getElementById('poster-count-badge');
+
+      posterCount.textContent = `${state.posters.length} Unique Option${state.posters.length === 1 ? '' : 's'}`;
+
+      posterStrip.innerHTML = state.posters.map((url, idx) => `
+        <button type="button" data-asset-type="poster" data-idx="${idx}"
+          class="w-16 h-24 rounded-lg overflow-hidden shrink-0 border-2 transition ${idx === state.selectedPosterIndex ? 'border-lbgreen ring-2 ring-lbgreen/30 scale-105' : 'border-white/10 opacity-75 hover:opacity-100'}">
+          <img src="${url}" alt="Poster ${idx + 1}" class="w-full h-full object-cover" />
+        </button>
+      `).join('');
+
+      backdropStrip.innerHTML = state.backdrops.map((url, idx) => `
+        <button type="button" data-asset-type="backdrop" data-idx="${idx}"
+          class="w-28 h-16 rounded-lg overflow-hidden shrink-0 border-2 transition ${idx === state.selectedBackdropIndex ? 'border-lbblue ring-2 ring-lbblue/30 scale-105' : 'border-white/10 opacity-75 hover:opacity-100'}">
+          <img src="${url}" alt="Backdrop ${idx + 1}" class="w-full h-full object-cover" />
+        </button>
+      `).join('');
+
+      if (state.logos.length > 0) {
+        logoStrip.innerHTML = state.logos.map((url, idx) => `
+          <button type="button" data-asset-type="logo" data-idx="${idx}"
+            class="w-32 h-14 p-2 rounded-lg bg-obsidian flex items-center justify-center shrink-0 border-2 transition ${idx === state.selectedLogoIndex ? 'border-lbgreen ring-2 ring-lbgreen/30' : 'border-white/10 opacity-75 hover:opacity-100'}">
+            <img src="${url}" alt="Logo ${idx + 1}" class="max-w-full max-h-full object-contain" />
+          </button>
+        `).join('');
+      } else {
+        logoStrip.innerHTML = `<div class="text-xs text-gray-500 font-mono py-2">No PNG logo available — using crisp vector typography fallback.</div>`;
+      }
+
+      document.querySelectorAll('[data-asset-type]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selectAndLoadAsset(btn.dataset.assetType, parseInt(btn.dataset.idx, 10));
+        });
+      });
+
+      const thumbEl = document.getElementById('active-thumb');
+      if (state.posters[state.selectedPosterIndex]) {
+        thumbEl.src = state.posters[state.selectedPosterIndex];
+      }
+    }
+
+    function syncInputsFromState() {
+      document.getElementById('input-title').value = state.title;
+      document.getElementById('input-year').value = state.year;
+      document.getElementById('input-director').value = state.director;
+      document.getElementById('input-writer').value = state.writer;
+      document.getElementById('input-dop').value = state.dop;
+      document.getElementById('input-music').value = state.music;
+      document.getElementById('input-cast').value = state.cast;
+      document.getElementById('input-genre').value = state.genre;
+      document.getElementById('input-runtime').value = state.runtime;
+      document.getElementById('input-spine').value = state.spine;
+      document.getElementById('input-episode-title').value = state.episodeTitle;
+      document.getElementById('input-review').value = state.review;
+      document.getElementById('input-username').value = state.username;
+      document.getElementById('input-watched-date').value = state.watchedDate;
+      document.getElementById('input-tags').value = state.tags;
+      document.getElementById('review-char-count').textContent = `${state.review.length} / 220`;
+
+      const badge = document.getElementById('active-media-badge');
+      const dirLabel = document.getElementById('director-label');
+      const tvBox = document.getElementById('tv-episode-box');
+      if (state.mediaType === 'tv') {
+        badge.textContent = 'TV SERIES';
+        badge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-lbblue/15 text-lbblue border border-lbblue/30 font-semibold';
+        dirLabel.textContent = 'Created By';
+        tvBox.classList.remove('hidden');
+      } else {
+        badge.textContent = 'MOVIE';
+        badge.className = 'text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-lbgreen/15 text-lbgreen border border-lbgreen/30 font-semibold';
+        dirLabel.textContent = 'Directed By';
+        tvBox.classList.add('hidden');
+      }
+
+      updateStarRatingUI(state.rating);
+      updateHeartButtonUI(state.isLiked);
+    }
+
+    function buildTmdbHeadersAndUrl(endpoint, params = {}) {
+      const key = state.tmdbApiKey.trim();
+      const url = new URL(`https://api.themoviedb.org/3${endpoint}`);
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
+      });
+
+      const headers = { 'Accept': 'application/json' };
+      if (key.length > 45) {
+        headers['Authorization'] = `Bearer ${key}`;
+      } else {
+        url.searchParams.set('api_key', key);
+      }
+      return { url: url.toString(), headers };
+    }
+
+    async function tmdbFetch(endpoint, params = {}) {
+      const { url, headers } = buildTmdbHeadersAndUrl(endpoint, params);
+      const res = await fetch(url, { headers });
+      if (!res.ok) throw new Error(`TMDB Error (${res.status})`);
+      return await res.json();
+    }
+
+    function parseLetterboxdInput(rawText) {
+      const text = rawText.trim();
+      const isLb = /letterboxd\.com|boxd\.it|[★☆½]{2,}|I watched/i.test(text);
+      if (!isLb) return null;
+
+      let rating = null;
+      const starMatch = text.match(/([★]+)\s*(½)?/);
+      if (starMatch) {
+        rating = starMatch[1].length + (starMatch[2] ? 0.5 : 0);
+      } else if (text.includes('½')) {
+        rating = 0.5;
+      }
+
+      const isLiked = /❤️|♥|Liked/i.test(text);
+
+      let cleaned = text
+        .replace(/https?:\/\/\S+/gi, '')
+        .replace(/I\s+watched|Watched|My\s+review\s+of/gi, '')
+        .replace(/[★☆½❤️♥]+/g, '')
+        .trim();
+
+      let title = '';
+      let year = '';
+      const yearMatch = cleaned.match(/^(.*?)\s*\((\d{4})\)/);
+      if (yearMatch) {
+        title = yearMatch[1].replace(/^[-–•:\s]+|[-–•:\s]+$/g, '').trim();
+        year = yearMatch[2];
+      } else if (cleaned.length > 1) {
+        title = cleaned.replace(/^[-–•:\s]+|[-–•:\s]+$/g, '').trim();
+      }
+
+      let username = '';
+      const urlMatch = text.match(/https?:\/\/(?:www\.)?letterboxd\.com\/([^/\s]+)\/film\/([^/\s]+)/i)
+        || text.match(/https?:\/\/(?:www\.)?letterboxd\.com\/film\/([^/\s]+)/i);
+      if (urlMatch) {
+        if (urlMatch.length === 3) {
+          username = urlMatch[1];
+          if (!title) title = urlMatch[2].replace(/-/g, ' ');
+        } else if (urlMatch.length === 2 && !title) {
+          title = urlMatch[1].replace(/-/g, ' ');
+        }
+      }
+
+      return { title, year, rating, isLiked, username };
+    }
+
+    async function handleSearchOrFetch() {
+      const query = document.getElementById('search-input').value.trim();
+      if (!query) return;
+
+      if (!state.tmdbApiKey) {
+        revealApiModal('A TMDB API key is required for live movie and TV search. Add one below, then try your search again.');
+        return;
+      }
+
+      const resultsBox = document.getElementById('search-results-container');
+      resultsBox.classList.remove('hidden');
+      resultsBox.innerHTML = `<div class="text-xs font-mono text-gray-400 py-3 text-center"><i class="fa-solid fa-circle-notch fa-spin mr-1.5 text-lbgreen"></i>Searching TMDB…</div>`;
+
+      const lbParsed = parseLetterboxdInput(query);
+      if (lbParsed) {
+        if (lbParsed.rating !== null) state.rating = lbParsed.rating;
+        if (lbParsed.isLiked) state.isLiked = true;
+        if (lbParsed.username) state.username = lbParsed.username;
+        syncInputsFromState();
+      }
+
+      const effectiveQuery = (lbParsed && lbParsed.title) ? lbParsed.title : query;
+
+      try {
+        const [movies, tvShows] = await Promise.all([
+          tmdbFetch('/search/movie', { query: effectiveQuery, year: lbParsed?.year || '' }),
+          tmdbFetch('/search/tv', { query: effectiveQuery })
+        ]);
+
+        const combined = [
+          ...(movies.results || []).map(m => ({ ...m, media_type: 'movie' })),
+          ...(tvShows.results || []).map(t => ({ ...t, media_type: 'tv' }))
+        ].sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 8);
+
+        if (combined.length === 0) {
+          resultsBox.innerHTML = `
+            <div class="text-xs text-gray-400 py-2">No TMDB matches found for “${escapeHtml(effectiveQuery)}”.</div>
+            <button type="button" id="apply-custom-title-btn" class="w-full flex items-center justify-between p-2.5 rounded-lg bg-lbblue/10 hover:bg-lbblue/20 border border-lbblue/30 text-left text-xs text-lbblue font-semibold transition">
+              <span><i class="fa-solid fa-pen mr-1.5"></i>Use as a custom title</span>
+              <span class="text-[10px] font-mono">Manual entry</span>
+            </button>`;
+          document.getElementById('apply-custom-title-btn').addEventListener('click', () => {
+            state.title = effectiveQuery;
+            if (lbParsed?.year) state.year = lbParsed.year;
+            syncInputsFromState();
+            scheduleCanvasRender();
+            resultsBox.classList.add('hidden');
+          });
+          return;
+        }
+
+        renderSearchResultsList(combined);
+        if (lbParsed && combined[0]) {
+          await loadTmdbMediaDetails(combined[0].id, combined[0].media_type);
+        }
+      } catch (err) {
+        resultsBox.innerHTML = `<div class="text-xs text-amber-300 py-2">TMDB search failed. Check your connection or API key in the top-right settings.</div>`;
+        showToast(`TMDB search failed: ${err.message}`, true);
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    function renderSearchResultsList(results) {
+      const resultsBox = document.getElementById('search-results-container');
+      resultsBox.innerHTML = results.map(item => {
+        const title = item.title || item.name;
+        const date = item.release_date || item.first_air_date || '';
+        const year = date ? date.substring(0, 4) : '—';
+        const poster = item.poster_path ? `https://image.tmdb.org/t/p/w185${item.poster_path}` : '';
+        const isTv = item.media_type === 'tv';
+        return `
+          <button type="button" data-tmdb-id="${item.id}" data-tmdb-type="${item.media_type}"
+            class="w-full flex items-center gap-3 p-2 rounded-lg bg-obsidian hover:bg-elevated border border-white/10 text-left transition">
+            ${poster
+              ? `<img src="${poster}" alt="${title}" class="w-10 h-14 object-cover rounded shrink-0" />`
+              : `<div class="w-10 h-14 rounded bg-cardbg flex items-center justify-center text-[10px] text-gray-500 shrink-0">No Art</div>`
+            }
+            <div class="flex-1 min-w-0">
+              <div class="text-xs font-bold text-white truncate">${title} <span class="text-gray-400 font-normal">(${year})</span></div>
+              <div class="text-[11px] text-gray-400 truncate">${item.overview || 'Click to load high-res posters, backdrops & logos'}</div>
+            </div>
+            <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded ${isTv ? 'bg-lbblue/20 text-lbblue' : 'bg-lbgreen/20 text-lbgreen'} shrink-0">
+              ${isTv ? 'TV' : 'MOVIE'}
+            </span>
+          </button>
+        `;
+      }).join('');
+
+      resultsBox.querySelectorAll('[data-tmdb-id]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.tmdbId;
+          const type = btn.dataset.tmdbType;
+          resultsBox.classList.add('hidden');
+          await loadTmdbMediaDetails(id, type);
+        });
+      });
+    }
+
+    async function loadTmdbMediaDetails(id, mediaType) {
+      showToast('Fetching TMDB metadata, crew & artwork...');
+      try {
+        const endpoint = mediaType === 'tv' ? `/tv/${id}` : `/movie/${id}`;
+        const [details, credits, images] = await Promise.all([
+          tmdbFetch(endpoint),
+          tmdbFetch(`${endpoint}/credits`),
+          tmdbFetch(`${endpoint}/images`, { include_image_language: 'en,null' })
+        ]);
+
+        state.tmdbId = id;
+        state.mediaType = mediaType;
+        state.title = details.title || details.name || '';
+        state.spine = `#${String(id).slice(-4)}`;
+        state.episodeTitle = '';
+
+        if (mediaType === 'tv') {
+          const firstY = details.first_air_date ? details.first_air_date.substring(0, 4) : '';
+          const lastY = details.last_air_date ? details.last_air_date.substring(0, 4) : '';
+          state.year = firstY ? `${firstY}${lastY && lastY !== firstY ? `–${lastY}` : ''}` : '';
+          state.director = details.created_by?.map(c => c.name).join(', ') || credits.crew?.find(c => c.job === 'Director')?.name || '';
+          const seasonsCount = details.number_of_seasons || 1;
+          const epsCount = details.number_of_episodes || '';
+          state.runtime = `${seasonsCount} Season${seasonsCount > 1 ? 's' : ''}${epsCount ? ` · ${epsCount} Eps` : ''}`;
+          populateLiveTvSeasons(details.seasons || []);
+        } else {
+          state.year = details.release_date ? details.release_date.substring(0, 4) : '';
+          state.director = credits.crew?.find(c => c.job === 'Director')?.name || '';
+          if (details.runtime) {
+            const h = Math.floor(details.runtime / 60);
+            const m = details.runtime % 60;
+            state.runtime = h > 0 ? `${h}h ${m}m` : `${m}m`;
+          } else {
+            state.runtime = '';
+          }
+        }
+
+        state.writer = credits.crew?.filter(c => ['Writer', 'Screenplay', 'Story'].includes(c.job)).slice(0, 2).map(c => c.name).join(', ') || state.director;
+        state.dop = credits.crew?.find(c => ['Director of Photography', 'Cinematography'].includes(c.job))?.name || '';
+        state.music = credits.crew?.find(c => ['Original Music Composer', 'Music'].includes(c.job))?.name || '';
+        state.cast = credits.cast?.slice(0, 4).map(c => c.name).join(', ') || '';
+        state.genre = details.genres?.slice(0, 3).map(g => g.name).join(' | ') || '';
+
+        const rawPosterPaths = [details.poster_path, ...(images.posters || []).slice(0, 7).map(p => p.file_path)].filter(Boolean);
+        state.posters = Array.from(new Set(rawPosterPaths)).map(p => `https://image.tmdb.org/t/p/w780${p}`);
+
+        const rawBackdropPaths = [details.backdrop_path, ...(images.backdrops || []).slice(0, 7).map(b => b.file_path)].filter(Boolean);
+        state.backdrops = Array.from(new Set(rawBackdropPaths)).map(b => `https://image.tmdb.org/t/p/w1280${b}`);
+
+        const rawLogos = (images.logos || []).slice(0, 5).map(l => `https://image.tmdb.org/t/p/w500${l.file_path}`);
+        state.logos = Array.from(new Set(rawLogos));
+
+        state.selectedPosterIndex = 0;
+        state.selectedBackdropIndex = 0;
+        state.selectedLogoIndex = 0;
+
+        syncInputsFromState();
+
+        const [pImg, bImg, lImg] = await Promise.all([
+          loadCorsImage(state.posters[0]),
+          loadCorsImage(state.backdrops[0]),
+          loadCorsImage(state.logos[0])
+        ]);
+        state.posterImg = pImg;
+        state.backdropImg = bImg;
+        state.logoImg = lImg;
+
+        if (pImg) {
+          state.palette = extractDominantPalette(pImg);
+          renderPaletteSwatchesUI();
+        }
+        renderAssetPickerStrips();
+        scheduleCanvasRender();
+        showToast(`Loaded "${state.title}" from TMDB`);
+      } catch (err) {
+        showToast(`Failed to load TMDB media: ${err.message}`, true);
+      }
+    }
+
+    function populateLiveTvSeasons(seasons) {
+      const seasonSel = document.getElementById('tv-season-select');
+      const epSel = document.getElementById('tv-episode-select');
+      const validSeasons = seasons.filter(s => s.season_number > 0);
+      seasonSel.innerHTML = '<option value="">All Seasons</option>' +
+        validSeasons.map(s => `<option value="${s.season_number}">Season ${s.season_number} — ${s.name} (${s.episode_count} eps)</option>`).join('');
+      epSel.innerHTML = '<option value="">All Episodes</option>';
+      epSel.disabled = true;
+    }
+
+    function updateStarRatingUI(ratingVal) {
+      const starsContainer = document.getElementById('interactive-stars');
+      const badge = document.getElementById('rating-numeric-badge');
+      const slider = document.getElementById('rating-range');
+
+      slider.value = ratingVal;
+      badge.textContent = ratingVal > 0 ? `${ratingVal.toFixed(1)} ★` : 'Unrated';
+
+      let html = '';
+      for (let i = 1; i <= 5; i++) {
+        const diff = ratingVal - (i - 1);
+        let iconClass = 'fa-regular fa-star text-gray-600';
+        if (diff >= 1) iconClass = 'fa-solid fa-star text-lbgreen';
+        else if (diff >= 0.5) iconClass = 'fa-solid fa-star-half-stroke text-lbgreen';
+        html += `<i data-star-index="${i}" class="${iconClass} text-xl transition-transform hover:scale-110"></i>`;
+      }
+      starsContainer.innerHTML = html;
+    }
+
+    function updateHeartButtonUI(isLiked) {
+      const btn = document.getElementById('heart-toggle-btn');
+      const label = document.getElementById('heart-toggle-label');
+      btn.setAttribute('aria-pressed', String(isLiked));
+      if (isLiked) {
+        btn.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg border border-lborange/60 bg-lborange/20 text-lborange font-semibold text-xs transition hover:scale-105';
+        label.textContent = 'Liked';
+      } else {
+        btn.className = 'flex items-center gap-2 px-3.5 py-2 rounded-lg border border-white/10 bg-obsidian text-gray-400 font-semibold text-xs transition hover:text-white';
+        label.textContent = 'No Heart';
+      }
+    }
+
+    function revealApiModal(message = '') {
+      const modal = document.getElementById('api-modal');
+      const keyInput = document.getElementById('tmdb-key-input');
+      const feedback = document.getElementById('api-modal-feedback');
+      if (!modal) return;
+      if (keyInput) keyInput.value = state.tmdbApiKey || '';
+      if (feedback && message) {
+        feedback.textContent = message;
+        feedback.className = 'text-xs font-mono text-amber-300';
+      }
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      if (keyInput) keyInput.focus({ preventScroll: true });
+    }
+
+    function updateApiStatusPill() {
+      const dot = document.getElementById('api-status-dot');
+      const text = document.getElementById('api-status-text');
+      const textMobile = document.getElementById('api-status-text-mobile');
+      if (state.tmdbApiKey) {
+        dot.className = 'w-2 h-2 rounded-full bg-lbgreen shrink-0';
+        text.textContent = 'TMDB Connected';
+        if (textMobile) textMobile.textContent = 'Live';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0';
+        text.textContent = 'Connect TMDB';
+        if (textMobile) textMobile.textContent = 'Add Key';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initGrainPattern();
+      updateApiStatusPill();
+
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      syncInputsFromState();
+      renderPaletteSwatchesUI();
+      renderAssetPickerStrips();
+      scheduleCanvasRender();
+
+      document.querySelectorAll('.studio-tab').forEach(tabBtn => {
+        tabBtn.addEventListener('click', () => {
+          const target = tabBtn.dataset.tab;
+          document.querySelectorAll('.studio-tab').forEach(b => {
+            const isActive = b.dataset.tab === target;
+            b.classList.toggle('active', isActive);
+            b.classList.toggle('border-lbgreen', isActive);
+            b.classList.toggle('text-white', isActive);
+            b.classList.toggle('bg-slatepanel', isActive);
+            b.classList.toggle('border-transparent', !isActive);
+            b.classList.toggle('text-gray-400', !isActive);
+          });
+          document.querySelectorAll('.tab-panel').forEach(panel => {
+            panel.classList.toggle('hidden', panel.id !== `tab-${target}`);
+          });
+        });
+      });
+
+      const searchInput = document.getElementById('search-input');
+      const clearSearchBtn = document.getElementById('clear-search-btn');
+      searchInput.addEventListener('input', () => {
+        clearSearchBtn.classList.toggle('hidden', !searchInput.value);
+      });
+      clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        clearSearchBtn.classList.add('hidden');
+        document.getElementById('search-results-container').classList.add('hidden');
+      });
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleSearchOrFetch();
+        }
+      });
+      document.getElementById('search-btn').addEventListener('click', handleSearchOrFetch);
+
+      const starsEl = document.getElementById('interactive-stars');
+      const handleStarPointer = (clientX, commit = false) => {
+        const rect = starsEl.getBoundingClientRect();
+        const relX = Math.max(0, Math.min(rect.width, clientX - rect.left));
+        const raw = (relX / rect.width) * 5;
+        const snapped = Math.max(0.5, Math.min(5, Math.ceil(raw * 2) / 2));
+        updateStarRatingUI(snapped);
+        if (commit) {
+          state.rating = snapped;
+          scheduleCanvasRender();
+        }
+      };
+      starsEl.addEventListener('mousemove', (e) => handleStarPointer(e.clientX, false));
+      starsEl.addEventListener('mouseleave', () => updateStarRatingUI(state.rating));
+      starsEl.addEventListener('click', (e) => handleStarPointer(e.clientX, true));
+      starsEl.addEventListener('touchstart', (e) => {
+        if (e.touches[0]) handleStarPointer(e.touches[0].clientX, true);
+      }, { passive: true });
+      starsEl.addEventListener('touchmove', (e) => {
+        if (e.touches[0]) handleStarPointer(e.touches[0].clientX, true);
+      }, { passive: true });
+
+      document.getElementById('rating-range').addEventListener('input', (e) => {
+        state.rating = parseFloat(e.target.value);
+        updateStarRatingUI(state.rating);
+        scheduleCanvasRender();
+      });
+
+      document.getElementById('clear-rating-btn').addEventListener('click', () => {
+        state.rating = 0;
+        updateStarRatingUI(0);
+        scheduleCanvasRender();
+      });
+
+      document.getElementById('heart-toggle-btn').addEventListener('click', () => {
+        state.isLiked = !state.isLiked;
+        updateHeartButtonUI(state.isLiked);
+        scheduleCanvasRender();
+      });
+
+      const bindInput = (id, key) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', () => {
+          state[key] = el.value;
+          if (id === 'input-review') {
+            document.getElementById('review-char-count').textContent = `${el.value.length} / 220`;
+          }
+          scheduleCanvasRender();
+        });
+      };
+      bindInput('input-title', 'title');
+      bindInput('input-year', 'year');
+      bindInput('input-director', 'director');
+      bindInput('input-writer', 'writer');
+      bindInput('input-dop', 'dop');
+      bindInput('input-music', 'music');
+      bindInput('input-cast', 'cast');
+      bindInput('input-genre', 'genre');
+      bindInput('input-runtime', 'runtime');
+      bindInput('input-spine', 'spine');
+      bindInput('input-episode-title', 'episodeTitle');
+      bindInput('input-review', 'review');
+      bindInput('input-username', 'username');
+      bindInput('input-watched-date', 'watchedDate');
+      bindInput('input-tags', 'tags');
+
+      const seasonSel = document.getElementById('tv-season-select');
+      const epSel = document.getElementById('tv-episode-select');
+
+      seasonSel.addEventListener('change', async () => {
+        const sNum = seasonSel.value;
+        if (!sNum) {
+          state.episodeTitle = '';
+          document.getElementById('input-episode-title').value = '';
+          epSel.innerHTML = '<option value="">All Episodes</option>';
+          epSel.disabled = true;
+          scheduleCanvasRender();
+          return;
+        }
+        state.episodeTitle = `Season ${sNum}`;
+        document.getElementById('input-episode-title').value = state.episodeTitle;
+        scheduleCanvasRender();
+
+        if (state.tmdbId && state.tmdbApiKey) {
+          try {
+            const seasonData = await tmdbFetch(`/tv/${state.tmdbId}/season/${sNum}`);
+            const eps = seasonData.episodes || [];
+            epSel.innerHTML = '<option value="">All Episodes</option>' +
+              eps.map(ep => `<option value="${ep.episode_number}">E${String(ep.episode_number).padStart(2, '0')} · ${ep.name}</option>`).join('');
+            epSel.disabled = false;
+          } catch (e) {
+            showToast('Could not fetch season episodes', true);
+          }
+        }
+      });
+
+      epSel.addEventListener('change', async () => {
+        const sNum = seasonSel.value;
+        const eNum = epSel.value;
+        if (!sNum || !eNum) return;
+
+        if (state.tmdbId && state.tmdbApiKey) {
+          try {
+            const epData = await tmdbFetch(`/tv/${state.tmdbId}/season/${sNum}/episode/${eNum}`);
+            const epCode = `S${String(sNum).padStart(2, '0')}E${String(eNum).padStart(2, '0')}`;
+            const epDir = epData.crew?.find(c => c.job === 'Director')?.name;
+            state.episodeTitle = `${epCode} · ${epData.name}`;
+            if (epDir) state.director = epDir;
+            if (epData.runtime) state.runtime = `${epData.runtime}m`;
+            if (epData.air_date) state.watchedDate = epData.air_date;
+
+            if (epData.still_path) {
+              const stillUrl = `https://image.tmdb.org/t/p/w1280${epData.still_path}`;
+              state.backdrops = Array.from(new Set([stillUrl, ...state.backdrops]));
+              state.selectedBackdropIndex = 0;
+              state.backdropImg = await loadCorsImage(stillUrl);
+              renderAssetPickerStrips();
+            }
+            syncInputsFromState();
+            scheduleCanvasRender();
+            showToast(`Loaded ${state.episodeTitle}`);
+          } catch (e) {
+            showToast('Could not load episode details', true);
+          }
+        } else {
+          const label = epSel.options[epSel.selectedIndex]?.text || '';
+          state.episodeTitle = `S0${sNum}${label}`;
+          document.getElementById('input-episode-title').value = state.episodeTitle;
+          scheduleCanvasRender();
+        }
+      });
+
+      const archetypeNames = {
+        classic: '1. Classic Centered',
+        editorial: '2. Full-Bleed Editorial',
+        polaroid: '3. Polaroid Gallery Frame',
+        criterion: '4. Criterion Arthouse Split',
+        ticket: '5. Cinema Ticket Stub'
+      };
+      const archetypeOrder = ['classic', 'editorial', 'polaroid', 'criterion', 'ticket'];
+
+      function setArchetype(arch) {
+        state.archetype = arch;
+        document.querySelectorAll('.archetype-card').forEach(card => {
+          const active = card.dataset.archetype === arch;
+          card.classList.toggle('active', active);
+          card.classList.toggle('border-lbgreen', active);
+          card.classList.toggle('bg-elevated', active);
+          card.classList.toggle('border-white/10', !active);
+          card.classList.toggle('bg-obsidian/60', !active);
+        });
+        document.getElementById('stage-archetype-label').textContent = `Style: ${archetypeNames[arch]}`;
+        scheduleCanvasRender();
+      }
+
+      document.querySelectorAll('.archetype-card').forEach(card => {
+        card.addEventListener('click', () => setArchetype(card.dataset.archetype));
+      });
+
+      document.getElementById('cycle-style-btn').addEventListener('click', () => {
+        const nextIdx = (archetypeOrder.indexOf(state.archetype) + 1) % archetypeOrder.length;
+        setArchetype(archetypeOrder[nextIdx]);
+      });
+
+      const stageSection = document.getElementById('poster-stage-section');
+      const scrollToStage = () => stageSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('mobile-jump-preview-btn')?.addEventListener('click', scrollToStage);
+      document.getElementById('mobile-dock-thumb-trigger')?.addEventListener('click', scrollToStage);
+      document.getElementById('mobile-back-to-top-btn')?.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      document.getElementById('mobile-dock-cycle-btn')?.addEventListener('click', () => {
+        const nextIdx = (archetypeOrder.indexOf(state.archetype) + 1) % archetypeOrder.length;
+        setArchetype(archetypeOrder[nextIdx]);
+      });
+      document.getElementById('mobile-dock-download-btn')?.addEventListener('click', () => {
+        document.getElementById('download-poster-btn')?.click();
+      });
+
+      document.querySelectorAll('.brand-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.brandMode = btn.dataset.brand;
+          document.querySelectorAll('.brand-btn').forEach(b => {
+            const active = b.dataset.brand === state.brandMode;
+            b.className = active
+              ? 'brand-btn active py-2 px-2.5 rounded-lg text-xs font-semibold bg-elevated border border-lbgreen text-white'
+              : 'brand-btn py-2 px-2.5 rounded-lg text-xs font-semibold bg-obsidian border border-white/10 text-gray-300';
+          });
+          scheduleCanvasRender();
+        });
+      });
+
+      document.querySelectorAll('.ratio-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.aspectRatio = btn.dataset.ratio;
+          document.querySelectorAll('.ratio-pill').forEach(b => {
+            const active = b.dataset.ratio === state.aspectRatio;
+            b.className = active
+              ? 'ratio-pill active px-3 py-1 rounded-lg text-xs font-mono font-semibold bg-lbgreen text-obsidian transition'
+              : 'ratio-pill px-3 py-1 rounded-lg text-xs font-mono font-semibold text-gray-300 hover:bg-white/10 transition';
+          });
+          const dims = state.aspectRatio === '9:16' ? '1080 × 1920' : (state.aspectRatio === '4:5' ? '1080 × 1350' : '1200 × 1800');
+          document.getElementById('export-dimensions-label').textContent = `PNG · ${dims} px · Zero Server Lag`;
+          scheduleCanvasRender();
+        });
+      });
+
+      document.getElementById('reextract-palette-btn').addEventListener('click', () => {
+        if (state.posterImg) {
+          state.palette = extractDominantPalette(state.posterImg);
+          renderPaletteSwatchesUI();
+          scheduleCanvasRender();
+          showToast('Re-sampled 5 dominant colors from poster');
+        }
+      });
+
+      document.getElementById('toggle-tint-backdrop').addEventListener('change', (e) => {
+        state.tintBackdropWithPalette = e.target.checked;
+        scheduleCanvasRender();
+      });
+
+      document.getElementById('use-poster-as-bg-btn').addEventListener('click', () => {
+        state.backdropImg = state.posterImg;
+        scheduleCanvasRender();
+        showToast('Using active poster as backdrop');
+      });
+
+      document.getElementById('toggle-use-logo').addEventListener('change', (e) => {
+        state.useLogoImage = e.target.checked;
+        scheduleCanvasRender();
+      });
+
+      const sortableList = document.getElementById('metadata-sortable-list');
+      const syncFieldOrderFromDOM = () => {
+        state.fieldOrder = Array.from(sortableList.querySelectorAll('li[data-field]')).map(li => li.dataset.field);
+        scheduleCanvasRender();
+      };
+
+      sortableList.querySelectorAll('button[data-move]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const li = btn.closest('li[data-field]');
+          if (!li) return;
+          if (btn.dataset.move === 'up' && li.previousElementSibling) {
+            sortableList.insertBefore(li, li.previousElementSibling);
+            syncFieldOrderFromDOM();
+          } else if (btn.dataset.move === 'down' && li.nextElementSibling) {
+            sortableList.insertBefore(li.nextElementSibling, li);
+            syncFieldOrderFromDOM();
+          }
+        });
+      });
+
+      if (typeof Sortable !== 'undefined') {
+        Sortable.create(sortableList, {
+          animation: 150,
+          handle: '.drag-handle',
+          ghostClass: 'sortable-ghost',
+          onEnd: syncFieldOrderFromDOM
+        });
+      } else {
+        let draggedItem = null;
+        sortableList.querySelectorAll('li[data-field]').forEach(item => {
+          item.setAttribute('draggable', 'true');
+          item.addEventListener('dragstart', () => {
+            draggedItem = item;
+            item.classList.add('sortable-ghost');
+          });
+          item.addEventListener('dragend', () => {
+            item.classList.remove('sortable-ghost');
+            draggedItem = null;
+            syncFieldOrderFromDOM();
+          });
+          item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (!draggedItem || draggedItem === item) return;
+            const rect = item.getBoundingClientRect();
+            const after = (e.clientY - rect.top) > (rect.height / 2);
+            sortableList.insertBefore(draggedItem, after ? item.nextSibling : item);
+          });
+        });
+      }
+
+      ['title', 'director', 'rating', 'review', 'cast', 'genre', 'palette', 'tags'].forEach(field => {
+        const chk = document.getElementById(`chk-${field}`);
+        if (chk) {
+          chk.addEventListener('change', () => {
+            state.visibleFields[field] = chk.checked;
+            scheduleCanvasRender();
+          });
+        }
+      });
+
+      document.getElementById('chk-gradient').addEventListener('change', (e) => {
+        state.gradientOverlay = e.target.checked;
+        scheduleCanvasRender();
+      });
+      document.getElementById('chk-grain').addEventListener('change', (e) => {
+        state.filmGrain = e.target.checked;
+        scheduleCanvasRender();
+      });
+
+      const bindSlider = (sliderId, valId, stateKey, formatFn) => {
+        const slider = document.getElementById(sliderId);
+        const valSpan = document.getElementById(valId);
+        slider.addEventListener('input', () => {
+          const num = parseFloat(slider.value);
+          state[stateKey] = num;
+          valSpan.textContent = formatFn(num);
+          scheduleCanvasRender();
+        });
+      };
+
+      bindSlider('slider-brightness', 'val-brightness', 'backdropBrightness', v => `${v}%`);
+      bindSlider('slider-blur', 'val-blur', 'backdropBlur', v => `${v}px`);
+      bindSlider('slider-poster-scale', 'val-poster-scale', 'posterScale', v => `${v.toFixed(2)}x`);
+      bindSlider('slider-radius', 'val-radius', 'posterRadius', v => `${v}px`);
+      bindSlider('slider-font-scale', 'val-font-scale', 'fontScale', v => `${v.toFixed(2)}x`);
+      bindSlider('slider-spacing', 'val-spacing', 'sectionSpacing', v => `${v.toFixed(2)}x`);
+      bindSlider('slider-footer-scale', 'val-footer-scale', 'footerScale', v => `${v.toFixed(2)}x`);
+
+      document.getElementById('reset-sliders-btn').addEventListener('click', () => {
+        state.backdropBrightness = 55;
+        state.backdropBlur = 14;
+        state.posterScale = 1.0;
+        state.posterRadius = 20;
+        state.fontScale = 1.0;
+        state.sectionSpacing = 1.0;
+        state.footerScale = 1.0;
+        state.gradientOverlay = true;
+        state.filmGrain = true;
+
+        document.getElementById('slider-brightness').value = 55;
+        document.getElementById('val-brightness').textContent = '55%';
+        document.getElementById('slider-blur').value = 14;
+        document.getElementById('val-blur').textContent = '14px';
+        document.getElementById('slider-poster-scale').value = 1.0;
+        document.getElementById('val-poster-scale').textContent = '1.00x';
+        document.getElementById('slider-radius').value = 20;
+        document.getElementById('val-radius').textContent = '20px';
+        document.getElementById('slider-font-scale').value = 1.0;
+        document.getElementById('val-font-scale').textContent = '1.00x';
+        document.getElementById('slider-spacing').value = 1.0;
+        document.getElementById('val-spacing').textContent = '1.00x';
+        document.getElementById('slider-footer-scale').value = 1.0;
+        document.getElementById('val-footer-scale').textContent = '1.00x';
+        document.getElementById('chk-gradient').checked = true;
+        document.getElementById('chk-grain').checked = true;
+
+        scheduleCanvasRender();
+        showToast('Visual sliders reset to defaults');
+      });
+
+      const apiModal = document.getElementById('api-modal');
+      const keyInput = document.getElementById('tmdb-key-input');
+      const feedback = document.getElementById('api-modal-feedback');
+
+      const openApiModal = () => {
+        feedback.textContent = 'Your credential is stored in this browser and used only for direct requests to TMDB.';
+        feedback.className = 'text-xs font-mono text-gray-400';
+        revealApiModal();
+      };
+      const closeApiModal = () => {
+        apiModal.classList.add('hidden');
+        apiModal.classList.remove('flex');
+      };
+
+      document.getElementById('open-api-modal-btn').addEventListener('click', openApiModal);
+      document.getElementById('close-api-modal-btn').addEventListener('click', closeApiModal);
+      document.getElementById('cancel-api-modal-btn').addEventListener('click', closeApiModal);
+
+      document.getElementById('save-api-key-btn').addEventListener('click', async () => {
+        const candidate = keyInput.value.trim();
+        if (!candidate) {
+          feedback.textContent = 'Please enter a valid TMDB v3 API Key or v4 Read Token.';
+          feedback.className = 'text-xs font-mono text-amber-400';
+          return;
+        }
+        feedback.textContent = 'Testing connection to api.themoviedb.org...';
+        feedback.className = 'text-xs font-mono text-lbblue';
+        const prevKey = state.tmdbApiKey;
+        state.tmdbApiKey = candidate;
+        try {
+          await tmdbFetch('/configuration');
+          localStorage.setItem('posterboxd_tmdb_key', candidate);
+          updateApiStatusPill();
+          feedback.textContent = 'TMDB API Key verified & saved!';
+          feedback.className = 'text-xs font-mono text-lbgreen';
+          showToast('TMDB API Key verified and connected!');
+          setTimeout(closeApiModal, 500);
+        } catch (err) {
+          state.tmdbApiKey = prevKey;
+          feedback.textContent = 'Invalid API Key. Please check your TMDB v3 key or v4 token.';
+          feedback.className = 'text-xs font-mono text-red-400';
+        }
+      });
+
+      document.getElementById('clear-api-key-btn').addEventListener('click', () => {
+        state.tmdbApiKey = '';
+        keyInput.value = '';
+        localStorage.removeItem('posterboxd_tmdb_key');
+        updateApiStatusPill();
+        showToast('Saved TMDB key removed');
+        feedback.textContent = 'Add a TMDB API key to search movie and TV data.';
+        feedback.className = 'text-xs font-mono text-amber-300';
+      });
+
+      const canvas = document.getElementById('poster-canvas');
+      const getSafeSlug = () => (state.title || 'poster').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+      document.getElementById('download-poster-btn').addEventListener('click', () => {
+        canvas.toBlob((blob) => {
+          if (!blob) return;
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `posterboxd-${getSafeSlug()}-${state.archetype}.png`;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 3000);
+          showToast('High-res PNG downloaded!');
+        }, 'image/png');
+      });
+
+      document.getElementById('copy-poster-btn').addEventListener('click', () => {
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+          try {
+            if (navigator.clipboard && window.ClipboardItem) {
+              await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+              const txt = document.getElementById('copy-btn-text');
+              txt.textContent = 'Copied!';
+              setTimeout(() => { txt.textContent = 'Copy'; }, 2000);
+              showToast('Poster image copied to clipboard!');
+            } else {
+              throw new Error('ClipboardItem unsupported');
+            }
+          } catch (e) {
+            showToast('Clipboard restricted in this frame — use Download PNG', true);
+          }
+        }, 'image/png');
+      });
+
+      document.getElementById('share-poster-btn').addEventListener('click', () => {
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+          const file = new File([blob], `posterboxd-${getSafeSlug()}.png`, { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                title: `${state.title} (${state.year}) — PosterBoxd`,
+                text: state.review || `My poster for ${state.title}`,
+                files: [file]
+              });
+            } catch (err) {}
+          } else {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `posterboxd-${getSafeSlug()}-${state.archetype}.png`;
+            a.click();
+            setTimeout(() => URL.revokeObjectURL(url), 3000);
+            showToast('Downloaded PNG');
+          }
+        }, 'image/png');
+      });
+
+      if (!state.tmdbApiKey) {
+        revealApiModal('Connect a TMDB API key to enable live movie and TV search. Follow the quick guide below to get one.');
+      }
+    });
+  </script>
+</body>
+</html>
