@@ -12,8 +12,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
-  <!-- Tesseract.js for Client-Side Review Screenshot OCR -->
-  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <!-- QRCode Generator for Scannable Letterboxd Review QR Codes -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -150,11 +150,8 @@
       <div class="google-search-pill rounded-full flex items-center px-3 py-1.5 gap-2">
         <i class="fa-solid fa-magnifying-glass text-lbgreen text-xs shrink-0"></i>
         <input id="header-search-input" type="text" autocomplete="off"
-          placeholder="Search movie, TV show, or URL..."
+          placeholder="Search movie, TV, or paste Letterboxd URL..."
           class="w-full min-w-0 bg-transparent text-xs sm:text-sm text-white placeholder-gray-400 focus:outline-none" />
-        <label for="screenshot-upload-input" title="Upload Review Screenshot" class="cursor-pointer text-gray-400 hover:text-lbgreen px-1.5 transition shrink-0">
-          <i class="fa-solid fa-camera text-xs"></i>
-        </label>
         <button id="header-search-btn" type="button" class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-lbgreen text-obsidian shrink-0 hover:bg-[#1ed760] transition">
           Go
         </button>
@@ -172,9 +169,6 @@
     </div>
   </header>
 
-  <!-- Hidden File Input for Screenshot OCR Mapping -->
-  <input id="screenshot-upload-input" type="file" accept="image/*" class="hidden" />
-
   <!-- VIEW 1: CLEAN GOOGLE-STYLE SEARCH HOME -->
   <section id="view-home" class="flex-1 flex flex-col items-center justify-center px-4 py-10 max-w-2xl mx-auto w-full text-center">
     <div class="mb-7 flex flex-col items-center space-y-3">
@@ -186,7 +180,7 @@
         PosterBoxd
       </h1>
       <p class="text-xs sm:text-sm text-gray-400 max-w-md">
-        Search any movie, TV series, or upload a review screenshot to craft custom cinema posters.
+        Search any movie or TV series, or paste a Letterboxd review URL to craft custom cinema posters.
       </p>
     </div>
 
@@ -195,11 +189,8 @@
       <div class="google-search-pill rounded-full flex items-center px-4 sm:px-5 py-3 sm:py-4 gap-3">
         <i class="fa-solid fa-magnifying-glass text-lbgreen text-base sm:text-lg shrink-0"></i>
         <input id="home-search-input" type="text" autocomplete="off"
-          placeholder="Search movie, TV series, or paste review URL..."
+          placeholder="Search movie, TV series, or paste Letterboxd review URL..."
           class="w-full bg-transparent text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none" />
-        <label for="screenshot-upload-input" title="Upload Review Screenshot" class="cursor-pointer text-gray-400 hover:text-lbgreen p-1.5 transition shrink-0">
-          <i class="fa-solid fa-camera text-base sm:text-lg"></i>
-        </label>
         <button id="home-search-submit-btn" type="button" class="px-4 sm:px-5 py-2 rounded-full bg-lbgreen hover:bg-[#1ed760] text-obsidian font-bold text-xs sm:text-sm shrink-0 transition">
           Search
         </button>
@@ -209,25 +200,29 @@
       <div id="home-search-results" class="hidden absolute left-0 right-0 top-full mt-2 bg-slatepanel border border-white/15 rounded-2xl shadow-2xl z-40 max-h-80 overflow-y-auto p-2 space-y-1 text-left"></div>
     </div>
 
-    <!-- Screenshot Upload Action Pill -->
+    <!-- Letterboxd Fetch Status Banner -->
     <div class="mb-6 flex flex-col items-center gap-2">
-      <label for="screenshot-upload-input" class="cursor-pointer inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-slatepanel hover:bg-elevated border border-lbgreen/40 text-xs sm:text-sm font-semibold text-gray-100 shadow-lg transition hover:scale-[1.02]">
-        <i class="fa-solid fa-wand-magic-sparkles text-lbgreen"></i>
-        <span>Upload Review Screenshot (Auto-Map Movie, Rating & Review)</span>
-      </label>
-      <div id="ocr-status-banner" class="hidden items-center gap-2 text-xs font-mono text-lbblue bg-lbblue/10 border border-lbblue/30 px-3.5 py-1.5 rounded-full">
+      <div class="inline-flex items-center gap-2 text-[11px] font-mono text-gray-400">
+        <i class="fa-solid fa-link text-lbgreen"></i>
+        <span>Tip: Paste any <code class="text-gray-200">letterboxd.com/&lt;user&gt;/film/&lt;slug&gt;/</code> link or raw JSON directly above</span>
+      </div>
+      <div id="lb-fetch-status-banner" class="hidden items-center gap-2 text-xs font-mono text-lbblue bg-lbblue/10 border border-lbblue/30 px-3.5 py-1.5 rounded-full">
         <i class="fa-solid fa-circle-notch fa-spin"></i>
-        <span id="ocr-status-text">Scanning screenshot...</span>
+        <span id="lb-fetch-status-text">Fetching Letterboxd review...</span>
       </div>
     </div>
 
-    <!-- Instant Presets -->
-    <div class="flex items-center justify-center gap-2 flex-wrap">
-      <span class="text-xs font-mono text-gray-500">Try:</span>
-      <button type="button" data-demo="dune2" class="demo-chip text-xs px-3 py-1.5 rounded-full bg-cardbg hover:bg-elevated border border-white/10 text-gray-200 transition">Dune: Part Two</button>
-      <button type="button" data-demo="itmfl" class="demo-chip text-xs px-3 py-1.5 rounded-full bg-cardbg hover:bg-elevated border border-white/10 text-gray-200 transition">In the Mood for Love</button>
-      <button type="button" data-demo="br2049" class="demo-chip text-xs px-3 py-1.5 rounded-full bg-cardbg hover:bg-elevated border border-white/10 text-gray-200 transition">Blade Runner 2049</button>
-      <button type="button" data-demo="succession" class="demo-chip text-xs px-3 py-1.5 rounded-full bg-cardbg hover:bg-elevated border border-white/10 text-gray-200 transition">Succession S4E3</button>
+    <!-- Trending In Theaters Around Browser Timezone Region -->
+    <div class="flex flex-col items-center gap-2 w-full">
+      <div class="flex items-center gap-1.5 text-[11px] font-mono text-gray-400">
+        <i class="fa-solid fa-ticket text-lbgreen"></i>
+        <span id="trending-region-label">Now Playing in Theaters Near You:</span>
+      </div>
+      <div id="home-trending-chips" class="flex items-center justify-center gap-2 flex-wrap">
+        <button type="button" data-demo="dune2" class="demo-chip text-xs px-3 py-1.5 rounded-full bg-cardbg hover:bg-elevated border border-white/10 text-gray-200 transition">Dune: Part Two</button>
+        <button type="button" data-demo="br2049" class="demo-chip text-xs px-3 py-1.5 rounded-full bg-cardbg hover:bg-elevated border border-white/10 text-gray-200 transition">Blade Runner 2049</button>
+        <button type="button" data-demo="itmfl" class="demo-chip text-xs px-3 py-1.5 rounded-full bg-cardbg hover:bg-elevated border border-white/10 text-gray-200 transition">In the Mood for Love</button>
+      </div>
     </div>
   </section>
 
@@ -300,30 +295,39 @@
           class="w-full bg-obsidian border border-white/15 rounded-xl p-3 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-lbgreen leading-relaxed"></textarea>
       </div>
 
-      <!-- Optional Detailed Review -->
+      <!-- Optional Detailed Review + Toggle -->
       <div class="space-y-1.5">
-        <label for="input-detailed-review" class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">Detailed Review / Notes (Optional)</label>
-        <textarea id="input-detailed-review" rows="3" placeholder="Longer thoughts or paragraph review..."
+        <div class="flex items-center justify-between">
+          <label for="input-detailed-review" class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">Detailed Review / Notes (Optional)</label>
+          <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+            <input type="checkbox" id="chk-show-detailed-review" checked class="accent-lbgreen rounded w-4 h-4" />
+            <span class="text-[11px] font-mono text-lbgreen font-semibold">Show on Poster</span>
+          </label>
+        </div>
+        <textarea id="input-detailed-review" rows="3" placeholder="Longer thoughts or paragraph review (auto-adds '..... full review in Letterboxd profile' when long)..."
           class="w-full bg-obsidian border border-white/15 rounded-xl p-3 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-lbgreen leading-relaxed"></textarea>
       </div>
 
-      <!-- Screening Medium / Format Selector (IMAX, Dolby, 3D, 4DX, 70mm, etc.) -->
+      <!-- Screening Medium / Format & OTT Selector -->
       <div class="space-y-2">
         <div class="flex items-center justify-between">
           <label class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">
-            <i class="fa-solid fa-film mr-1 text-lbblue"></i>Screening Format Badge (Optional)
+            <i class="fa-solid fa-film mr-1 text-lbblue"></i>Screening Format / Platform Badge (Auto-Detected)
           </label>
-          <span id="active-medium-label" class="text-[11px] font-mono text-lbblue">IMAX</span>
+          <span id="active-medium-label" class="text-[11px] font-mono text-lbblue">THEATER</span>
         </div>
         <div id="medium-pills-container" class="flex flex-wrap gap-1.5">
           <button type="button" data-medium="" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono border border-white/10 bg-obsidian text-gray-400 hover:text-white transition">None</button>
-          <button type="button" data-medium="IMAX" class="medium-pill active px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-lbblue bg-lbblue/20 text-white transition">IMAX</button>
+          <button type="button" data-medium="THEATER" class="medium-pill active px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-lbblue bg-lbblue/20 text-white transition">Theater</button>
+          <button type="button" data-medium="IMAX" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">IMAX</button>
           <button type="button" data-medium="DOLBY" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">Dolby Cinema</button>
-          <button type="button" data-medium="70MM" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">70mm Film</button>
-          <button type="button" data-medium="35MM" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">35mm</button>
+          <button type="button" data-medium="70MM" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">70mm</button>
           <button type="button" data-medium="4DX" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">4DX</button>
           <button type="button" data-medium="3D" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">REALD 3D</button>
-          <button type="button" data-medium="CRITERION" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">4K UHD</button>
+          <button type="button" data-medium="OTT" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">OTT</button>
+          <button type="button" data-medium="NETFLIX" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">Netflix</button>
+          <button type="button" data-medium="JIOHOTSTAR" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">JioHotstar</button>
+          <button type="button" data-medium="PRIME" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">Prime Video</button>
         </div>
       </div>
 
@@ -527,6 +531,20 @@
                 <input type="checkbox" id="chk-grain" checked class="accent-lbgreen rounded" />
                 <span>Film Grain</span>
               </label>
+              <label id="qrcode-toggle-row" class="flex items-center justify-between gap-2 text-xs text-gray-200 cursor-pointer bg-obsidian p-2.5 rounded-lg border border-white/10 col-span-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <input type="checkbox" id="chk-qrcode" checked class="accent-lbgreen rounded shrink-0" />
+                  <span class="truncate">Show Review QR Code (<code id="qr-url-preview" class="text-[10px] text-lbblue">letterboxd.com/...</code>)</span>
+                </div>
+                <span class="text-[10px] font-mono text-gray-400 shrink-0">Transparent</span>
+              </label>
+              <label id="marquee-bulb-toggle-row" class="flex items-center justify-between gap-2 text-xs text-gray-200 cursor-pointer bg-obsidian p-2.5 rounded-lg border border-white/10 col-span-2">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="chk-marquee-bulb" checked class="accent-lbgreen rounded" />
+                  <span>10. Marquee Style: Lit-Up Bulb Title Font (Uncheck for Normal Font)</span>
+                </div>
+                <i class="fa-solid fa-lightbulb text-amber-400 text-xs"></i>
+              </label>
             </div>
 
             <div class="space-y-3">
@@ -577,20 +595,46 @@
     </footer>
   </main>
 
+  <!-- VIEW 4: FETCH & POSTER HISTORY TAB -->
+  <section id="view-history" class="hidden flex-1 max-w-xl mx-auto w-full px-4 py-6 space-y-4">
+    <div class="bg-slatepanel p-5 rounded-2xl border border-white/10 space-y-4 shadow-xl">
+      <div class="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-lbblue/15 border border-lbblue/30 flex items-center justify-center text-lbblue">
+            <i class="fa-solid fa-clock-rotate-left"></i>
+          </div>
+          <div>
+            <h2 class="font-display font-bold text-base text-white">Saved Fetch History</h2>
+            <p class="text-[11px] text-gray-400">Stored locally in your browser — tap any entry to reload</p>
+          </div>
+        </div>
+        <button type="button" id="clear-all-history-btn" class="px-3 py-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-xs font-semibold transition">
+          <i class="fa-solid fa-trash-can mr-1"></i>Clear All
+        </button>
+      </div>
+
+      <div id="history-list-container" class="space-y-2.5 max-h-[65dvh] overflow-y-auto pr-1"></div>
+    </div>
+  </section>
+
   <!-- ANIMATED MOBILE-FIRST BOTTOM NAVIGATION BAR (Safe spacing, never overlaps controls) -->
   <nav id="mobile-bottom-nav" aria-label="App Navigation"
-    class="bottom-nav-hidden fixed bottom-3 left-1/2 z-40 w-[92%] max-w-md bg-slatepanel/95 backdrop-blur-xl border border-white/15 rounded-2xl p-1.5 shadow-2xl transition-all duration-300 flex items-center justify-around">
-    <button type="button" data-nav-target="review" class="bottom-nav-btn flex-1 py-2 px-3 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold text-gray-400 hover:text-white transition">
+    class="bottom-nav-hidden fixed bottom-3 left-1/2 z-40 w-[94%] max-w-md bg-slatepanel/95 backdrop-blur-xl border border-white/15 rounded-2xl p-1.5 shadow-2xl transition-all duration-300 flex items-center justify-around">
+    <button type="button" data-nav-target="review" class="bottom-nav-btn flex-1 py-2 px-2 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold text-gray-400 hover:text-white transition">
       <i class="fa-solid fa-pen-to-square text-sm"></i>
       <span class="text-[11px]">Review</span>
     </button>
-    <button type="button" data-nav-target="design" class="bottom-nav-btn active flex-1 py-2 px-3 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold bg-elevated text-lbgreen border border-lbgreen/30 transition">
+    <button type="button" data-nav-target="design" class="bottom-nav-btn active flex-1 py-2 px-2 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold bg-elevated text-lbgreen border border-lbgreen/30 transition">
       <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
       <span class="text-[11px]">Design</span>
     </button>
-    <button type="button" data-nav-target="settings" class="bottom-nav-btn flex-1 py-2 px-3 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold text-gray-400 hover:text-white transition">
+    <button type="button" data-nav-target="settings" class="bottom-nav-btn flex-1 py-2 px-2 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold text-gray-400 hover:text-white transition">
       <i class="fa-solid fa-sliders text-sm"></i>
       <span class="text-[11px]">Settings</span>
+    </button>
+    <button type="button" data-nav-target="history" class="bottom-nav-btn flex-1 py-2 px-2 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold text-gray-400 hover:text-white transition">
+      <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+      <span class="text-[11px]">History</span>
     </button>
   </nav>
 
@@ -685,11 +729,13 @@
       const banner = document.getElementById('toast-banner');
       const icon = document.getElementById('toast-icon');
       const msg = document.getElementById('toast-message');
-      if (!banner || !icon || !msg) return;
+      if (!banner || !msg) return;
       msg.textContent = message;
-      icon.className = isError
-        ? 'fa-solid fa-triangle-exclamation text-amber-400'
-        : 'fa-solid fa-circle-check text-lbgreen';
+      if (icon) {
+        icon.className = isError
+          ? 'fa-solid fa-triangle-exclamation text-amber-400'
+          : 'fa-solid fa-circle-check text-lbgreen';
+      }
       banner.classList.remove('opacity-0', '-translate-y-2');
       banner.classList.add('opacity-100', 'translate-y-0');
       clearTimeout(window.__toastTimer);
@@ -697,6 +743,241 @@
         banner.classList.add('opacity-0', '-translate-y-2');
         banner.classList.remove('opacity-100', 'translate-y-0');
       }, 2600);
+    }
+
+    function updateApiStatusPill() {
+      const dot = document.getElementById('api-status-dot');
+      if (!dot) return;
+      if (state.tmdbApiKey && state.tmdbApiKey.trim().length > 0) {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-lbgreen ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none';
+      } else {
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none animate-pulse';
+      }
+    }
+
+    function switchView(viewName, openSettingsDrawer = false) {
+      state.currentView = viewName;
+      const vHome = document.getElementById('view-home');
+      const vReview = document.getElementById('view-review');
+      const vPreview = document.getElementById('view-preview');
+      const vHistory = document.getElementById('view-history');
+      const headerSearch = document.getElementById('header-search-container');
+      const bottomNav = document.getElementById('mobile-bottom-nav');
+
+      vHome?.classList.toggle('hidden', viewName !== 'home');
+      vReview?.classList.toggle('hidden', viewName !== 'review');
+      vPreview?.classList.toggle('hidden', viewName !== 'preview');
+      vHistory?.classList.toggle('hidden', viewName !== 'history');
+
+      if (viewName === 'home') {
+        headerSearch?.classList.add('hidden');
+        bottomNav?.classList.remove('bottom-nav-enter');
+        bottomNav?.classList.add('bottom-nav-hidden');
+      } else {
+        headerSearch?.classList.remove('hidden');
+        bottomNav?.classList.remove('bottom-nav-hidden');
+        bottomNav?.classList.add('bottom-nav-enter');
+      }
+
+      let activeTab = 'design';
+      if (viewName === 'review') activeTab = 'review';
+      else if (viewName === 'history') activeTab = 'history';
+      else if (openSettingsDrawer) activeTab = 'settings';
+
+      document.querySelectorAll('.bottom-nav-btn').forEach(btn => {
+        const isAct = btn.dataset.navTarget === activeTab;
+        btn.classList.toggle('active', isAct);
+        btn.classList.toggle('bg-elevated', isAct);
+        btn.classList.toggle('text-lbgreen', isAct);
+        btn.classList.toggle('border', isAct);
+        btn.classList.toggle('border-lbgreen/30', isAct);
+        btn.classList.toggle('text-gray-400', !isAct);
+      });
+
+      if (viewName === 'history') {
+        renderHistoryListUI();
+      }
+
+      if (viewName === 'preview') {
+        scheduleCanvasRender();
+        const detailsAccordion = document.getElementById('settings-accordion');
+        if (openSettingsDrawer && detailsAccordion) {
+          detailsAccordion.open = true;
+          setTimeout(() => detailsAccordion.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // Persistent Local Fetch History Management
+    function getSavedHistory() {
+      try {
+        return JSON.parse(localStorage.getItem('posterboxd_fetch_history_v1') || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveHistoryArray(arr) {
+      try {
+        localStorage.setItem('posterboxd_fetch_history_v1', JSON.stringify(arr.slice(0, 35)));
+      } catch (e) {}
+    }
+
+    function recordCurrentFetchToHistory() {
+      if (!state.title) return;
+      const history = getSavedHistory();
+      const entryId = `${state.mediaType}-${state.tmdbId || state.title.toLowerCase()}-${state.year}`;
+      const newEntry = {
+        id: entryId,
+        timestamp: Date.now(),
+        mediaType: state.mediaType,
+        tmdbId: state.tmdbId,
+        title: state.title,
+        year: state.year,
+        director: state.director,
+        writer: state.writer,
+        dop: state.dop,
+        music: state.music,
+        cast: state.cast,
+        genre: state.genre,
+        runtime: state.runtime,
+        spine: state.spine,
+        rating: state.rating,
+        isLiked: state.isLiked,
+        medium: state.medium,
+        watchedAt: state.watchedAt,
+        username: state.username,
+        watchedDate: state.watchedDate,
+        review: state.review,
+        detailedReview: state.detailedReview,
+        showDetailedReview: state.showDetailedReview,
+        isFromLetterboxd: state.isFromLetterboxd,
+        letterboxdUrl: state.letterboxdUrl,
+        showQrCode: state.showQrCode,
+        posters: state.posters.slice(0, 8),
+        backdrops: state.backdrops.slice(0, 8),
+        logos: state.logos.slice(0, 4)
+      };
+      const filtered = history.filter(item => item.id !== entryId);
+      filtered.unshift(newEntry);
+      saveHistoryArray(filtered);
+      renderHistoryListUI();
+    }
+
+    function renderHistoryListUI() {
+      const container = document.getElementById('history-list-container');
+      if (!container) return;
+      const history = getSavedHistory();
+      if (history.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-10 text-gray-400 text-xs font-mono">
+            No history saved yet. Search a movie or import a Letterboxd review to build your history!
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = history.map((item, idx) => {
+        const thumb = (item.posters && item.posters[0]) || '';
+        const dateFormatted = new Date(item.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        return `
+          <div class="bg-cardbg hover:bg-elevated border border-white/10 rounded-xl p-3 flex items-center justify-between gap-3 transition">
+            <button type="button" data-history-load="${idx}" class="flex-1 flex items-center gap-3 text-left min-w-0">
+              ${thumb
+                ? `<img src="${thumb}" alt="${item.title}" class="w-11 h-16 object-cover rounded-lg border border-white/10 shrink-0 bg-obsidian" />`
+                : `<div class="w-11 h-16 rounded-lg bg-obsidian border border-white/10 shrink-0 flex items-center justify-center text-[10px] text-gray-500">Art</div>`
+              }
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded ${item.isFromLetterboxd ? 'bg-lborange/20 text-lborange' : 'bg-lbgreen/15 text-lbgreen'} font-semibold">
+                    ${item.isFromLetterboxd ? 'Letterboxd' : (item.mediaType === 'tv' ? 'TV' : 'Movie')}
+                  </span>
+                  <span class="text-[11px] font-mono text-lbgreen font-bold">${Number(item.rating || 0).toFixed(1)} ★</span>
+                  <span class="text-[10px] font-mono text-gray-500 ml-auto">${dateFormatted}</span>
+                </div>
+                <div class="font-display font-bold text-sm text-white truncate mt-0.5">${item.title} ${item.year ? `<span class="text-xs font-mono text-gray-400 font-normal">(${item.year})</span>` : ''}</div>
+                <div class="text-[11px] text-gray-400 truncate">${item.review || item.director || 'Tap to restore poster'}</div>
+              </div>
+            </button>
+            <button type="button" data-history-delete="${idx}" title="Delete from History"
+              class="w-8 h-8 rounded-lg bg-obsidian hover:bg-red-500/20 text-gray-400 hover:text-red-400 border border-white/10 flex items-center justify-center shrink-0 transition">
+              <i class="fa-solid fa-xmark text-xs"></i>
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      container.querySelectorAll('[data-history-load]').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const idx = parseInt(btn.dataset.historyLoad, 10);
+          const item = getSavedHistory()[idx];
+          if (!item) return;
+          Object.assign(state, {
+            mediaType: item.mediaType || 'movie',
+            tmdbId: item.tmdbId || null,
+            title: item.title || '',
+            year: item.year || '',
+            director: item.director || '',
+            writer: item.writer || '',
+            dop: item.dop || '',
+            music: item.music || '',
+            cast: item.cast || '',
+            genre: item.genre || '',
+            runtime: item.runtime || '',
+            spine: item.spine || '#2026',
+            rating: item.rating ?? 4.5,
+            isLiked: Boolean(item.isLiked),
+            medium: item.medium || 'THEATER',
+            watchedAt: item.watchedAt || '',
+            username: item.username || state.username,
+            watchedDate: item.watchedDate || state.watchedDate,
+            review: item.review || '',
+            detailedReview: item.detailedReview || '',
+            showDetailedReview: item.showDetailedReview !== undefined ? item.showDetailedReview : true,
+            isFromLetterboxd: Boolean(item.isFromLetterboxd),
+            letterboxdUrl: item.letterboxdUrl || '',
+            showQrCode: Boolean(item.showQrCode),
+            posters: item.posters || [],
+            backdrops: item.backdrops || [],
+            logos: item.logos || [],
+            selectedPosterIndex: 0,
+            selectedBackdropIndex: (item.backdrops && item.backdrops.length > 1) ? 1 : 0,
+            selectedLogoIndex: 0
+          });
+          syncReviewFormState();
+          const [pImg, bImg, lImg] = await Promise.all([
+            loadCorsImage(state.posters[state.selectedPosterIndex]),
+            loadCorsImage(state.backdrops[state.selectedBackdropIndex]),
+            loadCorsImage(state.logos[0])
+          ]);
+          state.posterImg = pImg;
+          state.backdropImg = bImg;
+          state.logoImg = lImg;
+          if (pImg) {
+            state.palette = extractDominantPalette(pImg);
+            renderPaletteSwatchesUI();
+          }
+          renderAssetPickerStrips();
+          switchView('preview');
+          showToast(`Restored "${state.title}" from History`);
+        });
+      });
+
+      container.querySelectorAll('[data-history-delete]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(btn.dataset.historyDelete, 10);
+          const history = getSavedHistory();
+          history.splice(idx, 1);
+          saveHistoryArray(history);
+          renderHistoryListUI();
+          showToast('Removed entry from History');
+        });
+      });
     }
 
     function formatSafeDate(dateStr) {
@@ -709,21 +990,37 @@
       return dateStr;
     }
 
-    // Relevant Movie-Specific Review Generator using actual Director, Cast & Genre
-    function buildRelevantMovieReview(title, director, castStr, genreStr, mediaType = 'movie') {
-      const leadCast = (castStr || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 2);
-      const leadText = leadCast.length > 0 ? leadCast.join(' and ') : 'the ensemble cast';
-      const dirText = director ? director : 'the filmmaking team';
-      const primaryGenre = (genreStr || '').split('|')[0]?.trim()?.toLowerCase() || (mediaType === 'tv' ? 'television' : 'cinema');
-
-      if (director && leadCast.length > 0) {
-        return `${dirText} crafts a gripping ${primaryGenre} masterclass, anchored by unforgettable performances from ${leadText}.`;
-      } else if (director) {
-        return `${dirText}'s vision turns ${title} into an atmospheric, unforgettable ${primaryGenre} experience.`;
-      } else if (leadCast.length > 0) {
-        return `Magnetic screen presence from ${leadText} elevates every frame of ${title}.`;
+    function buildRelevantMovieReview(title, director, cast, genre, mediaType = 'movie') {
+      const leadCast = (cast || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 2).join(' and ');
+      const primaryGenre = (genre || '').split('|')[0]?.trim()?.toLowerCase() || (mediaType === 'tv' ? 'series' : 'cinema');
+      if (director && leadCast) {
+        return `${director} crafts a gripping ${primaryGenre} triumph, anchored by unforgettable performances from ${leadCast}.`;
+      }
+      if (director) {
+        return `${director} delivers a masterclass in ${primaryGenre} storytelling with "${title || 'this film'}".`;
+      }
+      if (leadCast) {
+        return `${leadCast} command the screen in a deeply atmospheric ${primaryGenre} experience.`;
       }
       return `An unforgettable ${primaryGenre} experience that lingers long after the credits roll.`;
+    }
+
+    async function tmdbFetch(endpoint, params = {}) {
+      const key = (state.tmdbApiKey || '').trim();
+      if (!key) throw new Error('TMDB API Key missing');
+      const url = new URL(`https://api.themoviedb.org/3${endpoint}`);
+      Object.entries(params).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
+      });
+      const headers = { Accept: 'application/json' };
+      if (key.length > 45) {
+        headers.Authorization = `Bearer ${key}`;
+      } else {
+        url.searchParams.set('api_key', key);
+      }
+      const res = await fetch(url.toString(), { headers });
+      if (!res.ok) throw new Error(`TMDB HTTP ${res.status}`);
+      return await res.json();
     }
 
     async function loadCorsImage(url) {
@@ -778,7 +1075,8 @@
             const max = Math.max(r, g, b), min = Math.min(r, g, b);
             const sat = max === 0 ? 0 : (max - min) / max;
             const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-            return { r, g, b, score: count * (1 + sat * 1.4) * (lum > 18 && lum < 245 ? 1.2 : 0.5) };
+            const score = count * (1 + sat * 1.4) * (lum > 18 && lum < 245 ? 1.2 : 0.5);
+            return { r, g, b, score };
           })
           .sort((a, b) => b.score - a.score);
 
@@ -806,7 +1104,7 @@
       if (!container) return;
       container.innerHTML = state.palette.map((hex, idx) => `
         <label class="group flex flex-col items-center gap-1 cursor-pointer">
-          <div class="w-full h-8 rounded-lg border border-white/20 shadow-inner relative overflow-hidden transition transform group-hover:scale-105" style="background-color: ${hex};">
+          <div class="w-full h-8 rounded-lg border border-white/20 shadow-inner relative overflow-hidden" style="background-color: ${hex};">
             <input type="color" data-swatch-idx="${idx}" value="${hex}" class="opacity-0 absolute inset-0 w-full h-full cursor-pointer" />
           </div>
           <span class="text-[10px] font-mono text-gray-400 group-hover:text-white">${hex}</span>
@@ -836,7 +1134,7 @@
     }
 
     function drawImageCover(ctx, img, x, y, w, h) {
-      if (!img) return;
+      if (!img || !img.width || !img.height) return;
       const imgRatio = img.width / img.height;
       const boxRatio = w / h;
       let sx = 0, sy = 0, sw = img.width, sh = img.height;
@@ -928,28 +1226,231 @@
       return starSize * 2;
     }
 
-    // Vector Screening Format Badge (IMAX, Dolby Cinema, 70mm, 35mm, 4DX, RealD 3D, 4K UHD)
+    // Calculate relative luminance of a hex color to guarantee readable contrast
+    function getHexLuminance(hexColor) {
+      const hex = String(hexColor || '#00E054').replace('#', '').trim();
+      if (hex.length !== 6) return 0.5;
+      const r = parseInt(hex.slice(0, 2), 16) / 255;
+      const g = parseInt(hex.slice(2, 4), 16) / 255;
+      const b = parseInt(hex.slice(4, 6), 16) / 255;
+      const toLin = (c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+      return 0.2126 * toLin(r) + 0.7152 * toLin(g) + 0.0722 * toLin(b);
+    }
+
+    function getReadableTextColor(bgHex) {
+      return getHexLuminance(bgHex) > 0.36 ? '#0B0C0E' : '#FFFFFF';
+    }
+
+    function ensureVisibleAccentOnDark(hexColor, fallback = '#00E054') {
+      return getHexLuminance(hexColor) < 0.14 ? fallback : hexColor;
+    }
+
+    // Detect browser region code without GPS using Intl timeZone & locale
+    function detectBrowserRegion() {
+      try {
+        const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+        const tzMap = {
+          'Asia/Kolkata': { code: 'IN', name: 'India' },
+          'Asia/Calcutta': { code: 'IN', name: 'India' },
+          'Europe/Warsaw': { code: 'PL', name: 'Poland' },
+          'Europe/London': { code: 'GB', name: 'UK' },
+          'Europe/Berlin': { code: 'DE', name: 'Germany' },
+          'Europe/Paris': { code: 'FR', name: 'France' },
+          'America/New_York': { code: 'US', name: 'USA' },
+          'America/Los_Angeles': { code: 'US', name: 'USA' },
+          'America/Chicago': { code: 'US', name: 'USA' },
+          'America/Toronto': { code: 'CA', name: 'Canada' },
+          'Australia/Sydney': { code: 'AU', name: 'Australia' },
+          'Asia/Tokyo': { code: 'JP', name: 'Japan' },
+          'Asia/Dubai': { code: 'AE', name: 'UAE' },
+          'Asia/Singapore': { code: 'SG', name: 'Singapore' }
+        };
+        if (tzMap[tz]) return tzMap[tz];
+        const lang = (navigator.language || 'en-US').split('-')[1];
+        if (lang && lang.length === 2) return { code: lang.toUpperCase(), name: lang.toUpperCase() };
+      } catch (e) {}
+      return { code: 'US', name: 'Your Region' };
+    }
+
+    // Build Letterboxd Review URL: https://letterboxd.com/<userhandle>/film/<film_name>/
+    function getLetterboxdReviewUrl() {
+      if (state.letterboxdUrl && /^https?:\/\/(www\.)?letterboxd\.com\//i.test(state.letterboxdUrl)) {
+        const previewEl = document.getElementById('qr-url-preview');
+        if (previewEl) previewEl.textContent = state.letterboxdUrl.replace(/^https?:\/\//i, '');
+        return state.letterboxdUrl;
+      }
+      const slug = (state.title || 'film')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      const cleanYear = (state.year || '').match(/\d{4}/)?.[0] || '';
+      const filmSlug = cleanYear ? `${slug}-${cleanYear}` : slug;
+      const cleanUser = (state.username || '').trim().replace(/^@/, '').toLowerCase();
+      const url = cleanUser
+        ? `https://letterboxd.com/${cleanUser}/film/${filmSlug}/`
+        : `https://letterboxd.com/film/${filmSlug}/`;
+      const previewEl = document.getElementById('qr-url-preview');
+      if (previewEl) previewEl.textContent = url.replace('https://', '');
+      return url;
+    }
+
+    // Keep QR Code toggle accessible at all times so users can turn it ON or OFF freely
+    function syncQrToggleVisibility() {
+      const row = document.getElementById('qrcode-toggle-row');
+      const chk = document.getElementById('chk-qrcode');
+      if (row) {
+        row.classList.remove('hidden');
+        row.classList.add('flex');
+      }
+      if (chk) chk.checked = Boolean(state.showQrCode);
+      getLetterboxdReviewUrl();
+    }
+
+    // Render transparent, OCD-balanced scannable QR code with muted grayish dots (no bright white box)
+    function drawPosterQrCode(ctx, x, y, size = 112, isLightMode = false) {
+      if (!state.showQrCode || typeof qrcode === 'undefined') return;
+      const url = getLetterboxdReviewUrl();
+      try {
+        const qr = qrcode(0, 'M');
+        qr.addData(url);
+        qr.make();
+        const count = qr.getModuleCount();
+        const pad = Math.round(size * 0.12); // Balanced equal padding on all 4 sides
+        const innerSize = size - pad * 2;
+        const cellSize = innerSize / count;
+
+        ctx.save();
+        // Subtle transparent container with thin framing border (never a harsh white square)
+        drawRoundedRectPath(ctx, x, y, size, size, 14);
+        ctx.fillStyle = isLightMode ? 'rgba(24, 24, 27, 0.04)' : 'rgba(255, 255, 255, 0.04)';
+        ctx.fill();
+        ctx.lineWidth = 1.25;
+        ctx.strokeStyle = isLightMode ? 'rgba(87, 83, 78, 0.28)' : 'rgba(161, 161, 170, 0.26)';
+        ctx.stroke();
+
+        // Muted grayish circular/rounded dots
+        ctx.fillStyle = isLightMode ? 'rgba(68, 64, 60, 0.82)' : 'rgba(212, 212, 216, 0.78)';
+        for (let r = 0; r < count; r++) {
+          for (let c = 0; c < count; c++) {
+            if (qr.isDark(r, c)) {
+              const rx = x + pad + c * cellSize;
+              const ry = y + pad + r * cellSize;
+              ctx.beginPath();
+              ctx.arc(rx + cellSize / 2, ry + cellSize / 2, (cellSize * 0.46), 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+        ctx.restore();
+      } catch (e) {}
+    }
+
+    // Helper: Wrap Detailed Review lines and append "..... full review in Letterboxd profile" if truncated
+    function getDetailedReviewLines(ctx, text, maxWidth, maxLines = 3) {
+      if (!state.showDetailedReview || !text || text === state.review) return [];
+      const clean = String(text).trim();
+      if (!clean) return [];
+      const words = clean.split(/\s+/);
+      const lines = [];
+      let current = '';
+      const suffix = ' ..... full review in Letterboxd profile';
+
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        const test = current ? `${current} ${word}` : word;
+        if (ctx.measureText(test).width <= maxWidth) {
+          current = test;
+        } else {
+          if (lines.length === maxLines - 1) {
+            let truncated = current || word;
+            while (truncated.length > 0 && ctx.measureText(truncated + suffix).width > maxWidth) {
+              truncated = truncated.replace(/\s+\S*$/, '');
+              if (!truncated.includes(' ')) truncated = truncated.slice(0, -1);
+            }
+            lines.push((truncated.trim() || '') + suffix);
+            return lines;
+          }
+          if (current) {
+            lines.push(current);
+            current = word;
+          } else {
+            lines.push(word);
+            current = '';
+          }
+        }
+      }
+      if (current && lines.length < maxLines) {
+        if (clean.length > 210 && ctx.measureText(current + suffix).width <= maxWidth) {
+          lines.push(current + suffix);
+        } else {
+          lines.push(current);
+        }
+      }
+      return lines;
+    }
+
+    // Dynamic Title Font Scaling & Multi-line Breaker based on movie title length
+    function computeAdaptiveTitleLayout(ctx, text, maxWidth, baseFontPx, fontFamily = '"Syne", sans-serif', fontWeight = '800', maxLines = 2) {
+      const cleanText = String(text || 'Untitled').trim();
+      const len = cleanText.length;
+      let scaleFactor = 1.0;
+      if (len > 36) scaleFactor = 0.72;
+      else if (len > 26) scaleFactor = 0.82;
+      else if (len > 18) scaleFactor = 0.90;
+
+      let fontPx = Math.round(baseFontPx * scaleFactor);
+      ctx.font = `${fontWeight} ${fontPx}px ${fontFamily}`;
+      let lines = getWrappedLines(ctx, cleanText, maxWidth, maxLines);
+
+      // Shrink slightly if any single word still exceeds maxWidth
+      while (fontPx > 24 && lines.some(l => ctx.measureText(l).width > maxWidth)) {
+        fontPx -= 2;
+        ctx.font = `${fontWeight} ${fontPx}px ${fontFamily}`;
+        lines = getWrappedLines(ctx, cleanText, maxWidth, maxLines);
+      }
+      return { fontPx, lines, lineHeight: Math.round(fontPx * 1.12) };
+    }
+
+    // Vector Screening Format & Streaming Platform Badge (Theater, IMAX, Dolby, OTT, Netflix, JioHotstar, Prime Video)
     function drawMediumBadge(ctx, cx, y, medium, isLightMode = false, scale = 1.0) {
       if (!medium) return 0;
       ctx.save();
-      const fg = isLightMode ? '#18181B' : '#FFFFFF';
-      const borderCol = isLightMode ? 'rgba(24,24,27,0.45)' : 'rgba(255,255,255,0.45)';
-      const bgFill = isLightMode ? 'rgba(24,24,27,0.06)' : 'rgba(255,255,255,0.08)';
+      let fg = isLightMode ? '#18181B' : '#FFFFFF';
+      let borderCol = isLightMode ? 'rgba(24,24,27,0.45)' : 'rgba(255,255,255,0.45)';
+      let bgFill = isLightMode ? 'rgba(24,24,27,0.06)' : 'rgba(255,255,255,0.08)';
 
       let badgeText = medium.toUpperCase();
       let subText = '';
-      if (medium === 'IMAX') { badgeText = 'I M A X'; subText = 'LARGE FORMAT'; }
+      if (medium === 'THEATER') { badgeText = 'THEATRICAL'; subText = 'CINEMA PRESENTATION'; }
+      else if (medium === 'IMAX') { badgeText = 'I M A X'; subText = 'LARGE FORMAT'; }
       else if (medium === 'DOLBY') { badgeText = 'DOLBY'; subText = 'C I N E M A'; }
       else if (medium === '70MM') { badgeText = '70MM'; subText = 'CELLULOID FILM'; }
-      else if (medium === '35MM') { badgeText = '35MM'; subText = 'ANALOG PRINT'; }
       else if (medium === '4DX') { badgeText = '4 D X'; subText = 'MOTION EXPERIENCE'; }
       else if (medium === '3D') { badgeText = 'REALD 3D'; subText = 'STEREOSCOPIC'; }
-      else if (medium === 'CRITERION') { badgeText = '4K UHD'; subText = 'RESTORATION'; }
+      else if (medium === 'OTT') { badgeText = 'O T T'; subText = 'DIGITAL STREAMING'; }
+      else if (medium === 'NETFLIX') {
+        badgeText = 'NETFLIX';
+        subText = 'ORIGINAL / STREAMING';
+        borderCol = '#E50914';
+        bgFill = isLightMode ? 'rgba(229,9,20,0.10)' : 'rgba(229,9,20,0.22)';
+      } else if (medium === 'JIOHOTSTAR') {
+        badgeText = 'JIOHOTSTAR';
+        subText = 'STREAMING PREMIERE';
+        borderCol = '#38BDF8';
+        bgFill = isLightMode ? 'rgba(56,189,248,0.10)' : 'rgba(56,189,248,0.20)';
+      } else if (medium === 'PRIME') {
+        badgeText = 'PRIME VIDEO';
+        subText = 'AMAZON STREAMING';
+        borderCol = '#00A8E1';
+        bgFill = isLightMode ? 'rgba(0,168,225,0.10)' : 'rgba(0,168,225,0.20)';
+      }
 
       const h = Math.round(52 * scale);
-      ctx.font = `800 ${Math.round(23 * scale)}px "Syne", sans-serif`;
+      ctx.font = `800 ${Math.round(21 * scale)}px "Syne", sans-serif`;
       const mainW = ctx.measureText(badgeText).width;
-      const w = Math.max(Math.round(148 * scale), mainW + Math.round(48 * scale));
+      const w = Math.max(Math.round(156 * scale), mainW + Math.round(52 * scale));
       const x = cx - w / 2;
 
       drawRoundedRectPath(ctx, x, y, w, h, Math.round(10 * scale));
@@ -963,13 +1464,13 @@
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       if (subText) {
-        ctx.font = `800 ${Math.round(22 * scale)}px "Syne", sans-serif`;
-        ctx.fillText(badgeText, cx, y + Math.round(26 * scale));
-        ctx.font = `700 ${Math.round(11 * scale)}px "JetBrains Mono", monospace`;
-        ctx.fillStyle = isLightMode ? '#57534E' : '#9CA3AF';
-        ctx.fillText(subText, cx, y + Math.round(43 * scale));
+        ctx.font = `800 ${Math.round(20 * scale)}px "Syne", sans-serif`;
+        ctx.fillText(badgeText, cx, y + Math.round(25 * scale));
+        ctx.font = `700 ${Math.round(10 * scale)}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = isLightMode ? '#57534E' : '#D1D5DB';
+        ctx.fillText(subText, cx, y + Math.round(42 * scale));
       } else {
-        ctx.fillText(badgeText, cx, y + Math.round(34 * scale));
+        ctx.fillText(badgeText, cx, y + Math.round(33 * scale));
       }
       ctx.restore();
       return h;
@@ -1009,7 +1510,7 @@
       return lines;
     }
 
-    // Draws Unified Aesthetic Footer: Username and PosterBoxd Logo in matching Syne Typography & Spacing
+    // Draws Unified Aesthetic Footer: Supports PosterBoxd x Letterboxd (with 3-dot favicon) when imported from Letterboxd
     function drawFooterBrand(ctx, cx, bottomY, isLightMode = false) {
       const scale = state.footerScale || 1.0;
       const textPrimary = isLightMode ? '#18181B' : '#F4EFE6';
@@ -1021,8 +1522,8 @@
       ctx.save();
       ctx.textBaseline = 'middle';
 
-      const fontSize = Math.round(20 * scale);
-      const iconSize = Math.round(25 * scale);
+      const fontSize = Math.round(19 * scale);
+      const iconSize = Math.round(24 * scale);
       const rowY = bottomY - Math.round(22 * scale);
 
       ctx.font = `700 ${fontSize}px "Syne", sans-serif`;
@@ -1034,7 +1535,16 @@
       const brandW = ctx.measureText(brandText).width;
       const iconGap = Math.round(8 * scale);
 
-      const totalW = handleW + sepW + iconSize + iconGap + brandW;
+      const isLbCollab = Boolean(state.isFromLetterboxd);
+      const collabSepText = isLbCollab ? '  ×  ' : '';
+      const collabSepW = isLbCollab ? ctx.measureText(collabSepText).width : 0;
+      const lbText = isLbCollab ? 'LETTERBOXD' : '';
+      const lbTextW = isLbCollab ? ctx.measureText(lbText).width : 0;
+      const dotR = Math.round(5.5 * scale);
+      const lbDotsW = isLbCollab ? (dotR * 6 + Math.round(6 * scale)) : 0;
+      const lbTotalW = isLbCollab ? (collabSepW + lbDotsW + iconGap + lbTextW) : 0;
+
+      const totalW = handleW + sepW + iconSize + iconGap + brandW + lbTotalW;
       let curX = cx - totalW / 2;
 
       if (venuePart) {
@@ -1064,6 +1574,27 @@
 
       ctx.fillStyle = textPrimary;
       ctx.fillText(brandText, curX, rowY);
+      curX += brandW;
+
+      if (isLbCollab) {
+        ctx.fillStyle = textMuted;
+        ctx.fillText(collabSepText, curX, rowY);
+        curX += collabSepW;
+
+        // Draw Letterboxd 3-dot favicon (#FF8000, #00E054, #40BCF4)
+        const dotColors = ['#FF8000', '#00E054', '#40BCF4'];
+        dotColors.forEach((col, idx) => {
+          ctx.beginPath();
+          ctx.arc(curX + dotR + idx * (dotR * 2 + 2), rowY, dotR, 0, Math.PI * 2);
+          ctx.fillStyle = col;
+          ctx.fill();
+        });
+        curX += lbDotsW + iconGap;
+
+        ctx.fillStyle = textPrimary;
+        ctx.fillText(lbText, curX, rowY);
+      }
+
       ctx.restore();
     }
 
@@ -1262,7 +1793,7 @@
         watchedDate: new Date().toISOString().split('T')[0],
         tags: 'imax, 70mm, sci-fi, villeneuve',
         review: 'Denis Villeneuve crafts a mythic science fiction spectacle, anchored by magnetic performances from Timothée Chalamet and Zendaya.',
-        detailedReview: 'The scale is genuinely staggering. Greig Fraser and Hans Zimmer turn every desert frame into pure cinema.',
+        detailedReview: '',
         episodeTitle: '',
         posters: [createProceduralArtwork('dune2', 'poster', 0), createProceduralArtwork('dune2', 'poster', 1)],
         backdrops: [createProceduralArtwork('dune2', 'backdrop', 0)],
@@ -1282,13 +1813,13 @@
         spine: '#0147',
         rating: 5.0,
         isLiked: true,
-        medium: '35MM',
+        medium: '70MM',
         watchedAt: '',
         username: window.localStorage.getItem('posterboxd_username') || '',
         watchedDate: new Date().toISOString().split('T')[0],
         tags: 'hong-kong, criterion, 35mm, romance',
         review: 'Wong Kar-wai crafts an aching romance masterclass, anchored by unforgettable performances from Tony Leung Chiu-wai and Maggie Cheung.',
-        detailedReview: 'Christopher Doyle’s neon-soaked cinematography makes every glance in a rain-slicked alleyway unforgettable.',
+        detailedReview: '',
         episodeTitle: '',
         posters: [createProceduralArtwork('itmfl', 'poster', 0)],
         backdrops: [createProceduralArtwork('itmfl', 'backdrop', 0)],
@@ -1314,7 +1845,7 @@
         watchedDate: new Date().toISOString().split('T')[0],
         tags: 'deakins, neo-noir, cyberpunk, masterpiece',
         review: 'Denis Villeneuve and Roger Deakins craft a hypnotic neo-noir, anchored by soulful work from Ryan Gosling and Harrison Ford.',
-        detailedReview: 'The sound design shakes theater seats while the story asks deeply human questions about memory and identity.',
+        detailedReview: '',
         episodeTitle: '',
         posters: [createProceduralArtwork('br2049', 'poster', 0)],
         backdrops: [createProceduralArtwork('br2049', 'backdrop', 0)],
@@ -1334,13 +1865,13 @@
         spine: '#S04E03',
         rating: 5.0,
         isLiked: true,
-        medium: 'CRITERION',
+        medium: 'OTT',
         watchedAt: '',
         username: window.localStorage.getItem('posterboxd_username') || '',
         watchedDate: new Date().toISOString().split('T')[0],
         tags: 'hbo, television, finale, drama',
         review: 'Jesse Armstrong delivers a towering television drama, anchored by tour-de-force performances from Jeremy Strong and Sarah Snook.',
-        detailedReview: 'Thirty unbroken minutes of chaos on a Hudson River ferry that permanently rewired modern television.',
+        detailedReview: '',
         episodeTitle: "S04E03 · Connor's Wedding",
         posters: [createProceduralArtwork('succession', 'poster', 0)],
         backdrops: [createProceduralArtwork('succession', 'backdrop', 0)],
@@ -1368,10 +1899,11 @@
       episodeTitle: '',
       rating: 4.5,
       isLiked: true,
-      medium: 'IMAX',
+      medium: 'THEATER',
       watchedAt: '',
       review: 'Denis Villeneuve crafts a mythic science fiction spectacle, anchored by magnetic performances from Timothée Chalamet and Zendaya.',
       detailedReview: '',
+      showDetailedReview: true,
       username: localStorage.getItem('posterboxd_username') || '',
       watchedDate: new Date().toISOString().split('T')[0],
       tags: 'imax, 70mm, sci-fi',
@@ -1389,6 +1921,10 @@
       tintBackdropWithPalette: true,
       gradientOverlay: true,
       filmGrain: true,
+      showQrCode: false,
+      marqueeBulbMode: true,
+      isFromLetterboxd: false,
+      letterboxdUrl: '',
       backdropBrightness: 55,
       backdropBlur: 14,
       posterScale: 1.0,
@@ -1398,64 +1934,31 @@
       footerScale: 1.0,
       isInteractiveEdit: false,
       selectedElementId: null,
-      elementTransforms: {},
+      elementTransformsByArchetype: (() => {
+        try {
+          return JSON.parse(localStorage.getItem('posterboxd_transforms_v3') || '{}');
+        } catch (e) {
+          return {};
+        }
+      })(),
       hitBoxes: []
     };
 
-    function switchView(viewName, openSettings = false) {
-      state.currentView = viewName;
-      document.getElementById('view-home').classList.toggle('hidden', viewName !== 'home');
-      document.getElementById('view-review').classList.toggle('hidden', viewName !== 'review');
-      document.getElementById('view-preview').classList.toggle('hidden', viewName !== 'preview');
-
-      // Show persistent top Google-style search bar & animated bottom navbar whenever not on Home
-      const headerSearch = document.getElementById('header-search-container');
-      const bottomNav = document.getElementById('mobile-bottom-nav');
-
-      if (viewName === 'home') {
-        headerSearch.classList.add('hidden');
-        bottomNav.classList.remove('bottom-nav-enter');
-        bottomNav.classList.add('bottom-nav-hidden');
-      } else {
-        headerSearch.classList.remove('hidden');
-        bottomNav.classList.remove('bottom-nav-hidden');
-        bottomNav.classList.add('bottom-nav-enter');
-      }
-
-      // Update active state on bottom navbar
-      const activeNavKey = viewName === 'review' ? 'review' : (openSettings ? 'settings' : 'design');
-      document.querySelectorAll('.bottom-nav-btn').forEach(btn => {
-        const isAct = btn.dataset.navTarget === activeNavKey;
-        btn.classList.toggle('active', isAct);
-        btn.classList.toggle('bg-elevated', isAct);
-        btn.classList.toggle('text-lbgreen', isAct);
-        btn.classList.toggle('border', isAct);
-        btn.classList.toggle('border-lbgreen/30', isAct);
-        btn.classList.toggle('text-gray-400', !isAct);
-      });
-
-      const accordion = document.getElementById('settings-accordion');
-      if (viewName === 'preview') {
-        scheduleCanvasRender();
-        if (openSettings && accordion) {
-          accordion.open = true;
-          setTimeout(() => {
-            document.getElementById('settings-drawer-wrapper')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 80);
-        } else {
-          if (accordion) accordion.open = false;
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+    function saveTransformsToStorage() {
+      try {
+        localStorage.setItem('posterboxd_transforms_v3', JSON.stringify(state.elementTransformsByArchetype));
+      } catch (e) {}
     }
 
     function getElTransform(id) {
-      if (!state.elementTransforms[id]) {
-        state.elementTransforms[id] = { dx: 0, dy: 0, scale: 1.0 };
+      const arch = state.archetype || 'floatingticket';
+      if (!state.elementTransformsByArchetype[arch]) {
+        state.elementTransformsByArchetype[arch] = {};
       }
-      return state.elementTransforms[id];
+      if (!state.elementTransformsByArchetype[arch][id]) {
+        state.elementTransformsByArchetype[arch][id] = { dx: 0, dy: 0, scale: 1.0 };
+      }
+      return state.elementTransformsByArchetype[arch][id];
     }
 
     function drawMovableGroup(ctx, id, label, baseBox, drawFn) {
@@ -1482,13 +1985,14 @@
       });
     }
 
-    // 1. CLASSIC CENTERED
+    // 2. CLASSIC CENTERED (Balanced vertical distribution, 42% poster height, 36px quote, cast & specs row)
     function renderClassicPoster(ctx, w, h) {
       const bgImg = state.backdropImg || state.posterImg;
       drawProcessedBackdrop(ctx, w, h, bgImg);
 
       const isCompact = h < 1500;
-      const posterH = Math.round((isCompact ? h * 0.36 : h * 0.39) * state.posterScale);
+      const clampedArtScale = Math.min(1.18, Math.max(0.65, state.posterScale));
+      const posterH = Math.round((isCompact ? h * 0.38 : h * 0.43) * clampedArtScale);
       const posterW = Math.round(posterH * (2 / 3));
       const posterX = Math.round((w - posterW) / 2);
       const posterY = Math.round(isCompact ? h * 0.05 : h * 0.065);
@@ -1496,9 +2000,9 @@
       drawMovableGroup(ctx, 'artwork', 'Poster Artwork', { x: posterX, y: posterY, w: posterW, h: posterH }, () => {
         if (state.posterImg) {
           ctx.save();
-          ctx.shadowColor = 'rgba(0, 0, 0, 0.72)';
-          ctx.shadowBlur = 48;
-          ctx.shadowOffsetY = 22;
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.78)';
+          ctx.shadowBlur = 52;
+          ctx.shadowOffsetY = 24;
           drawRoundedRectPath(ctx, posterX, posterY, posterW, posterH, state.posterRadius);
           ctx.fillStyle = '#111';
           ctx.fill();
@@ -1508,136 +2012,199 @@
 
           ctx.save();
           drawRoundedRectPath(ctx, posterX, posterY, posterW, posterH, state.posterRadius);
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
           ctx.lineWidth = 2;
           ctx.stroke();
           ctx.restore();
         }
       });
 
-      const fs = state.fontScale * (isCompact ? 0.88 : 1.0);
-      const gap = Math.round(24 * state.sectionSpacing * (isCompact ? 0.82 : 1.0));
-      let curY = posterY + posterH + Math.round(36 * state.sectionSpacing);
+      const fs = Math.min(1.22, state.fontScale) * (isCompact ? 0.88 : 1.0);
+      const gap = Math.round(28 * state.sectionSpacing * (isCompact ? 0.82 : 1.0));
+      let curY = posterY + posterH + Math.round(42 * state.sectionSpacing);
       const cx = w / 2;
-      const maxW = w - 150;
+      const pad = 72;
+      const maxW = w - pad * 2;
 
-      const titlePx = Math.round(48 * fs);
-      ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
-      const tLines = getWrappedLines(ctx, state.title, maxW, 2);
-      const titleGroupH = tLines.length * (titlePx + 6) + 60;
+      const tLayout = computeAdaptiveTitleLayout(ctx, state.title, maxW, Math.round(56 * fs), '"Syne", sans-serif', '800', 2);
+      const titleGroupH = tLayout.lines.length * tLayout.lineHeight + Math.round(50 * fs);
 
-      drawMovableGroup(ctx, 'title', 'Title & Director', { x: 75, y: curY, w: maxW, h: titleGroupH }, () => {
+      drawMovableGroup(ctx, 'title', 'Title & Director', { x: pad, y: curY, w: maxW, h: titleGroupH }, () => {
         let ty = curY;
-        ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+        ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'center';
-        tLines.forEach(line => {
-          ty += titlePx;
+        tLayout.lines.forEach(line => {
+          ty += tLayout.fontPx;
           ctx.fillText(line, cx, ty);
           ty += 6;
         });
-        const subLine = [state.year, state.director ? `Directed by ${state.director}` : '', state.episodeTitle].filter(Boolean).join('  ·  ');
+        const subLine = [state.year, state.director ? `Directed by ${state.director}` : '', state.runtime].filter(Boolean).join('  ·  ');
         if (subLine) {
-          ty += Math.round(22 * fs);
-          ctx.font = `600 ${Math.round(21 * fs)}px "Plus Jakarta Sans", sans-serif`;
+          ty += Math.round(26 * fs);
+          ctx.font = `600 ${Math.round(24 * fs)}px "Plus Jakarta Sans", sans-serif`;
           ctx.fillStyle = '#D1D5DB';
-          ctx.fillText(subLine, cx, ty);
+          ctx.fillText(getWrappedLines(ctx, subLine, maxW, 1)[0] || '', cx, ty);
         }
       });
-      curY += titleGroupH + gap * 0.4;
+      curY += titleGroupH + Math.round(gap * 0.65);
 
       if (state.rating > 0 || state.isLiked) {
-        const starR = Math.round(22 * fs);
-        drawMovableGroup(ctx, 'rating', 'Star Rating', { x: cx - 180, y: curY, w: 360, h: starR * 2 }, () => {
-          drawRatingAndHeartRow(ctx, { x: cx, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: Math.round(10 * fs), align: 'center', starColor: '#00E054' });
+        const starR = Math.round(25 * fs);
+        drawMovableGroup(ctx, 'rating', 'Star Rating', { x: cx - 200, y: curY, w: 400, h: starR * 2 }, () => {
+          drawRatingAndHeartRow(ctx, { x: cx, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: Math.round(12 * fs), align: 'center', starColor: '#00E054' });
         });
-        curY += starR * 2 + gap * 0.8;
+        curY += starR * 2 + Math.round(gap * 0.85);
       }
 
       if (state.medium) {
-        drawMovableGroup(ctx, 'medium', 'Format Badge', { x: cx - 90, y: curY, w: 180, h: 52 }, () => {
-          drawMediumBadge(ctx, cx, curY, state.medium, false, fs * 0.92);
+        drawMovableGroup(ctx, 'medium', 'Format Badge', { x: cx - 105, y: curY, w: 210, h: 56 }, () => {
+          drawMediumBadge(ctx, cx, curY, state.medium, false, fs * 0.96);
         });
-        curY += Math.round(52 * fs) + gap * 0.8;
+        curY += Math.round(56 * fs) + Math.round(gap * 0.85);
       }
 
-      if (state.review) {
-        const revPx = Math.round(30 * fs);
+      if (state.review || (state.showDetailedReview && state.detailedReview)) {
+        const revPx = Math.round(36 * fs);
         ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-        const rLines = getWrappedLines(ctx, `“${state.review}”`, maxW - 30, 3);
-        const rH = rLines.length * (revPx + 6) + 10;
-        drawMovableGroup(ctx, 'review', 'Review Pull-Quote', { x: 90, y: curY, w: maxW - 30, h: rH }, () => {
-          ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-          ctx.fillStyle = '#F3F4F6';
-          ctx.textAlign = 'center';
-          rLines.forEach((l, idx) => {
-            ctx.fillText(l, cx, curY + (idx + 1) * (revPx + 4));
-          });
+        const rLines = state.review ? getWrappedLines(ctx, `“${state.review}”`, maxW - 20, 3) : [];
+        const detPx = Math.round(23 * fs);
+        ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+        const dLines = getDetailedReviewLines(ctx, state.detailedReview, maxW - 30, 3);
+        const totalRevH = rLines.length * (revPx + 8) + (dLines.length ? dLines.length * (detPx + 7) + 22 : 0);
+
+        drawMovableGroup(ctx, 'review', 'Review & Notes', { x: pad, y: curY, w: maxW, h: totalRevH }, () => {
+          let ry = curY;
+          if (rLines.length) {
+            ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
+            ctx.fillStyle = '#F9FAFB';
+            ctx.textAlign = 'center';
+            rLines.forEach((l) => {
+              ry += revPx + 6;
+              ctx.fillText(l, cx, ry);
+            });
+            ry += 18;
+          }
+          if (dLines.length) {
+            ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+            ctx.fillStyle = '#D1D5DB';
+            ctx.textAlign = 'center';
+            dLines.forEach((dl) => {
+              ry += detPx + 6;
+              ctx.fillText(dl, cx, ry);
+            });
+          }
         });
-        curY += rH + gap * 0.8;
+        curY += totalRevH + Math.round(gap * 0.85);
       }
 
-      drawPaletteBar(ctx, cx, curY, 320, 14, false, false);
+      if (state.cast && curY < h - 220) {
+        const castPx = Math.round(22 * fs);
+        drawMovableGroup(ctx, 'cast', 'Starring Cast', { x: pad, y: curY, w: maxW, h: castPx + 14 }, () => {
+          ctx.font = `500 ${castPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#9CA3AF';
+          ctx.textAlign = 'center';
+          ctx.fillText(getWrappedLines(ctx, `Starring ${state.cast}`, maxW, 1)[0] || '', cx, curY + castPx);
+        });
+        curY += castPx + Math.round(gap * 0.85);
+      }
+
+      if (curY < h - 140) {
+        drawPaletteBar(ctx, cx, curY, 360, 16, false, false);
+      }
+
+      if (state.showQrCode) {
+        drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: w - 168, y: h - 178, w: 108, h: 108 }, () => {
+          drawPosterQrCode(ctx, w - 168, h - 178, 108, false);
+        });
+      }
       drawFooterBrand(ctx, w / 2, h - 28, false);
     }
 
-    // 2. FULL-BLEED EDITORIAL
+    // 3. FULL-BLEED EDITORIAL (Larger title logo, 24px credits, 38px headline quote, no wasted width when QR is off)
     function renderEditorialPoster(ctx, w, h) {
-      const bgImg = state.backdropImg || state.posterImg;
+      const bgImg = state.posterImg || state.backdropImg;
       drawProcessedBackdrop(ctx, w, h, bgImg, Math.max(0, state.backdropBlur - 10), Math.min(100, state.backdropBrightness + 15));
 
-      const leftX = 84;
+      const leftX = 80;
       const maxW = w - leftX * 2;
-      const fs = state.fontScale * (h < 1500 ? 0.88 : 1.0);
+      const hasQr = Boolean(state.showQrCode);
+      const textMaxW = hasQr ? maxW - 130 : maxW;
+      const fs = Math.min(1.22, state.fontScale) * (h < 1500 ? 0.88 : 1.0);
       let cursorBottom = h - Math.round(135 * state.footerScale);
 
       if (state.medium) {
-        drawMovableGroup(ctx, 'medium', 'Format Badge', { x: w - leftX - 180, y: 80, w: 180, h: 54 }, () => {
-          drawMediumBadge(ctx, w - leftX - 90, 80, state.medium, false, fs);
+        drawMovableGroup(ctx, 'medium', 'Format Badge', { x: w - leftX - 190, y: 76, w: 190, h: 56 }, () => {
+          drawMediumBadge(ctx, w - leftX - 95, 76, state.medium, false, fs);
+        });
+      }
+
+      if (hasQr) {
+        drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: w - leftX - 112, y: h - 252, w: 112, h: 112 }, () => {
+          drawPosterQrCode(ctx, w - leftX - 112, h - 252, 112, false);
         });
       }
 
       if (state.rating > 0 || state.isLiked) {
-        const starR = Math.round(24 * fs);
+        const starR = Math.round(26 * fs);
         cursorBottom -= starR * 2;
-        drawMovableGroup(ctx, 'rating', 'Star Rating', { x: leftX, y: cursorBottom, w: 340, h: starR * 2 }, () => {
-          drawRatingAndHeartRow(ctx, { x: leftX, y: cursorBottom, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: 12, align: 'left', starColor: '#00E054' });
+        drawMovableGroup(ctx, 'rating', 'Star Rating', { x: leftX, y: cursorBottom, w: 380, h: starR * 2 }, () => {
+          drawRatingAndHeartRow(ctx, { x: leftX, y: cursorBottom, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: 14, align: 'left', starColor: '#00E054' });
         });
-        cursorBottom -= Math.round(26 * state.sectionSpacing);
+        cursorBottom -= Math.round(28 * state.sectionSpacing);
+      }
+
+      const dLines = getDetailedReviewLines(ctx, state.detailedReview, textMaxW, 3);
+      if (dLines.length > 0) {
+        const detPx = Math.round(23 * fs);
+        const dH = dLines.length * (detPx + 7);
+        cursorBottom -= dH;
+        const topDetY = cursorBottom;
+        drawMovableGroup(ctx, 'detailedReview', 'Detailed Review', { x: leftX, y: topDetY, w: textMaxW, h: dH }, () => {
+          ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#D1D5DB';
+          ctx.textAlign = 'left';
+          dLines.forEach((l, i) => {
+            ctx.fillText(l, leftX, topDetY + (i + 1) * (detPx + 6));
+          });
+        });
+        cursorBottom -= Math.round(24 * state.sectionSpacing);
       }
 
       if (state.review) {
-        const revPx = Math.round(33 * fs);
+        const revPx = Math.round(38 * fs);
         ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-        const lines = getWrappedLines(ctx, `“${state.review}”`, maxW, 3);
+        const lines = getWrappedLines(ctx, `“${state.review}”`, textMaxW, 3);
         const rH = lines.length * (revPx + 8);
         cursorBottom -= rH;
         const topRevY = cursorBottom;
-        drawMovableGroup(ctx, 'review', 'Review Quote', { x: leftX, y: topRevY, w: maxW, h: rH }, () => {
+        drawMovableGroup(ctx, 'review', 'Review Quote', { x: leftX, y: topRevY, w: textMaxW, h: rH }, () => {
           ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-          ctx.fillStyle = '#F3F4F6';
+          ctx.fillStyle = '#FFFFFF';
           ctx.textAlign = 'left';
           lines.forEach((l, i) => {
             ctx.fillText(l, leftX, topRevY + (i + 1) * (revPx + 6));
           });
         });
-        cursorBottom -= Math.round(22 * state.sectionSpacing);
+        cursorBottom -= Math.round(28 * state.sectionSpacing);
       }
 
-      const credPx = Math.round(23 * fs);
+      const credPx = Math.round(24 * fs);
       const rows = [
         state.director ? { role: state.mediaType === 'tv' ? 'Created by' : 'Director', val: state.director } : null,
         state.dop ? { role: 'Cinematography', val: state.dop } : null,
         state.music ? { role: 'Original Score', val: state.music } : null,
-        state.cast ? { role: 'Cast', val: state.cast } : null
+        state.cast ? { role: 'Cast', val: state.cast } : null,
+        (state.year || state.runtime || state.genre) ? { role: 'Specs', val: [state.year, state.runtime, state.genre].filter(Boolean).join(' · ') } : null
       ].filter(Boolean);
-      const credH = rows.length * Math.round(34 * fs);
+      const rowStep = Math.round(35 * fs);
+      const credH = rows.length * rowStep;
       cursorBottom -= credH;
       const topCredY = cursorBottom;
 
       drawMovableGroup(ctx, 'credits', 'Crew Block', { x: leftX, y: topCredY, w: maxW, h: credH }, () => {
         rows.forEach((r, idx) => {
-          const ry = topCredY + (idx + 1) * Math.round(32 * fs);
+          const ry = topCredY + (idx + 1) * rowStep;
           const label = `${r.role}: `;
           ctx.font = `400 ${credPx}px "Plus Jakarta Sans", sans-serif`;
           ctx.fillStyle = '#9CA3AF';
@@ -1649,11 +2216,11 @@
           ctx.fillText(getWrappedLines(ctx, r.val, maxW - lw, 1)[0] || '', leftX + lw, ry);
         });
       });
-      cursorBottom -= Math.round(26 * state.sectionSpacing);
+      cursorBottom -= Math.round(28 * state.sectionSpacing);
 
       if (state.useLogoImage && state.logoImg) {
-        const maxLogoW = Math.round(540 * state.posterScale);
-        const maxLogoH = Math.round(140 * state.posterScale);
+        const maxLogoW = Math.round(620 * Math.min(1.2, state.posterScale));
+        const maxLogoH = Math.round(165 * Math.min(1.2, state.posterScale));
         const ratio = Math.min(maxLogoW / state.logoImg.width, maxLogoH / state.logoImg.height);
         const lw = Math.round(state.logoImg.width * ratio);
         const lh = Math.round(state.logoImg.height * ratio);
@@ -1663,18 +2230,16 @@
           ctx.drawImage(state.logoImg, leftX, logoY, lw, lh);
         });
       } else {
-        const titlePx = Math.round(58 * fs);
-        ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
-        const lines = getWrappedLines(ctx, state.title, maxW, 2);
-        const tH = lines.length * (titlePx + 8);
+        const tLayout = computeAdaptiveTitleLayout(ctx, state.title, maxW, Math.round(64 * fs), '"Syne", sans-serif', '800', 2);
+        const tH = tLayout.lines.length * tLayout.lineHeight;
         cursorBottom -= tH;
         const topTY = cursorBottom;
         drawMovableGroup(ctx, 'title', 'Title Header', { x: leftX, y: topTY, w: maxW, h: tH }, () => {
-          ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+          ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
           ctx.fillStyle = '#FFFFFF';
           ctx.textAlign = 'left';
-          lines.forEach((l, i) => {
-            ctx.fillText(l, leftX, topTY + (i + 1) * titlePx);
+          tLayout.lines.forEach((l, i) => {
+            ctx.fillText(l, leftX, topTY + (i + 1) * tLayout.fontPx);
           });
         });
       }
@@ -1682,15 +2247,15 @@
       drawFooterBrand(ctx, w / 2, h - 28, false);
     }
 
-    // 3. POLAROID GALLERY FRAME
+    // 4. POLAROID GALLERY FRAME (Left-aligned scaled QR code above the bottom metadata thin line)
     function renderPolaroidPoster(ctx, w, h) {
       ctx.fillStyle = '#F4F1EA';
       ctx.fillRect(0, 0, w, h);
 
-      const pad = 64;
+      const pad = 68;
       const isCompact = h < 1500;
       const artW = w - pad * 2;
-      const artH = Math.round((isCompact ? h * 0.48 : h * 0.52) * Math.min(1.12, state.posterScale));
+      const artH = Math.round((isCompact ? h * 0.46 : h * 0.50) * Math.min(1.08, state.posterScale));
       const artImg = state.posterImg || state.backdropImg;
 
       drawMovableGroup(ctx, 'artwork', 'Polaroid Artwork', { x: pad, y: pad, w: artW, h: artH }, () => {
@@ -1703,73 +2268,122 @@
         }
       });
 
-      let curY = pad + artH + 20;
-      drawPaletteBar(ctx, pad + artW / 2, curY, artW, 14, false, true);
+      let curY = pad + artH + 22;
+      drawPaletteBar(ctx, pad + artW / 2, curY, artW, 16, false, true);
       curY += 32;
 
-      const fs = state.fontScale * (isCompact ? 0.9 : 1.0);
-      const titlePx = Math.round(44 * fs);
-      drawMovableGroup(ctx, 'title', 'Polaroid Title', { x: pad, y: curY, w: artW, h: titlePx + 40 }, () => {
-        ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+      const fs = Math.min(1.18, state.fontScale) * (isCompact ? 0.9 : 1.0);
+      const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), artW * 0.62, Math.round(48 * fs), '"Syne", sans-serif', '800', 2);
+      const titleBlockH = tLayout.lines.length * tLayout.lineHeight + 42;
+
+      drawMovableGroup(ctx, 'title', 'Polaroid Title', { x: pad, y: curY, w: artW, h: titleBlockH }, () => {
+        ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
         ctx.fillStyle = '#18181B';
         ctx.textAlign = 'left';
-        const line = getWrappedLines(ctx, state.title.toUpperCase(), artW * 0.65, 1)[0] || '';
-        ctx.fillText(line, pad, curY + titlePx);
+        tLayout.lines.forEach((line, idx) => {
+          ctx.fillText(line, pad, curY + (idx + 1) * tLayout.fontPx + idx * 4);
+        });
 
         drawRatingAndHeartRow(ctx, {
           x: w - pad,
-          y: curY + 8,
+          y: curY + 10,
           rating: state.rating,
           isLiked: state.isLiked,
-          starSize: Math.round(18 * fs),
-          gap: 8,
+          starSize: Math.round(21 * fs),
+          gap: 9,
           align: 'right',
           starColor: '#15803D',
           emptyColor: 'rgba(24,24,27,0.16)',
           heartColor: '#EA580C'
         });
 
-        ctx.font = `600 ${Math.round(19 * fs)}px "JetBrains Mono", monospace`;
+        const subY = curY + tLayout.lines.length * tLayout.lineHeight + 28;
+        ctx.font = `600 ${Math.round(22 * fs)}px "JetBrains Mono", monospace`;
         ctx.fillStyle = '#57534E';
         ctx.textAlign = 'left';
         const sub = [state.year, state.director ? `DIR. ${state.director.toUpperCase()}` : '', state.medium, state.runtime].filter(Boolean).join('  /  ');
-        ctx.fillText(sub, pad, curY + titlePx + 30);
+        ctx.fillText(getWrappedLines(ctx, sub, artW, 1)[0] || '', pad, subY);
       });
 
-      curY += titlePx + 60;
-      if (state.review) {
-        const revPx = Math.round(32 * fs);
+      curY += titleBlockH + 20;
+      ctx.fillStyle = 'rgba(24, 24, 27, 0.12)';
+      ctx.fillRect(pad, curY, artW, 2);
+      curY += 22;
+
+      if (state.review || (state.showDetailedReview && state.detailedReview)) {
+        const revPx = Math.round(35 * fs);
         ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-        const lines = getWrappedLines(ctx, `“${state.review}”`, artW, 3);
-        const rH = lines.length * (revPx + 8);
-        drawMovableGroup(ctx, 'review', 'Polaroid Quote', { x: pad, y: curY, w: artW, h: rH }, () => {
+        const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, artW, 2) : [];
+        const detPx = Math.round(22 * fs);
+        ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+        const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW, 2);
+        const rH = lines.length * (revPx + 8) + dLines.length * (detPx + 6) + 18;
+
+        drawMovableGroup(ctx, 'review', 'Polaroid Quote & Review', { x: pad, y: curY, w: artW, h: rH }, () => {
+          let ry = curY;
           ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-          ctx.fillStyle = '#27272A';
+          ctx.fillStyle = '#18181B';
           ctx.textAlign = 'left';
-          lines.forEach((l, i) => {
-            ctx.fillText(l, pad, curY + (i + 1) * (revPx + 6));
+          lines.forEach((l) => {
+            ry += revPx + 6;
+            ctx.fillText(l, pad, ry);
           });
+          if (dLines.length) {
+            ry += 16;
+            ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+            ctx.fillStyle = '#44403C';
+            dLines.forEach((dl) => {
+              ry += detPx + 6;
+              ctx.fillText(dl, pad, ry);
+            });
+          }
+        });
+        curY += rH + 16;
+      }
+
+      const archiveY = h - 135;
+      // Left-aligned, slightly larger QR code positioned cleanly above the footer metadata thin line
+      if (state.showQrCode) {
+        const qrSize = 118;
+        const qrY = archiveY - 36 - qrSize - 16;
+        drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: pad, y: qrY, w: qrSize, h: qrSize }, () => {
+          drawPosterQrCode(ctx, pad, qrY, qrSize, true);
         });
       }
+
+      // Bottom Archive Cast & Date Strip below the thin line
+      drawMovableGroup(ctx, 'credits', 'Polaroid Credits Strip', { x: pad, y: archiveY - 38, w: artW, h: 64 }, () => {
+        ctx.fillStyle = 'rgba(24, 24, 27, 0.14)';
+        ctx.fillRect(pad, archiveY - 36, artW, 1.5);
+        ctx.font = `600 ${Math.round(20 * fs)}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = '#44403C';
+        ctx.textAlign = 'left';
+        const castLine = state.cast ? `Featuring ${state.cast}` : (state.genre || '');
+        ctx.fillText(getWrappedLines(ctx, castLine, artW, 1)[0] || '', pad, archiveY - 4);
+        ctx.font = `600 ${Math.round(18 * fs)}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = '#78716C';
+        const metaLine = [state.genre ? state.genre.toUpperCase() : '', state.watchedDate ? `LOGGED ${formatSafeDate(state.watchedDate).toUpperCase()}` : ''].filter(Boolean).join('   ·   ');
+        ctx.fillText(getWrappedLines(ctx, metaLine, artW, 1)[0] || '', pad, archiveY + 24);
+      });
 
       drawFooterBrand(ctx, w / 2, h - 28, true);
     }
 
-    // 4. CRITERION ARTHOUSE SPLIT
+    // 5. CRITERION ARTHOUSE SPLIT (Center-aligned, slightly larger QR code at bottom)
     function renderCriterionPoster(ctx, w, h) {
       ctx.fillStyle = '#0E1014';
       ctx.fillRect(0, 0, w, h);
 
-      const accentColor = state.palette[0] || '#00E054';
+      const accentColor = ensureVisibleAccentOnDark(state.palette[0], '#00E054');
       const pad = 72;
       const innerW = w - pad * 2;
-      const fs = state.fontScale * (h < 1500 ? 0.88 : 1.0);
+      const fs = Math.min(1.2, state.fontScale) * (h < 1500 ? 0.88 : 1.0);
 
       ctx.fillStyle = accentColor;
       ctx.fillRect(0, 0, w, 18);
 
       let topY = 74;
-      ctx.font = '700 20px "JetBrains Mono", monospace';
+      ctx.font = '700 21px "JetBrains Mono", monospace';
       ctx.fillStyle = '#E5E7EB';
       ctx.textAlign = 'left';
       ctx.fillText('THE POSTERBOXD ARCHIVE EDITION', pad, topY);
@@ -1781,22 +2395,25 @@
       ctx.fillStyle = 'rgba(255,255,255,0.22)';
       ctx.fillRect(pad, topY, innerW, 2);
 
-      topY += 40;
-      const titlePx = Math.round(52 * fs);
-      drawMovableGroup(ctx, 'title', 'Criterion Title', { x: pad, y: topY, w: innerW, h: titlePx + 40 }, () => {
-        ctx.font = `600 ${Math.round(19 * fs)}px "JetBrains Mono", monospace`;
-        ctx.fillStyle = state.palette[2] || '#40BCF4';
-        ctx.textAlign = 'left';
-        ctx.fillText(`A ${state.mediaType === 'tv' ? 'SERIES' : 'FILM'} BY ${(state.director || 'UNKNOWN').toUpperCase()}`, pad, topY + 18);
+      topY += 38;
+      const tLayout = computeAdaptiveTitleLayout(ctx, state.title, innerW, Math.round(56 * fs), '"Syne", sans-serif', '800', 2);
+      const headerH = tLayout.lines.length * tLayout.lineHeight + 42;
 
-        ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+      drawMovableGroup(ctx, 'title', 'Criterion Title', { x: pad, y: topY, w: innerW, h: headerH }, () => {
+        ctx.font = `600 ${Math.round(21 * fs)}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = ensureVisibleAccentOnDark(state.palette[2], '#40BCF4');
+        ctx.textAlign = 'left';
+        ctx.fillText(`A ${state.mediaType === 'tv' ? 'SERIES' : 'FILM'} BY ${(state.director || 'UNKNOWN').toUpperCase()}`, pad, topY + 20);
+
+        ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
         ctx.fillStyle = '#FFFFFF';
-        const line = getWrappedLines(ctx, state.title, innerW, 1)[0] || '';
-        ctx.fillText(line, pad, topY + 24 + titlePx);
+        tLayout.lines.forEach((line, idx) => {
+          ctx.fillText(line, pad, topY + 30 + (idx + 1) * tLayout.fontPx + idx * 4);
+        });
       });
 
-      topY += titlePx + 50;
-      const artH = Math.round((h < 1500 ? h * 0.40 : h * 0.44) * Math.min(1.1, state.posterScale));
+      topY += headerH + 22;
+      const artH = Math.round((h < 1500 ? h * 0.38 : h * 0.42) * Math.min(1.08, state.posterScale));
       const artImg = state.backdropImg || state.posterImg;
 
       drawMovableGroup(ctx, 'artwork', 'Criterion Artwork', { x: pad, y: topY, w: innerW, h: artH }, () => {
@@ -1811,59 +2428,101 @@
 
       const botY = topY + artH + 50;
       const colLeftW = Math.round(innerW * 0.36);
-      const colRightX = pad + colLeftW + 40;
-      const colRightW = innerW - colLeftW - 40;
+      const colRightX = pad + colLeftW + 44;
+      const colRightW = innerW - colLeftW - 44;
 
-      drawMovableGroup(ctx, 'credits', 'Specs Column', { x: pad, y: botY - 10, w: colLeftW, h: 200 }, () => {
+      drawMovableGroup(ctx, 'credits', 'Specs Column', { x: pad, y: botY - 10, w: colLeftW, h: 290 }, () => {
         let leftCursor = botY;
-        ctx.font = `600 ${Math.round(17 * fs)}px "JetBrains Mono", monospace`;
+        const specPx = Math.round(21 * fs);
+        ctx.font = `600 ${specPx}px "JetBrains Mono", monospace`;
         ctx.textAlign = 'left';
-        [['YEAR', state.year], ['FORMAT', state.medium || state.runtime], ['VENUE', state.watchedAt], ['DOP', state.dop], ['SCORE', state.music]]
+        [['YEAR', state.year], ['FORMAT', state.medium || state.runtime], ['RUNTIME', state.runtime], ['DOP', state.dop], ['SCORE', state.music]]
           .filter(s => s[1])
           .forEach(([k, v]) => {
-            ctx.fillStyle = '#6B7280';
+            ctx.fillStyle = '#9CA3AF';
             ctx.fillText(k, pad, leftCursor);
             ctx.fillStyle = '#F3F4F6';
-            ctx.fillText(getWrappedLines(ctx, v, colLeftW - 90, 1)[0] || '', pad + 88, leftCursor);
-            leftCursor += Math.round(28 * fs);
+            ctx.fillText(getWrappedLines(ctx, v, colLeftW - 110, 1)[0] || '', pad + 106, leftCursor);
+            leftCursor += Math.round(36 * fs);
           });
+        leftCursor += 14;
+        drawPaletteBar(ctx, pad + (colLeftW - 16) / 2, leftCursor, colLeftW - 16, 14, false, false);
       });
 
-      drawMovableGroup(ctx, 'review', 'Criterion Review', { x: colRightX, y: botY - 10, w: colRightW, h: 210 }, () => {
+      ctx.fillStyle = 'rgba(255,255,255,0.14)';
+      ctx.fillRect(colRightX - 22, botY - 18, 1.5, Math.min(290, h - botY - 210));
+
+      drawMovableGroup(ctx, 'review', 'Criterion Essay & Review', { x: colRightX, y: botY - 10, w: colRightW, h: 310 }, () => {
         let rightCursor = botY;
-        const starR = Math.round(19 * fs);
-        drawRatingAndHeartRow(ctx, { x: colRightX, y: rightCursor - 16, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: 10, align: 'left', starColor: '#00E054' });
-        rightCursor += starR * 2 + 14;
+        const starR = Math.round(23 * fs);
+        drawRatingAndHeartRow(ctx, { x: colRightX, y: rightCursor - 18, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: 12, align: 'left', starColor: '#00E054' });
+        rightCursor += starR * 2 + 18;
 
-        const revPx = Math.round(29 * fs);
-        ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-        ctx.fillStyle = '#F3F4F6';
-        ctx.textAlign = 'left';
-        const lines = getWrappedLines(ctx, `“${state.review || state.detailedReview}”`, colRightW, 3);
-        lines.forEach(l => {
-          rightCursor += revPx;
-          ctx.fillText(l, colRightX, rightCursor);
-          rightCursor += 6;
-        });
+        if (state.review) {
+          const revPx = Math.round(34 * fs);
+          ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
+          ctx.fillStyle = '#FFFFFF';
+          ctx.textAlign = 'left';
+          const lines = getWrappedLines(ctx, `“${state.review}”`, colRightW, 2);
+          lines.forEach(l => {
+            rightCursor += revPx + 2;
+            ctx.fillText(l, colRightX, rightCursor);
+            rightCursor += 4;
+          });
+        }
+
+        const dLines = getDetailedReviewLines(ctx, state.detailedReview, colRightW, 3);
+        if (dLines.length > 0) {
+          rightCursor += 16;
+          const detPx = Math.round(21 * fs);
+          ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#D1D5DB';
+          ctx.textAlign = 'left';
+          dLines.forEach(dl => {
+            rightCursor += detPx + 5;
+            ctx.fillText(dl, colRightX, rightCursor);
+          });
+        }
+
+        if (state.cast) {
+          rightCursor += 18;
+          const castPx = Math.round(20 * fs);
+          ctx.font = `600 ${castPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#9CA3AF';
+          const cLines = getWrappedLines(ctx, `Starring: ${state.cast}`, colRightW, 1);
+          cLines.forEach(cl => {
+            rightCursor += castPx + 4;
+            ctx.fillText(cl, colRightX, rightCursor);
+          });
+        }
       });
+
+      if (state.showQrCode) {
+        const qrSize = 118;
+        const qrX = Math.round(w / 2 - qrSize / 2);
+        const qrY = h - 220;
+        drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: qrX, y: qrY, w: qrSize, h: qrSize }, () => {
+          drawPosterQrCode(ctx, qrX, qrY, qrSize, false);
+        });
+      }
 
       drawFooterBrand(ctx, w / 2, h - 28, false);
     }
 
-    // 5. CINEMA TICKET STUB (Features Watched At + Format Badge + Barcode)
+    // 6. CINEMA TICKET STUB (QR left-aligned under title, metadata beside it, breathing room between headline & extended review)
     function renderTicketPoster(ctx, w, h) {
       const bgImg = state.backdropImg || state.posterImg;
       drawProcessedBackdrop(ctx, w, h, bgImg, Math.max(18, state.backdropBlur), Math.min(45, state.backdropBrightness));
 
-      const marginX = 92;
-      const marginY = h < 1500 ? 64 : 96;
+      const marginX = 82;
+      const marginY = h < 1500 ? 64 : 88;
       const ticketW = w - marginX * 2;
       const ticketH = h - marginY * 2 - 70;
       const tx = marginX, ty = marginY;
-      const stubSplitY = ty + Math.round(ticketH * 0.73);
+      const stubSplitY = ty + Math.round(ticketH * 0.77);
 
       ctx.save();
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.78)';
       ctx.shadowBlur = 50;
       ctx.shadowOffsetY = 24;
       drawRoundedRectPath(ctx, tx, ty, ticketW, ticketH, 28);
@@ -1892,22 +2551,22 @@
       ctx.stroke();
       ctx.restore();
 
-      const innerPad = tx + 50;
-      const innerW = ticketW - 100;
-      const fs = state.fontScale * (h < 1500 ? 0.86 : 1.0);
+      const innerPad = tx + 52;
+      const innerW = ticketW - 104;
+      const fs = Math.min(1.18, state.fontScale) * (h < 1500 ? 0.86 : 1.0);
 
-      let curY = ty + 48;
-      ctx.font = '700 19px "JetBrains Mono", monospace';
+      let curY = ty + 52;
+      ctx.font = '700 21px "JetBrains Mono", monospace';
       ctx.fillStyle = '#57534E';
       ctx.textAlign = 'left';
       const topStubHeader = state.watchedAt ? `ADMIT ONE · ${state.watchedAt.toUpperCase()}` : 'ADMIT ONE · CINEMA DIARY STUB';
       ctx.fillText(getWrappedLines(ctx, topStubHeader, innerW * 0.72, 1)[0] || '', innerPad, curY);
       ctx.textAlign = 'right';
       ctx.fillStyle = '#18181B';
-      ctx.fillText(`NO. ${state.spine.replace('#', '') || '02049'}`, tx + ticketW - 50, curY);
+      ctx.fillText(`NO. ${state.spine.replace('#', '') || '02049'}`, tx + ticketW - 52, curY);
 
-      curY += 20;
-      const artH = Math.round((h < 1500 ? ticketH * 0.27 : ticketH * 0.30) * Math.min(1.1, state.posterScale));
+      curY += 22;
+      const artH = Math.round((h < 1500 ? ticketH * 0.28 : ticketH * 0.32) * Math.min(1.06, state.posterScale));
       const artImg = state.backdropImg || state.posterImg;
       drawMovableGroup(ctx, 'artwork', 'Ticket Artwork', { x: innerPad, y: curY, w: innerW, h: artH }, () => {
         if (artImg) {
@@ -1920,47 +2579,77 @@
       });
 
       curY += artH + 24;
-      const titlePx = Math.round(40 * fs);
-      ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+      const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), innerW, Math.round(48 * fs), '"Syne", sans-serif', '800', 2);
+      ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
       ctx.fillStyle = '#18181B';
       ctx.textAlign = 'left';
-      ctx.fillText(getWrappedLines(ctx, state.title.toUpperCase(), innerW, 1)[0] || '', innerPad, curY + titlePx);
+      tLayout.lines.forEach((line) => {
+        curY += tLayout.fontPx;
+        ctx.fillText(line, innerPad, curY);
+        curY += 4;
+      });
 
-      curY += titlePx + 24;
-      // Ticket Grid Cells (Venue, Date, Format, Director)
-      const colW = innerW / 2;
-      const drawStubCell = (lbl, val, xPos, yPos) => {
-        ctx.font = '600 14px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#78716C';
-        ctx.textAlign = 'left';
-        ctx.fillText(lbl, xPos, yPos);
-        ctx.font = '700 19px "JetBrains Mono", monospace';
-        ctx.fillStyle = '#18181B';
-        ctx.fillText(getWrappedLines(ctx, val || '—', colW - 15, 1)[0] || '—', xPos, yPos + 23);
-      };
-      drawStubCell('WATCHED AT', state.watchedAt || 'Cinema Selection', innerPad, curY);
-      drawStubCell('FORMAT / MEDIUM', state.medium || state.runtime || 'Standard', innerPad + colW, curY);
-      curY += 54;
-      drawStubCell('DATE LOGGED', formatSafeDate(state.watchedDate) || state.year, innerPad, curY);
-      drawStubCell('DIRECTOR', state.director || '—', innerPad + colW, curY);
-      curY += 44;
+      curY += 22;
+      const hasQr = Boolean(state.showQrCode);
+      const qrSize = 114;
+      const metaStartX = hasQr ? (innerPad + qrSize + 28) : innerPad;
+      const metaAvailW = hasQr ? (innerW - qrSize - 28) : innerW;
+      const colW = metaAvailW / 2;
 
-      if (state.review) {
-        const revPx = Math.round(26 * fs);
-        ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-        const lines = getWrappedLines(ctx, `“${state.review}”`, innerW, 2);
-        ctx.fillStyle = '#27272A';
-        ctx.textAlign = 'left';
-        lines.forEach((l, i) => {
-          ctx.fillText(l, innerPad, curY + (i + 1) * (revPx + 4));
+      if (hasQr) {
+        drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: innerPad, y: curY - 4, w: qrSize, h: qrSize }, () => {
+          drawPosterQrCode(ctx, innerPad, curY - 4, qrSize, true);
         });
       }
 
-      const stubY = stubSplitY + 30;
-      drawRatingAndHeartRow(ctx, { x: w / 2, y: stubY - 6, rating: state.rating, isLiked: state.isLiked, starSize: Math.round(21 * fs), gap: 12, align: 'center', starColor: '#18181B', emptyColor: 'rgba(24,24,27,0.18)', heartColor: '#EA580C' });
+      const drawStubCell = (lbl, val, xPos, yPos) => {
+        ctx.font = `600 ${Math.round(15 * fs)}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = '#78716C';
+        ctx.textAlign = 'left';
+        ctx.fillText(lbl, xPos, yPos);
+        ctx.font = `700 ${Math.round(22 * fs)}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = '#18181B';
+        ctx.fillText(getWrappedLines(ctx, val || '—', colW - 14, 1)[0] || '—', xPos, yPos + 26);
+      };
+      drawStubCell('WATCHED AT', state.watchedAt || 'Cinema / Stream', metaStartX, curY + 10);
+      drawStubCell('FORMAT / RUNTIME', [state.medium, state.runtime].filter(Boolean).join(' · ') || 'Standard', metaStartX + colW, curY + 10);
+      drawStubCell('DATE LOGGED', formatSafeDate(state.watchedDate) || state.year, metaStartX, curY + 72);
+      drawStubCell('DIRECTOR', state.director || '—', metaStartX + colW, curY + 72);
 
-      const barTop = stubY + Math.round(46 * fs);
-      const barH = 48;
+      curY += 132;
+
+      if ((state.review || (state.showDetailedReview && state.detailedReview)) && curY < stubSplitY - 28) {
+        const revPx = Math.round(33 * fs);
+        ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
+        const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, innerW, 2) : [];
+        ctx.fillStyle = '#18181B';
+        ctx.textAlign = 'left';
+        lines.forEach((l) => {
+          if (curY + revPx < stubSplitY - 14) {
+            curY += revPx + 4;
+            ctx.fillText(l, innerPad, curY);
+          }
+        });
+        const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW, 2);
+        if (dLines.length > 0 && curY + 42 < stubSplitY - 14) {
+          curY += 20; // Generous breathing room between punchline and extended review
+          const detPx = Math.round(21 * fs);
+          ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#44403C';
+          dLines.forEach((dl) => {
+            if (curY + detPx < stubSplitY - 12) {
+              curY += detPx + 6;
+              ctx.fillText(dl, innerPad, curY);
+            }
+          });
+        }
+      }
+
+      const stubY = stubSplitY + 34;
+      drawRatingAndHeartRow(ctx, { x: innerPad + innerW / 2, y: stubY - 6, rating: state.rating, isLiked: state.isLiked, starSize: Math.round(24 * fs), gap: 12, align: 'center', starColor: '#18181B', emptyColor: 'rgba(24,24,27,0.18)', heartColor: '#EA580C' });
+
+      const barTop = stubY + Math.round(54 * fs);
+      const barH = 66;
       let bx = innerPad;
       const seedStr = `${state.title}-${state.watchedAt}-${state.medium}-${state.rating}-${state.username}`;
       let idx = 0;
@@ -1974,28 +2663,33 @@
         idx++;
       }
 
+      ctx.font = '600 18px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#57534E';
+      ctx.textAlign = 'center';
+      const serialLine = [state.year, state.genre ? state.genre.toUpperCase() : '', `${(state.rating || 0).toFixed(1)} ★`].filter(Boolean).join('   ·   ');
+      ctx.fillText(getWrappedLines(ctx, serialLine, innerW, 1)[0] || '', innerPad + innerW / 2, barTop + barH + 30);
+
       drawFooterBrand(ctx, w / 2, h - 22, false);
     }
 
-    // 6. APPLE iOS GLASSMORPHISM CARD
+    // 7. APPLE iOS GLASSMORPHISM CARD (Larger poster, 52px title, 34px quote, bottom metadata pills inside glass card)
     function renderIosGlassPoster(ctx, w, h) {
       const bgImg = state.backdropImg || state.posterImg;
       drawProcessedBackdrop(ctx, w, h, bgImg, Math.max(22, state.backdropBlur), Math.min(80, state.backdropBrightness + 10));
 
-      const cardMargin = 72;
+      const cardMargin = 68;
       const cardW = w - cardMargin * 2;
-      const cardH = h - cardMargin * 2 - 90;
+      const cardH = h - cardMargin * 2 - 84;
       const cx = w / 2;
 
-      // Translucent Frosted Glass Card
       ctx.save();
       drawRoundedRectPath(ctx, cardMargin, cardMargin, cardW, cardH, 48);
       const glassGrad = ctx.createLinearGradient(cardMargin, cardMargin, cardW + cardMargin, cardH + cardMargin);
-      glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.18)');
-      glassGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.08)');
-      glassGrad.addColorStop(1, 'rgba(20, 22, 30, 0.48)');
+      glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.20)');
+      glassGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.09)');
+      glassGrad.addColorStop(1, 'rgba(20, 22, 30, 0.52)');
       ctx.fillStyle = glassGrad;
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
       ctx.shadowBlur = 60;
       ctx.shadowOffsetY = 24;
       ctx.fill();
@@ -2004,20 +2698,19 @@
       ctx.stroke();
       ctx.restore();
 
-      // Top iOS Pill Header inside Glass Card
       const pillY = cardMargin + 38;
       ctx.save();
-      drawRoundedRectPath(ctx, cx - 150, pillY, 300, 40, 20);
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      drawRoundedRectPath(ctx, cx - 190, pillY, 380, 44, 22);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
       ctx.fill();
-      ctx.font = '600 16px "Plus Jakarta Sans", sans-serif';
+      ctx.font = '700 17px "JetBrains Mono", monospace';
       ctx.fillStyle = '#E5E7EB';
       ctx.textAlign = 'center';
-      ctx.fillText(state.watchedAt ? `📍 ${state.watchedAt}` : `🎬 NOW LOGGED · ${state.year}`, cx, pillY + 26);
+      ctx.fillText(state.watchedAt ? `WATCHED AT ${state.watchedAt.toUpperCase()}` : `NOW LOGGED  ·  ${state.medium || state.year}`, cx, pillY + 28);
       ctx.restore();
 
       const isCompact = h < 1500;
-      const artH = Math.round((isCompact ? cardH * 0.42 : cardH * 0.45) * state.posterScale);
+      const artH = Math.round((isCompact ? cardH * 0.41 : cardH * 0.45) * Math.min(1.12, state.posterScale));
       const artW = Math.round(artH * (2 / 3));
       const artX = Math.round(cx - artW / 2);
       const artY = pillY + 66;
@@ -2025,9 +2718,9 @@
       drawMovableGroup(ctx, 'artwork', 'Glass Poster', { x: artX, y: artY, w: artW, h: artH }, () => {
         if (state.posterImg) {
           ctx.save();
-          ctx.shadowColor = 'rgba(0,0,0,0.6)';
-          ctx.shadowBlur = 40;
-          ctx.shadowOffsetY = 18;
+          ctx.shadowColor = 'rgba(0,0,0,0.65)';
+          ctx.shadowBlur = 44;
+          ctx.shadowOffsetY = 20;
           drawRoundedRectPath(ctx, artX, artY, artW, artH, 28);
           ctx.clip();
           drawImageCover(ctx, state.posterImg, artX, artY, artW, artH);
@@ -2035,107 +2728,163 @@
         }
       });
 
-      let curY = artY + artH + 46;
-      const fs = state.fontScale * (isCompact ? 0.88 : 1.0);
-      const titlePx = Math.round(44 * fs);
+      let curY = artY + artH + 42;
+      const fs = Math.min(1.18, state.fontScale) * (isCompact ? 0.88 : 1.0);
+      const tLayout = computeAdaptiveTitleLayout(ctx, state.title, cardW - 90, Math.round(52 * fs), '"Plus Jakarta Sans", sans-serif', '800', 2);
+      const titleGroupH = tLayout.lines.length * tLayout.lineHeight + 42;
 
-      drawMovableGroup(ctx, 'title', 'Glass Title', { x: cardMargin + 40, y: curY, w: cardW - 80, h: titlePx + 50 }, () => {
-        ctx.font = `800 ${titlePx}px "Plus Jakarta Sans", sans-serif`;
+      drawMovableGroup(ctx, 'title', 'Glass Title', { x: cardMargin + 45, y: curY, w: cardW - 90, h: titleGroupH }, () => {
+        ctx.font = `800 ${tLayout.fontPx}px "Plus Jakarta Sans", sans-serif`;
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'center';
-        const line = getWrappedLines(ctx, state.title, cardW - 80, 1)[0] || '';
-        ctx.fillText(line, cx, curY + titlePx);
+        tLayout.lines.forEach((line, idx) => {
+          ctx.fillText(line, cx, curY + (idx + 1) * tLayout.fontPx + idx * 4);
+        });
 
-        ctx.font = `500 ${Math.round(21 * fs)}px "Plus Jakarta Sans", sans-serif`;
-        ctx.fillStyle = 'rgba(255,255,255,0.72)';
-        const meta = [state.director, state.year, state.medium].filter(Boolean).join('  •  ');
-        ctx.fillText(meta, cx, curY + titlePx + 32);
+        ctx.font = `600 ${Math.round(24 * fs)}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = 'rgba(255,255,255,0.78)';
+        const meta = [state.director, state.year, state.runtime || state.medium].filter(Boolean).join('  •  ');
+        ctx.fillText(getWrappedLines(ctx, meta, cardW - 90, 1)[0] || '', cx, curY + tLayout.lines.length * tLayout.lineHeight + 30);
       });
-      curY += titlePx + 66;
+      curY += titleGroupH + 24;
 
       if (state.rating > 0 || state.isLiked) {
-        const starR = Math.round(22 * fs);
-        drawRatingAndHeartRow(ctx, { x: cx, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: 10, align: 'center', starColor: '#FACC15' });
-        curY += starR * 2 + 28;
+        const starR = Math.round(25 * fs);
+        drawRatingAndHeartRow(ctx, { x: cx, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: starR, gap: 12, align: 'center', starColor: '#FACC15' });
+        curY += starR * 2 + 26;
       }
 
-      if (state.review) {
-        const revPx = Math.round(27 * fs);
-        ctx.font = `500 ${revPx}px "Plus Jakarta Sans", sans-serif`;
-        const lines = getWrappedLines(ctx, `“${state.review}”`, cardW - 100, 3);
-        ctx.fillStyle = '#F3F4F6';
-        ctx.textAlign = 'center';
-        lines.forEach((l, i) => {
-          ctx.fillText(l, cx, curY + (i + 1) * (revPx + 8));
+      if (state.review || (state.showDetailedReview && state.detailedReview)) {
+        const revPx = Math.round(33 * fs);
+        ctx.font = `600 ${revPx}px "Plus Jakarta Sans", sans-serif`;
+        const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, cardW - 100, 3) : [];
+        const detPx = Math.round(22 * fs);
+        ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+        const dLines = getDetailedReviewLines(ctx, state.detailedReview, cardW - 110, 2);
+        const rH = lines.length * (revPx + 8) + dLines.length * (detPx + 6) + 20;
+
+        drawMovableGroup(ctx, 'review', 'Glass Review', { x: cardMargin + 50, y: curY, w: cardW - 100, h: rH }, () => {
+          let ry = curY;
+          ctx.font = `600 ${revPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#FFFFFF';
+          ctx.textAlign = 'center';
+          lines.forEach((l) => {
+            ry += revPx + 6;
+            ctx.fillText(l, cx, ry);
+          });
+          if (dLines.length) {
+            ry += 16;
+            ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+            ctx.fillStyle = 'rgba(255,255,255,0.80)';
+            dLines.forEach((dl) => {
+              ry += detPx + 5;
+              ctx.fillText(dl, cx, ry);
+            });
+          }
         });
+      }
+
+      // Bottom Glass Metadata & Palette Dock
+      const dockY = cardMargin + cardH - 74;
+      drawPaletteBar(ctx, cx, dockY, 320, 12, false, false);
+      if (state.cast || state.genre) {
+        ctx.font = `500 ${Math.round(20 * fs)}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = 'rgba(255,255,255,0.68)';
+        ctx.textAlign = 'center';
+        const bottomSpec = [state.genre, state.cast].filter(Boolean).join('  ·  ');
+        ctx.fillText(getWrappedLines(ctx, bottomSpec, cardW - 120, 1)[0] || '', cx, dockY + 38);
       }
 
       drawFooterBrand(ctx, cx, h - 26, false);
     }
 
-    // 7. BIG RATING SCOREBOARD & EMPHASIZED ONE-LINER
+    // 8. BIG RATING SCOREBOARD & EMPHASIZED ONE-LINER (Giant Score + Stars locked at DEAD CENTER of screen y = h/2)
     function renderScoreboardPoster(ctx, w, h) {
       const bgImg = state.backdropImg || state.posterImg;
       drawProcessedBackdrop(ctx, w, h, bgImg, Math.max(8, state.backdropBlur), Math.min(55, state.backdropBrightness));
 
-      const pad = 78;
+      const pad = 76;
       const innerW = w - pad * 2;
-      const fs = state.fontScale * (h < 1500 ? 0.88 : 1.0);
+      const fs = Math.min(1.2, state.fontScale) * (h < 1500 ? 0.88 : 1.0);
 
-      // Top Miniature Poster + Title Header
-      const thumbW = 160;
-      const thumbH = 240;
-      const topY = 88;
+      const thumbW = 220;
+      const thumbH = 330;
+      const topY = 96;
 
       drawMovableGroup(ctx, 'artwork', 'Poster Thumbnail', { x: pad, y: topY, w: thumbW, h: thumbH }, () => {
         if (state.posterImg) {
           ctx.save();
-          drawRoundedRectPath(ctx, pad, topY, thumbW, thumbH, 16);
+          ctx.shadowColor = 'rgba(0,0,0,0.65)';
+          ctx.shadowBlur = 36;
+          drawRoundedRectPath(ctx, pad, topY, thumbW, thumbH, 18);
           ctx.clip();
           drawImageCover(ctx, state.posterImg, pad, topY, thumbW, thumbH);
           ctx.restore();
         }
       });
 
-      const metaX = pad + thumbW + 36;
+      const metaX = pad + thumbW + 42;
       const metaW = w - metaX - pad;
       drawMovableGroup(ctx, 'title', 'Header Metadata', { x: metaX, y: topY, w: metaW, h: thumbH }, () => {
-        ctx.font = `700 ${Math.round(18 * fs)}px "JetBrains Mono", monospace`;
+        let my = topY + 28;
+        ctx.font = `700 ${Math.round(21 * fs)}px "JetBrains Mono", monospace`;
         ctx.fillStyle = '#00E054';
         ctx.textAlign = 'left';
-        ctx.fillText([state.year, state.medium, state.watchedAt].filter(Boolean).join(' · ').toUpperCase(), metaX, topY + 30);
+        const topSpecs = [state.year, state.medium, state.runtime].filter(Boolean).join('  ·  ').toUpperCase();
+        ctx.fillText(getWrappedLines(ctx, topSpecs, metaW, 1)[0] || '', metaX, my);
 
-        const titlePx = Math.round(48 * fs);
-        ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+        const tLayout = computeAdaptiveTitleLayout(ctx, state.title, metaW, Math.round(54 * fs), '"Syne", sans-serif', '800', 2);
+        ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
         ctx.fillStyle = '#FFFFFF';
-        const lines = getWrappedLines(ctx, state.title, metaW, 2);
-        lines.forEach((l, i) => {
-          ctx.fillText(l, metaX, topY + 86 + i * (titlePx + 6));
+        tLayout.lines.forEach((l) => {
+          my += tLayout.fontPx + 6;
+          ctx.fillText(l, metaX, my);
         });
 
-        ctx.font = `600 ${Math.round(22 * fs)}px "Plus Jakarta Sans", sans-serif`;
-        ctx.fillStyle = '#9CA3AF';
-        ctx.fillText(`Directed by ${state.director || 'Unknown'}`, metaX, topY + 210);
+        my += Math.round(34 * fs);
+        ctx.font = `600 ${Math.round(25 * fs)}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = '#E5E7EB';
+        ctx.fillText(`Directed by ${state.director || 'Unknown'}`, metaX, my);
+
+        if (state.genre) {
+          my += Math.round(32 * fs);
+          ctx.font = `600 ${Math.round(20 * fs)}px "JetBrains Mono", monospace`;
+          ctx.fillStyle = '#9CA3AF';
+          ctx.fillText(getWrappedLines(ctx, state.genre.toUpperCase(), metaW, 1)[0] || '', metaX, my);
+        }
+
+        if (state.cast) {
+          my += Math.round(30 * fs);
+          ctx.font = `500 ${Math.round(22 * fs)}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#D1D5DB';
+          const cLines = getWrappedLines(ctx, `Starring: ${state.cast}`, metaW, 2);
+          cLines.forEach((cl) => {
+            ctx.fillText(cl, metaX, my);
+            my += Math.round(28 * fs);
+          });
+        }
       });
 
-      // Giant Scoreboard Number Centerpiece
-      let centerY = topY + thumbH + (h < 1500 ? 70 : 120);
+      // Lock Rating Block at EXACT DEAD CENTER of the canvas (w / 2, h / 2)
       const bigScore = (state.rating || 0).toFixed(1);
-      const scorePx = Math.round(210 * fs);
+      const scorePx = Math.round(205 * fs);
+      const starR = Math.round(28 * fs);
+      const totalScoreBlockH = Math.round(scorePx * 0.85) + 24 + starR * 2;
+      const centerBlockTopY = Math.round(h / 2 - totalScoreBlockH / 2);
 
-      drawMovableGroup(ctx, 'rating', 'Giant Scoreboard', { x: pad, y: centerY, w: innerW, h: scorePx + 80 }, () => {
+      drawMovableGroup(ctx, 'rating', 'Giant Scoreboard', { x: pad, y: centerBlockTopY, w: innerW, h: totalScoreBlockH }, () => {
         ctx.save();
         ctx.font = `800 ${scorePx}px "Syne", sans-serif`;
         ctx.fillStyle = '#00E054';
         ctx.textAlign = 'center';
-        ctx.fillText(bigScore, w / 2, centerY + scorePx * 0.82);
+        ctx.fillText(bigScore, w / 2, centerBlockTopY + Math.round(scorePx * 0.78));
 
         drawRatingAndHeartRow(ctx, {
           x: w / 2,
-          y: centerY + scorePx + 4,
+          y: centerBlockTopY + Math.round(scorePx * 0.85) + 16,
           rating: state.rating,
           isLiked: state.isLiked,
-          starSize: Math.round(28 * fs),
+          starSize: starR,
           gap: 14,
           align: 'center',
           starColor: '#00E054'
@@ -2143,45 +2892,67 @@
         ctx.restore();
       });
 
-      let quoteY = centerY + scorePx + Math.round(115 * fs);
-
-      // Emphasized Giant One-Liner Pull-Quote
+      const quoteY = centerBlockTopY + totalScoreBlockH + Math.round(58 * fs);
       const quoteText = state.review || 'An unforgettable cinema experience.';
-      const revPx = Math.round(48 * fs);
+      const revPx = Math.round(42 * fs);
       ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-      const qLines = getWrappedLines(ctx, `“${quoteText}”`, innerW, 4);
+      const qLines = getWrappedLines(ctx, `“${quoteText}”`, innerW, 3);
+      const detPx = Math.round(23 * fs);
+      ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+      const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW - 30, 3);
+      const revBlockH = qLines.length * (revPx + 10) + dLines.length * (detPx + 8) + 24;
 
-      drawMovableGroup(ctx, 'review', 'Headline One-Liner', { x: pad, y: quoteY, w: innerW, h: qLines.length * (revPx + 10) }, () => {
+      drawMovableGroup(ctx, 'review', 'Headline & Detailed Review', { x: pad, y: quoteY, w: innerW, h: revBlockH }, () => {
+        let ry = quoteY;
         ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'center';
-        qLines.forEach((l, i) => {
-          ctx.fillText(l, w / 2, quoteY + (i + 1) * (revPx + 8));
+        qLines.forEach((l) => {
+          ry += revPx + 8;
+          ctx.fillText(l, w / 2, ry);
         });
+        if (dLines.length) {
+          ry += 20;
+          ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#D1D5DB';
+          dLines.forEach((dl) => {
+            ry += detPx + 6;
+            ctx.fillText(dl, w / 2, ry);
+          });
+        }
       });
+
+      const bottomSpecY = h - 140;
+      if (quoteY + revBlockH < bottomSpecY - 30) {
+        drawPaletteBar(ctx, w / 2, bottomSpecY, 340, 14, false, false);
+      }
+
+      if (state.showQrCode) {
+        drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: w - pad - 112, y: h - 196, w: 112, h: 112 }, () => {
+          drawPosterQrCode(ctx, w - pad - 112, h - 196, 112, false);
+        });
+      }
 
       drawFooterBrand(ctx, w / 2, h - 28, false);
     }
 
-    // 8. 70s RETRO GRINDHOUSE / VHS SLEEVE
+    // 9. 70s RETRO GRINDHOUSE / VHS SLEEVE (Larger artwork, 52px title, 36px quote, bottom credits box so sleeve is full)
     function renderRetroPoster(ctx, w, h) {
       ctx.fillStyle = '#18120E';
       ctx.fillRect(0, 0, w, h);
 
       const pad = 68;
       const innerW = w - pad * 2;
-      const fs = state.fontScale * (h < 1500 ? 0.88 : 1.0);
+      const fs = Math.min(1.18, state.fontScale) * (h < 1500 ? 0.88 : 1.0);
 
-      // Retro Rainbow Sunset Stripes Header
       const stripeColors = ['#D9381E', '#E86F2C', '#F2A93B', '#F7D070'];
       stripeColors.forEach((col, i) => {
         ctx.fillStyle = col;
-        ctx.fillRect(pad, 60 + i * 16, innerW, 12);
+        ctx.fillRect(pad, 56 + i * 16, innerW, 12);
       });
 
-      // Cream Vintage Inner Frame
-      const frameY = 145;
-      const frameH = h - frameY - 140;
+      const frameY = 138;
+      const frameH = h - frameY - 125;
       ctx.save();
       drawRoundedRectPath(ctx, pad, frameY, innerW, frameH, 20);
       ctx.fillStyle = '#EFE6D5';
@@ -2192,14 +2963,14 @@
       ctx.restore();
 
       let curY = frameY + 46;
-      ctx.font = `700 ${Math.round(20 * fs)}px "JetBrains Mono", monospace`;
+      ctx.font = `700 ${Math.round(21 * fs)}px "JetBrains Mono", monospace`;
       ctx.fillStyle = '#8C2D19';
       ctx.textAlign = 'center';
       ctx.fillText(`A RETROSPECTIVE FEATURE PRESENTATION · ${state.year}`, w / 2, curY);
 
       curY += 24;
       const artW = innerW - 76;
-      const artH = Math.round((h < 1500 ? frameH * 0.44 : frameH * 0.48) * state.posterScale);
+      const artH = Math.round((h < 1500 ? frameH * 0.44 : frameH * 0.48) * Math.min(1.08, state.posterScale));
       const artX = pad + 38;
       const artImg = state.posterImg || state.backdropImg;
 
@@ -2220,62 +2991,150 @@
         }
       });
 
-      curY += artH + 42;
-      const titlePx = Math.round(50 * fs);
-      drawMovableGroup(ctx, 'title', 'Retro Title', { x: artX, y: curY, w: artW, h: titlePx + 45 }, () => {
-        ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
+      curY += artH + 38;
+      const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), artW, Math.round(52 * fs), '"Syne", sans-serif', '800', 2);
+      const titleGroupH = tLayout.lines.length * tLayout.lineHeight + 42;
+
+      drawMovableGroup(ctx, 'title', 'Retro Title', { x: artX, y: curY, w: artW, h: titleGroupH }, () => {
+        ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
         ctx.fillStyle = '#18120E';
         ctx.textAlign = 'center';
-        ctx.fillText(getWrappedLines(ctx, state.title.toUpperCase(), artW, 1)[0] || '', w / 2, curY + titlePx);
+        tLayout.lines.forEach((line, idx) => {
+          ctx.fillText(line, w / 2, curY + (idx + 1) * tLayout.fontPx + idx * 4);
+        });
 
-        ctx.font = `700 ${Math.round(19 * fs)}px "JetBrains Mono", monospace`;
+        ctx.font = `700 ${Math.round(22 * fs)}px "JetBrains Mono", monospace`;
         ctx.fillStyle = '#B45309';
-        const sub = [`DIRECTED BY ${(state.director || '').toUpperCase()}`, state.medium, state.watchedAt].filter(Boolean).join(' · ');
-        ctx.fillText( getWrappedLines(ctx, sub, artW, 1)[0] || '', w / 2, curY + titlePx + 32);
+        const sub = [`DIRECTED BY ${(state.director || '').toUpperCase()}`, state.medium, state.runtime].filter(Boolean).join(' · ');
+        ctx.fillText(getWrappedLines(ctx, sub, artW, 1)[0] || '', w / 2, curY + tLayout.lines.length * tLayout.lineHeight + 30);
       });
 
-      curY += titlePx + 58;
-      drawRatingAndHeartRow(ctx, { x: w / 2, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: Math.round(22 * fs), gap: 10, align: 'center', starColor: '#D9381E', emptyColor: 'rgba(24,18,14,0.2)', heartColor: '#B45309' });
-      curY += Math.round(58 * fs);
+      curY += titleGroupH + 22;
+      drawRatingAndHeartRow(ctx, { x: w / 2, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: Math.round(24 * fs), gap: 12, align: 'center', starColor: '#D9381E', emptyColor: 'rgba(24,18,14,0.2)', heartColor: '#B45309' });
+      curY += Math.round(62 * fs);
 
-      if (state.review) {
-        const revPx = Math.round(31 * fs);
+      if (state.review || (state.showDetailedReview && state.detailedReview)) {
+        const revPx = Math.round(35 * fs);
         ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-        ctx.fillStyle = '#292524';
+        ctx.fillStyle = '#1C1917';
         ctx.textAlign = 'center';
-        const lines = getWrappedLines(ctx, `“${state.review}”`, artW, 2);
-        lines.forEach((l, i) => {
-          ctx.fillText(l, w / 2, curY + (i + 1) * (revPx + 4));
+        const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, artW, 3) : [];
+        lines.forEach((l) => {
+          curY += revPx + 6;
+          ctx.fillText(l, w / 2, curY);
         });
+        const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW - 20, 2);
+        if (dLines.length > 0) {
+          curY += 14;
+          const detPx = Math.round(21 * fs);
+          ctx.font = `500 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#44403C';
+          dLines.forEach((dl) => {
+            curY += detPx + 6;
+            ctx.fillText(dl, w / 2, curY);
+          });
+        }
+      }
+
+      // Retro Billing Block at bottom of cream sleeve
+      const billingY = frameY + frameH - 54;
+      if (curY < billingY - 24 && (state.cast || state.genre)) {
+        ctx.fillStyle = 'rgba(24, 18, 14, 0.16)';
+        ctx.fillRect(artX, billingY - 28, artW, 2);
+        ctx.font = `700 ${Math.round(19 * fs)}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = '#57534E';
+        ctx.textAlign = 'center';
+        const billingText = [state.cast ? `STARRING ${state.cast.toUpperCase()}` : '', state.genre ? state.genre.toUpperCase() : ''].filter(Boolean).join('  ·  ');
+        ctx.fillText(getWrappedLines(ctx, billingText, artW, 1)[0] || '', w / 2, billingY + 4);
       }
 
       drawFooterBrand(ctx, w / 2, h - 24, false);
     }
 
-    // 9. MOVIE THEATER MARQUEE ("NOW SHOWING")
+    // Helper: Render Broadway / Cinema Marquee Lit-Up Bulb Text (with automatic fallback to clean font if too long or toggled off)
+    function drawBulbLitMarqueeTitle(ctx, lines, cx, startY, fontPx, lineGap = 6) {
+      lines.forEach((line, idx) => {
+        const ly = startY + idx * (fontPx + lineGap);
+        ctx.save();
+        ctx.font = `800 ${fontPx}px "Syne", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // 1. Warm outer neon/incandescent halo
+        ctx.shadowColor = 'rgba(251, 191, 36, 0.95)';
+        ctx.shadowBlur = 28;
+        ctx.fillStyle = '#F59E0B';
+        ctx.fillText(line, cx, ly);
+
+        // 2. Dark brass socket casing stroke
+        ctx.shadowBlur = 0;
+        ctx.lineWidth = Math.max(4, Math.round(fontPx * 0.10));
+        ctx.strokeStyle = '#78350F';
+        ctx.strokeText(line, cx, ly);
+
+        // 3. Warm golden body fill
+        ctx.fillStyle = '#FDE047';
+        ctx.fillText(line, cx, ly);
+
+        // 4. Dotted incandescent filament bulb highlights along the letter strokes
+        ctx.save();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = Math.max(2.5, Math.round(fontPx * 0.055));
+        ctx.lineCap = 'round';
+        ctx.setLineDash([1, Math.max(7, Math.round(fontPx * 0.16))]);
+        ctx.shadowColor = '#FEF08A';
+        ctx.shadowBlur = 10;
+        ctx.strokeText(line, cx, ly);
+        ctx.restore();
+
+        ctx.restore();
+      });
+    }
+
+    // 10. MOVIE THEATER MARQUEE ("NOW SHOWING" — Illuminated Bulb-Lit Title Letters with auto-fit fallback or visual toggle)
     function renderMarqueePoster(ctx, w, h) {
-      ctx.fillStyle = '#070709';
-      ctx.fillRect(0, 0, w, h);
+      const bgImg = state.backdropImg || state.posterImg;
+      drawProcessedBackdrop(ctx, w, h, bgImg, Math.max(24, state.backdropBlur), Math.min(35, state.backdropBrightness));
 
       const pad = 64;
       const innerW = w - pad * 2;
-      const fs = state.fontScale * (h < 1500 ? 0.88 : 1.0);
+      const marqueeBaseFs = state.fontScale * 1.3 * (h < 1500 ? 0.88 : 1.0);
+      const fs = Math.min(1.55, marqueeBaseFs);
 
-      // Illuminated Theater Marquee Sign Box
-      const mqY = 64;
-      const mqH = 220;
+      const mqY = 60;
+      const mqH = 290;
+      const boxArtImg = state.backdropImg || state.posterImg;
+
       ctx.save();
       drawRoundedRectPath(ctx, pad, mqY, innerW, mqH, 18);
-      ctx.fillStyle = '#FFFBEB';
+      ctx.fillStyle = '#181411';
       ctx.shadowColor = 'rgba(245, 158, 11, 0.55)';
-      ctx.shadowBlur = 45;
+      ctx.shadowBlur = 48;
       ctx.fill();
-      ctx.lineWidth = 8;
-      ctx.strokeStyle = '#B45309';
+      ctx.clip();
+
+      if (boxArtImg) {
+        ctx.save();
+        ctx.globalAlpha = 0.24;
+        ctx.filter = 'contrast(115%) brightness(65%)';
+        drawImageCover(ctx, boxArtImg, pad, mqY, innerW, mqH);
+        ctx.restore();
+      }
+      const mqGrad = ctx.createLinearGradient(0, mqY, 0, mqY + mqH);
+      mqGrad.addColorStop(0, 'rgba(18, 14, 10, 0.86)');
+      mqGrad.addColorStop(0.5, 'rgba(24, 18, 12, 0.72)');
+      mqGrad.addColorStop(1, 'rgba(15, 12, 8, 0.92)');
+      ctx.fillStyle = mqGrad;
+      ctx.fillRect(pad, mqY, innerW, mqH);
+      ctx.restore();
+
+      ctx.save();
+      drawRoundedRectPath(ctx, pad, mqY, innerW, mqH, 18);
+      ctx.lineWidth = 7;
+      ctx.strokeStyle = '#D97706';
       ctx.stroke();
       ctx.restore();
 
-      // Marquee Bulb Dots along top & bottom border
       const numBulbs = 22;
       for (let i = 0; i < numBulbs; i++) {
         const bx = pad + 24 + (i * (innerW - 48)) / (numBulbs - 1);
@@ -2286,28 +3145,53 @@
         ctx.fill();
       }
 
-      // Letterboard Red/Black Marquee Text
-      drawMovableGroup(ctx, 'title', 'Marquee Sign', { x: pad + 20, y: mqY + 18, w: innerW - 40, h: mqH - 36 }, () => {
-        ctx.font = `700 ${Math.round(19 * fs)}px "JetBrains Mono", monospace`;
-        ctx.fillStyle = '#B91C1C';
+      drawMovableGroup(ctx, 'title', 'Marquee Sign & Bulb Title', { x: pad + 20, y: mqY + 16, w: innerW - 40, h: mqH - 32 }, () => {
+        ctx.font = `700 ${Math.round(18 * fs)}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = '#FBBF24';
         ctx.textAlign = 'center';
-        const topBanner = state.watchedAt ? `NOW SHOWING AT ${state.watchedAt.toUpperCase()}` : 'NOW SHOWING · FEATURE PRESENTATION';
-        ctx.fillText(getWrappedLines(ctx, topBanner, innerW - 50, 1)[0] || '', w / 2, mqY + 46);
+        const topBanner = state.watchedAt ? `NOW SHOWING AT ${state.watchedAt.toUpperCase()}` : `NOW SHOWING · ${state.medium || 'FEATURE PRESENTATION'}`;
+        ctx.fillText(getWrappedLines(ctx, topBanner, innerW - 60, 1)[0] || '', w / 2, mqY + 46);
 
-        const mTitlePx = Math.round(46 * fs);
-        ctx.font = `800 ${mTitlePx}px "Syne", sans-serif`;
-        ctx.fillStyle = '#18181B';
-        ctx.fillText(getWrappedLines(ctx, state.title.toUpperCase(), innerW - 50, 1)[0] || '', w / 2, mqY + 115);
+        const cleanTitleUpper = String(state.title || 'UNTITLED').toUpperCase();
+        const tLayout = computeAdaptiveTitleLayout(ctx, cleanTitleUpper, innerW - 70, Math.round(50 * fs), '"Syne", sans-serif', '800', 2);
+        const canFitBulbEffect = state.marqueeBulbMode && cleanTitleUpper.length <= 28;
 
-        ctx.font = `700 ${Math.round(20 * fs)}px "JetBrains Mono", monospace`;
-        ctx.fillStyle = '#3F3F46';
-        const bottomLine = [`DIR. ${(state.director || '').toUpperCase()}`, state.medium || state.year, `${(state.rating || 0).toFixed(1)} ★`].filter(Boolean).join('   •   ');
-        ctx.fillText(getWrappedLines(ctx, bottomLine, innerW - 50, 1)[0] || '', w / 2, mqY + 172);
+        if (canFitBulbEffect) {
+          const startBulbY = tLayout.lines.length === 1 ? (mqY + 148) : (mqY + 118);
+          drawBulbLitMarqueeTitle(ctx, tLayout.lines, w / 2, startBulbY, tLayout.fontPx, 8);
+        } else if (state.useLogoImage && state.logoImg && !state.marqueeBulbMode) {
+          const maxLW = innerW - 140;
+          const maxLH = 140;
+          const ratio = Math.min(maxLW / state.logoImg.width, maxLH / state.logoImg.height);
+          const lw = Math.round(state.logoImg.width * ratio);
+          const lh = Math.round(state.logoImg.height * ratio);
+          ctx.save();
+          ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          ctx.shadowBlur = 18;
+          ctx.drawImage(state.logoImg, Math.round(w / 2 - lw / 2), Math.round(mqY + 62 + (140 - lh) / 2), lw, lh);
+          ctx.restore();
+        } else {
+          ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
+          ctx.fillStyle = '#FFFBEB';
+          ctx.textAlign = 'center';
+          if (tLayout.lines.length === 1) {
+            ctx.fillText(tLayout.lines[0], w / 2, mqY + 154);
+          } else {
+            tLayout.lines.forEach((l, idx) => {
+              ctx.fillText(l, w / 2, mqY + 114 + idx * (tLayout.fontPx + 4));
+            });
+          }
+        }
+
+        ctx.font = `700 ${Math.round(18 * fs)}px "JetBrains Mono", monospace`;
+        ctx.fillStyle = '#E5E7EB';
+        ctx.textAlign = 'center';
+        const bottomLine = [`DIR. ${(state.director || '').toUpperCase()}`, state.year, state.runtime, `${(state.rating || 0).toFixed(1)} ★`].filter(Boolean).join('   •   ');
+        ctx.fillText(getWrappedLines(ctx, bottomLine, innerW - 60, 1)[0] || '', w / 2, mqY + mqH - 26);
       });
 
-      // Framed Theater Poster Case Below Marquee
-      const artY = mqY + mqH + 40;
-      const artH = Math.round((h < 1500 ? h * 0.45 : h * 0.49) * state.posterScale);
+      const artY = mqY + mqH + 38;
+      const artH = Math.round((h < 1500 ? h * 0.40 : h * 0.44) * Math.min(1.08, state.posterScale));
       const artW = Math.round(artH * (2 / 3));
       const artX = Math.round((w - artW) / 2);
       const artImg = state.posterImg || state.backdropImg;
@@ -2315,7 +3199,7 @@
       drawMovableGroup(ctx, 'artwork', 'Poster Case', { x: artX, y: artY, w: artW, h: artH }, () => {
         if (artImg) {
           ctx.save();
-          ctx.shadowColor = 'rgba(245, 158, 11, 0.25)';
+          ctx.shadowColor = 'rgba(245, 158, 11, 0.28)';
           ctx.shadowBlur = 50;
           drawRoundedRectPath(ctx, artX, artY, artW, artH, 16);
           ctx.clip();
@@ -2329,35 +3213,52 @@
         }
       });
 
-      let curY = artY + artH + 38;
-      drawRatingAndHeartRow(ctx, { x: w / 2, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: Math.round(23 * fs), gap: 12, align: 'center', starColor: '#FBBF24' });
-      curY += Math.round(62 * fs);
+      let curY = artY + artH + 36;
+      drawRatingAndHeartRow(ctx, { x: w / 2, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: Math.round(25 * state.fontScale), gap: 12, align: 'center', starColor: '#FBBF24' });
+      curY += Math.round(62 * state.fontScale);
 
-      if (state.review) {
-        const revPx = Math.round(30 * fs);
+      if (state.review || (state.showDetailedReview && state.detailedReview)) {
+        const revPx = Math.round(36 * state.fontScale);
         ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
         ctx.fillStyle = '#FEF3C7';
         ctx.textAlign = 'center';
-        const lines = getWrappedLines(ctx, `“${state.review}”`, innerW - 40, 2);
-        lines.forEach((l, i) => {
-          ctx.fillText(l, w / 2, curY + (i + 1) * (revPx + 6));
+        const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, innerW - 30, 3) : [];
+        lines.forEach((l) => {
+          curY += revPx + 6;
+          ctx.fillText(l, w / 2, curY);
         });
+        const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW - 50, 2);
+        if (dLines.length > 0 && curY < h - 135) {
+          curY += 14;
+          const detPx = Math.round(22 * state.fontScale);
+          ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+          ctx.fillStyle = '#D1D5DB';
+          dLines.forEach((dl) => {
+            if (curY + detPx < h - 105) {
+              curY += detPx + 6;
+              ctx.fillText(dl, w / 2, curY);
+            }
+          });
+        }
       }
 
       drawFooterBrand(ctx, w / 2, h - 26, false);
     }
 
-    // 10. VIP PRESS SCREENING PASS LANYARD
+    // 11. VIP PRESS SCREENING PASS LANYARD (Uses Background Still / Backdrop as the main pass visual & full-bleed atmosphere)
     function renderVipPassPoster(ctx, w, h) {
-      const bgImg = state.backdropImg || state.posterImg;
-      drawProcessedBackdrop(ctx, w, h, bgImg, Math.max(20, state.backdropBlur), Math.min(40, state.backdropBrightness));
+      const mainBackdrop = state.backdropImg || state.posterImg;
+      drawProcessedBackdrop(ctx, w, h, mainBackdrop, Math.max(12, state.backdropBlur - 4), Math.min(55, state.backdropBrightness));
 
-      const passW = w - 160;
-      const passH = h - 220;
-      const px = 80, py = 76;
+      const passW = w - 150;
+      const passH = h - 210;
+      const px = 75, py = 72;
       const cx = w / 2;
 
-      // Pass Card Body
+      const rawAccent = state.palette[0] || '#00E054';
+      const borderAccent = ensureVisibleAccentOnDark(rawAccent, '#00E054');
+      const bandTextColor = getReadableTextColor(rawAccent);
+
       ctx.save();
       ctx.shadowColor = 'rgba(0,0,0,0.85)';
       ctx.shadowBlur = 55;
@@ -2365,12 +3266,25 @@
       drawRoundedRectPath(ctx, px, py, passW, passH, 36);
       ctx.fillStyle = '#12151C';
       ctx.fill();
+      ctx.clip();
+
+      // Subtle atmospheric Background Still inside the VIP Pass body itself
+      if (mainBackdrop) {
+        ctx.save();
+        ctx.globalAlpha = 0.18;
+        ctx.filter = 'blur(8px) contrast(115%)';
+        drawImageCover(ctx, mainBackdrop, px, py, passW, passH);
+        ctx.restore();
+      }
+      ctx.restore();
+
+      ctx.save();
+      drawRoundedRectPath(ctx, px, py, passW, passH, 36);
       ctx.lineWidth = 3;
-      ctx.strokeStyle = state.palette[0] || '#00E054';
+      ctx.strokeStyle = borderAccent;
       ctx.stroke();
       ctx.restore();
 
-      // Lanyard Slot Cutout at Top
       ctx.save();
       drawRoundedRectPath(ctx, cx - 70, py + 26, 140, 22, 11);
       ctx.fillStyle = '#07080A';
@@ -2380,24 +3294,24 @@
       ctx.stroke();
       ctx.restore();
 
-      // Accent Header Band
       ctx.save();
-      ctx.fillStyle = state.palette[0] || '#00E054';
-      ctx.fillRect(px + 2, py + 74, passW - 4, 54);
+      ctx.fillStyle = rawAccent;
+      ctx.fillRect(px + 2, py + 72, passW - 4, 56);
       ctx.font = '800 22px "JetBrains Mono", monospace';
-      ctx.fillStyle = '#0B0C0E';
+      ctx.fillStyle = bandTextColor;
       ctx.textAlign = 'center';
-      ctx.fillText(`OFFICIAL SCREENING CREDENTIAL · ${state.medium || 'VIP ACCESS'}`, cx, py + 109);
+      ctx.fillText(`OFFICIAL SCREENING CREDENTIAL · ${state.medium || 'VIP ACCESS'}`, cx, py + 108);
       ctx.restore();
 
-      const fs = state.fontScale * (h < 1500 ? 0.86 : 1.0);
+      const fs = Math.min(1.18, state.fontScale) * (h < 1500 ? 0.86 : 1.0);
       const innerPad = px + 48;
       const innerW = passW - 96;
-      let curY = py + 158;
+      let curY = py + 154;
 
-      const artH = Math.round((h < 1500 ? passH * 0.34 : passH * 0.38) * state.posterScale);
-      const artImg = state.posterImg || state.backdropImg;
-      drawMovableGroup(ctx, 'artwork', 'Credential Photo', { x: innerPad, y: curY, w: innerW, h: artH }, () => {
+      const artH = Math.round((h < 1500 ? passH * 0.35 : passH * 0.39) * Math.min(1.08, state.posterScale));
+      // Explicitly prioritize Background Still / Backdrop as the hero image in VIP Pass
+      const artImg = state.backdropImg || state.posterImg;
+      drawMovableGroup(ctx, 'artwork', 'Credential Backdrop Still', { x: innerPad, y: curY, w: innerW, h: artH }, () => {
         if (artImg) {
           ctx.save();
           drawRoundedRectPath(ctx, innerPad, curY, innerW, artH, 18);
@@ -2408,48 +3322,105 @@
       });
 
       curY += artH + 34;
-      const titlePx = Math.round(44 * fs);
-      ctx.font = `800 ${titlePx}px "Syne", sans-serif`;
-      ctx.fillStyle = '#FFFFFF';
-      ctx.textAlign = 'left';
-      ctx.fillText(getWrappedLines(ctx, state.title.toUpperCase(), innerW, 1)[0] || '', innerPad, curY + titlePx);
+      const yearText = state.year ? ` (${state.year})` : '';
+      const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), innerW - 120, Math.round(48 * fs), '"Syne", sans-serif', '800', 2);
+      const titleGroupH = tLayout.lines.length * tLayout.lineHeight + 38;
 
-      curY += titlePx + 34;
-      drawRatingAndHeartRow(ctx, { x: innerPad, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: Math.round(22 * fs), gap: 10, align: 'left', starColor: '#00E054' });
+      drawMovableGroup(ctx, 'title', 'VIP Title & Year', { x: innerPad, y: curY, w: innerW, h: titleGroupH }, () => {
+        ctx.textAlign = 'left';
+        tLayout.lines.forEach((line, idx) => {
+          const lineY = curY + (idx + 1) * tLayout.fontPx + idx * 4;
+          ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillText(line, innerPad, lineY);
+
+          if (idx === tLayout.lines.length - 1 && yearText) {
+            const titleW = ctx.measureText(line).width;
+            ctx.font = `600 ${Math.round(tLayout.fontPx * 0.58)}px "JetBrains Mono", monospace`;
+            ctx.fillStyle = 'rgba(229, 231, 235, 0.68)';
+            ctx.fillText(yearText, innerPad + titleW + 8, lineY - 2);
+          }
+        });
+
+        const subCred = [state.director ? `DIR. ${state.director.toUpperCase()}` : '', state.runtime, state.genre ? state.genre.toUpperCase() : ''].filter(Boolean).join('  ·  ');
+        if (subCred) {
+          ctx.font = `600 ${Math.round(20 * fs)}px "JetBrains Mono", monospace`;
+          ctx.fillStyle = '#9CA3AF';
+          ctx.fillText(getWrappedLines(ctx, subCred, innerW, 1)[0] || '', innerPad, curY + tLayout.lines.length * tLayout.lineHeight + 30);
+        }
+      });
+
+      curY += titleGroupH + 22;
+      drawRatingAndHeartRow(ctx, { x: innerPad, y: curY, rating: state.rating, isLiked: state.isLiked, starSize: Math.round(24 * fs), gap: 12, align: 'left', starColor: '#00E054' });
       curY += Math.round(64 * fs);
 
-      if (state.review) {
-        const revPx = Math.round(29 * fs);
+      const hasQr = Boolean(state.showQrCode);
+      const textMaxW = hasQr ? innerW - 125 : innerW;
+      if (state.review || (state.showDetailedReview && state.detailedReview)) {
+        const revPx = Math.round(35 * fs);
         ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-        ctx.fillStyle = '#E5E7EB';
-        const lines = getWrappedLines(ctx, `“${state.review}”`, innerW, 3);
-        lines.forEach((l, i) => {
-          ctx.fillText(l, innerPad, curY + (i + 1) * (revPx + 6));
+        const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, textMaxW, 3) : [];
+        const detPx = Math.round(22 * fs);
+        ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+        const dLines = getDetailedReviewLines(ctx, state.detailedReview, textMaxW, 3);
+        const rH = lines.length * (revPx + 8) + dLines.length * (detPx + 6) + 20;
+
+        drawMovableGroup(ctx, 'review', 'VIP Review Quote', { x: innerPad, y: curY, w: textMaxW, h: rH }, () => {
+          let ry = curY;
+          ctx.textAlign = 'left';
+          ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
+          ctx.fillStyle = '#F3F4F6';
+          lines.forEach((l) => {
+            ry += revPx + 6;
+            ctx.fillText(l, innerPad, ry);
+          });
+          if (dLines.length) {
+            ry += 16;
+            ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+            ctx.fillStyle = '#D1D5DB';
+            dLines.forEach((dl) => {
+              if (ry + detPx < py + passH - 96) {
+                ry += detPx + 6;
+                ctx.fillText(dl, innerPad, ry);
+              }
+            });
+          }
         });
-        curY += lines.length * (revPx + 8) + 28;
+        curY += rH + 22;
       }
 
-      // Bottom Credential Badge Info
-      const metaY = py + passH - 76;
-      ctx.fillStyle = 'rgba(255,255,255,0.12)';
-      ctx.fillRect(innerPad, metaY - 26, innerW, 1.5);
-      ctx.font = '600 18px "JetBrains Mono", monospace';
+      if (state.cast && curY < py + passH - 125) {
+        ctx.font = `500 ${Math.round(21 * fs)}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = '#9CA3AF';
+        ctx.textAlign = 'left';
+        ctx.fillText(getWrappedLines(ctx, `Starring: ${state.cast}`, textMaxW, 1)[0] || '', innerPad, curY + 20);
+      }
+
+      if (hasQr) {
+        drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: px + passW - 148, y: py + passH - 205, w: 104, h: 104 }, () => {
+          drawPosterQrCode(ctx, px + passW - 148, py + passH - 205, 104, false);
+        });
+      }
+
+      const metaY = py + passH - 64;
+      ctx.fillStyle = 'rgba(255,255,255,0.14)';
+      ctx.fillRect(innerPad, metaY - 28, innerW, 1.5);
+      ctx.font = '600 20px "JetBrains Mono", monospace';
       ctx.fillStyle = '#9CA3AF';
       ctx.textAlign = 'left';
-      ctx.fillText(`VENUE: ${(state.watchedAt || 'PRIVATE SCREENING').toUpperCase()}`, innerPad, metaY + 8);
+      ctx.fillText(`VENUE: ${(state.watchedAt || state.medium || 'PRIVATE SCREENING').toUpperCase()}`, innerPad, metaY + 8);
       ctx.textAlign = 'right';
-      ctx.fillStyle = '#00E054';
+      ctx.fillStyle = borderAccent;
       ctx.fillText(`DATE: ${formatSafeDate(state.watchedDate) || state.year}`, px + passW - 48, metaY + 8);
 
       drawFooterBrand(ctx, w / 2, h - 22, false);
     }
 
-    // 11. FLOATING VINTAGE TICKET STUB OVER CINEMA BACKDROP (Inspired by Reference Image)
+    // 1. FLOATING VINTAGE TICKET STUB OVER CINEMA BACKDROP (Centered & scaled QR code above metadata strip)
     function renderFloatingTicketPoster(ctx, w, h) {
       const bgImg = state.posterImg || state.backdropImg;
       const ticketArtImg = state.backdropImg || state.posterImg;
 
-      // Full-bleed atmospheric cinema artwork with rich bottom fade
       ctx.save();
       ctx.fillStyle = '#07080B';
       ctx.fillRect(0, 0, w, h);
@@ -2473,10 +3444,9 @@
       ctx.fillRect(0, 0, w, h);
       ctx.restore();
 
-      const fs = state.fontScale * (h < 1500 ? 0.88 : 1.0);
+      const fs = Math.min(1.18, state.fontScale) * (h < 1500 ? 0.88 : 1.0);
       const cx = w / 2;
 
-      // Top Header: "A [DIRECTOR] FILM" + Official Logo or Classic Serif Title
       drawMovableGroup(ctx, 'title', 'Top Movie Header', { x: 80, y: 54, w: w - 160, h: 210 }, () => {
         ctx.save();
         ctx.textAlign = 'center';
@@ -2488,28 +3458,26 @@
         ctx.fillText(dirHeader, cx, 84);
 
         if (state.useLogoImage && state.logoImg) {
-          const maxLW = Math.round(620 * state.posterScale);
-          const maxLH = Math.round(135 * state.posterScale);
+          const maxLW = Math.round(620 * Math.min(1.15, state.posterScale));
+          const maxLH = Math.round(135 * Math.min(1.15, state.posterScale));
           const ratio = Math.min(maxLW / state.logoImg.width, maxLH / state.logoImg.height);
           const lw = Math.round(state.logoImg.width * ratio);
           const lh = Math.round(state.logoImg.height * ratio);
           ctx.drawImage(state.logoImg, cx - lw / 2, 108, lw, lh);
         } else {
-          const tPx = Math.round(68 * fs);
-          ctx.font = `400 ${tPx}px "Instrument Serif", serif`;
+          const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), w - 140, Math.round(66 * fs), '"Instrument Serif", serif', '400', 2);
+          ctx.font = `400 ${tLayout.fontPx}px "Instrument Serif", serif`;
           ctx.fillStyle = '#FFFFFF';
-          const lines = getWrappedLines(ctx, state.title.toUpperCase(), w - 140, 2);
-          lines.forEach((line, idx) => {
-            ctx.fillText(line, cx, 158 + idx * (tPx - 4));
+          tLayout.lines.forEach((line, idx) => {
+            ctx.fillText(line, cx, 154 + idx * (tLayout.fontPx - 4));
           });
         }
         ctx.restore();
       });
 
-      // Centerpiece: Tilted Vintage Perforated Admission Ticket
-      const ticketW = Math.round((w - 116) * Math.min(1.08, state.posterScale));
-      const ticketH = Math.round(h < 1500 ? 370 : 420);
-      const ticketY = Math.round(h * 0.45);
+      const ticketW = Math.round((w - 116) * Math.min(1.06, state.posterScale));
+      const ticketH = Math.round(h < 1500 ? 360 : 410);
+      const ticketY = Math.round(h * 0.43);
 
       drawMovableGroup(ctx, 'artwork', 'Floating Vintage Ticket', { x: cx - ticketW / 2, y: ticketY, w: ticketW, h: ticketH }, () => {
         ctx.save();
@@ -2519,7 +3487,6 @@
         const tx = -ticketW / 2;
         const ty = -ticketH / 2;
 
-        // Warm Vintage Parchment Ticket Base with Deep Shadow
         ctx.save();
         ctx.shadowColor = 'rgba(0, 0, 0, 0.88)';
         ctx.shadowBlur = 55;
@@ -2529,15 +3496,14 @@
         ctx.fill();
         ctx.restore();
 
-        // Subtle Paper Texture Border
         ctx.strokeStyle = 'rgba(40, 32, 24, 0.25)';
         ctx.lineWidth = 2;
         drawRoundedRectPath(ctx, tx + 6, ty + 6, ticketW - 12, ticketH - 12, 12);
         ctx.stroke();
 
-        // Left "ADMIT ONE" Vertical Stub Band
         const stubLeftW = Math.round(ticketW * 0.13);
         const stubColor = state.palette[0] || '#6E260E';
+        const stubTextCol = getReadableTextColor(stubColor);
         ctx.save();
         drawRoundedRectPath(ctx, tx + 14, ty + 14, stubLeftW - 14, ticketH - 28, 8);
         ctx.fillStyle = stubColor;
@@ -2546,27 +3512,25 @@
         ctx.translate(tx + stubLeftW / 2 + 4, 0);
         ctx.rotate(-Math.PI / 2);
         ctx.font = '700 22px "Instrument Serif", serif';
-        ctx.fillStyle = '#F5EFE6';
+        ctx.fillStyle = stubTextCol;
         ctx.textAlign = 'center';
         ctx.fillText('A D M I T   O N E', 0, 6);
         ctx.restore();
 
-        // Main Center Section of Ticket (Title + Inset Movie Still)
         const mainX = tx + stubLeftW + 22;
         const mainW = Math.round(ticketW * 0.50);
         ctx.textAlign = 'center';
         const mainCx = mainX + mainW / 2;
 
-        const ticketTitlePx = Math.round(36 * fs);
-        ctx.font = `700 ${ticketTitlePx}px "Instrument Serif", serif`;
+        const ticketTLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), mainW - 10, Math.round(34 * fs), '"Instrument Serif", serif', '700', 1);
+        ctx.font = `700 ${ticketTLayout.fontPx}px "Instrument Serif", serif`;
         ctx.fillStyle = '#1C1917';
-        const tLine = getWrappedLines(ctx, state.title.toUpperCase(), mainW - 10, 1)[0] || '';
-        ctx.fillText(tLine, mainCx, ty + 62);
+        ctx.fillText(ticketTLayout.lines[0] || '', mainCx, ty + 60);
 
         const insetW = mainW - 12;
         const insetH = ticketH - 135;
         const insetX = mainX + 6;
-        const insetY = ty + 80;
+        const insetY = ty + 78;
         if (ticketArtImg) {
           ctx.save();
           drawRoundedRectPath(ctx, insetX, insetY, insetW, insetH, 8);
@@ -2582,7 +3546,6 @@
           : (state.director ? `A ${state.director.toUpperCase()} FILM` : state.year);
         ctx.fillText(getWrappedLines(ctx, creditCaption, mainW, 1)[0] || '', mainCx, ty + ticketH - 22);
 
-        // Dashed Vertical Divider Line before Right Stub
         const divX = mainX + mainW + 16;
         ctx.save();
         ctx.strokeStyle = 'rgba(28, 25, 23, 0.35)';
@@ -2594,7 +3557,6 @@
         ctx.stroke();
         ctx.restore();
 
-        // Right Metadata Column (Year, Genres, Runtime/Format)
         const metaX = divX + 20;
         const metaW = Math.round(ticketW * 0.19);
         ctx.textAlign = 'left';
@@ -2619,7 +3581,6 @@
         ctx.fillStyle = '#1C1917';
         ctx.fillText(state.medium || state.runtime || '2h 15m', metaX, ty + ticketH - 58);
 
-        // Far-Right Vertical Barcode Strip
         const barX = tx + ticketW - 74;
         const barTop = ty + 28;
         const barBottom = ty + ticketH - 28;
@@ -2636,7 +3597,6 @@
           bIdx++;
         }
 
-        // Punched Scallop Notches along Left & Right Ticket Edges
         [-0.32, 0, 0.32].forEach(offset => {
           const ny = offset * ticketH;
           ctx.fillStyle = '#07080B';
@@ -2649,10 +3609,9 @@
         ctx.restore();
       });
 
-      // Below Ticket: Gold Stars + Large Serif Rating Fraction ("4.5/5")
-      let botY = ticketY + ticketH + (h < 1500 ? 30 : 48);
+      let botY = ticketY + ticketH + (h < 1500 ? 22 : 36);
       if (state.rating > 0 || state.isLiked) {
-        const starR = Math.round(24 * fs);
+        const starR = Math.round(23 * fs);
         drawMovableGroup(ctx, 'rating', 'Gold Rating & Score', { x: cx - 260, y: botY, w: 520, h: starR * 2 + 16 }, () => {
           drawRatingAndHeartRow(ctx, {
             x: cx - 85,
@@ -2667,43 +3626,67 @@
             heartColor: '#F97316'
           });
 
-          ctx.font = `400 ${Math.round(64 * fs)}px "Instrument Serif", serif`;
+          ctx.font = `400 ${Math.round(62 * fs)}px "Instrument Serif", serif`;
           ctx.fillStyle = '#FFFFFF';
           ctx.textAlign = 'left';
           const scoreStr = `${Number.isInteger(state.rating) ? state.rating : state.rating.toFixed(1)}/5`;
           ctx.fillText(scoreStr, cx + 115, botY + starR * 1.85);
         });
-        botY += starR * 2 + (h < 1500 ? 28 : 42);
+        botY += starR * 2 + (h < 1500 ? 18 : 26);
       }
 
-      // Italic Pull-Quote Review
       const activeQuote = state.review || buildRelevantMovieReview(state.title, state.director, state.cast, state.genre, state.mediaType);
-      if (activeQuote) {
-        const revPx = Math.round(33 * fs);
+      const quoteMaxW = w - 150;
+      if (activeQuote || (state.showDetailedReview && state.detailedReview)) {
+        const revPx = Math.round(35 * fs);
         ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-        const qLines = getWrappedLines(ctx, `“${activeQuote}”`, w - 160, 2);
-        drawMovableGroup(ctx, 'review', 'Review Pull-Quote', { x: 80, y: botY, w: w - 160, h: qLines.length * (revPx + 8) }, () => {
+        const qLines = activeQuote ? getWrappedLines(ctx, `“${activeQuote}”`, quoteMaxW, 2) : [];
+        const detPx = Math.round(21 * fs);
+        ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+        const dLines = getDetailedReviewLines(ctx, state.detailedReview, quoteMaxW, 2);
+        const rH = qLines.length * (revPx + 8) + dLines.length * (detPx + 6) + 16;
+
+        drawMovableGroup(ctx, 'review', 'Review & Notes', { x: (w - quoteMaxW) / 2, y: botY, w: quoteMaxW, h: rH }, () => {
+          let ry = botY;
           ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-          ctx.fillStyle = '#F3F4F6';
+          ctx.fillStyle = '#F9FAFB';
           ctx.textAlign = 'center';
-          qLines.forEach((line, idx) => {
-            ctx.fillText(line, cx, botY + (idx + 1) * (revPx + 4));
+          qLines.forEach((line) => {
+            ry += revPx + 6;
+            ctx.fillText(line, cx, ry);
           });
+          if (dLines.length) {
+            ry += 14;
+            ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+            ctx.fillStyle = '#D1D5DB';
+            dLines.forEach((dl) => {
+              ry += detPx + 5;
+              ctx.fillText(dl, cx, ry);
+            });
+          }
         });
-        botY += qLines.length * (revPx + 8) + 28;
+        botY += rH + 18;
       }
 
-      // Metadata Summary Strip (Year · Genre · Runtime)
-      const stripY = h - 105;
+      if (state.showQrCode) {
+        const qrSize = 116;
+        const qrX = Math.round(cx - qrSize / 2);
+        const qrY = Math.min(botY + 6, h - 245);
+        drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: qrX, y: qrY, w: qrSize, h: qrSize }, () => {
+          drawPosterQrCode(ctx, qrX, qrY, qrSize, false);
+        });
+      }
+
+      const stripY = h - 102;
       ctx.save();
-      ctx.font = `500 ${Math.round(19 * fs)}px "Plus Jakarta Sans", sans-serif`;
-      ctx.fillStyle = '#D1D5DB';
+      ctx.font = `600 ${Math.round(19 * fs)}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = '#9CA3AF';
       ctx.textAlign = 'center';
       const metaStrip = [
-        state.year ? `📅 ${state.year}` : '',
-        state.genre ? `🎭 ${state.genre}` : '',
-        (state.runtime || state.medium) ? `🕒 ${[state.runtime, state.medium].filter(Boolean).join(' · ')}` : ''
-      ].filter(Boolean).join('     ·     ');
+        state.year ? state.year.toUpperCase() : '',
+        state.genre ? state.genre.toUpperCase() : '',
+        (state.runtime || state.medium) ? [state.runtime, state.medium].filter(Boolean).join(' · ').toUpperCase() : ''
+      ].filter(Boolean).join('     •     ');
       ctx.fillText(getWrappedLines(ctx, metaStrip, w - 100, 1)[0] || '', cx, stripY);
       ctx.restore();
 
@@ -2838,6 +3821,11 @@
       const item = DEMO_CATALOG[key];
       if (!item) return;
 
+      state.isFromLetterboxd = false;
+      state.letterboxdUrl = '';
+      state.showQrCode = false;
+      syncQrToggleVisibility();
+
       state.tmdbId = null;
       state.mediaType = item.mediaType;
       state.title = item.title;
@@ -2943,8 +3931,8 @@
       document.getElementById('review-media-title').textContent = state.title;
       document.getElementById('review-media-year').textContent = state.year;
       document.getElementById('review-media-meta').textContent = `${state.mediaType === 'tv' ? 'Created by' : 'Directed by'} ${state.director || 'Unknown'}`;
-      if (state.posters[0]) {
-        document.getElementById('review-media-poster').src = state.posters[0];
+      if (state.posters[state.selectedPosterIndex] || state.posters[0]) {
+        document.getElementById('review-media-poster').src = state.posters[state.selectedPosterIndex] || state.posters[0];
       }
       const badge = document.getElementById('review-media-type-badge');
       badge.textContent = state.mediaType === 'tv' ? 'TV Series' : 'Movie';
@@ -2952,50 +3940,65 @@
 
       document.getElementById('input-review').value = state.review;
       document.getElementById('input-detailed-review').value = state.detailedReview || '';
+      const detToggle = document.getElementById('chk-show-detailed-review');
+      if (detToggle) detToggle.checked = Boolean(state.showDetailedReview);
       document.getElementById('input-watched-at').value = state.watchedAt || '';
       document.getElementById('input-username').value = state.username;
       document.getElementById('input-watched-date').value = state.watchedDate;
       document.getElementById('review-char-count').textContent = `${state.review.length} / 220`;
 
+      syncQrToggleVisibility();
+      getLetterboxdReviewUrl();
       updateMediumPillsUI(state.medium);
       updateStarRatingUI(state.rating);
       updateHeartButtonUI(state.isLiked);
     }
 
-    function updateApiStatusPill() {
-      const dot = document.getElementById('api-status-dot');
-      if (!dot) return;
-      if (state.tmdbApiKey) {
-        dot.className = 'w-2.5 h-2.5 rounded-full bg-lbgreen ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none';
-      } else {
-        dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none';
+    async function loadRegionalNowPlayingMovies() {
+      const regionInfo = detectBrowserRegion();
+      const regionLabel = document.getElementById('trending-region-label');
+      const chipsContainer = document.getElementById('home-trending-chips');
+      if (!chipsContainer) return;
+
+      if (!state.tmdbApiKey) {
+        if (regionLabel) regionLabel.textContent = `Featured Cinema Presets (${regionInfo.name}):`;
+        return;
       }
-    }
 
-    async function tmdbFetch(endpoint, params = {}) {
-      const key = state.tmdbApiKey.trim();
-      const url = new URL(`https://api.themoviedb.org/3${endpoint}`);
-      Object.entries(params).forEach(([k, v]) => {
-        if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, v);
-      });
-      const headers = { 'Accept': 'application/json' };
-      if (key.length > 45) headers['Authorization'] = `Bearer ${key}`;
-      else url.searchParams.set('api_key', key);
+      try {
+        if (regionLabel) regionLabel.textContent = `In Theaters Now (${regionInfo.name}):`;
+        const data = await tmdbFetch('/movie/now_playing', { region: regionInfo.code });
+        const topMovies = (data.results || []).slice(0, 5);
+        if (topMovies.length === 0) return;
 
-      const res = await fetch(url.toString(), { headers });
-      if (!res.ok) throw new Error(`TMDB Error (${res.status})`);
-      return await res.json();
+        chipsContainer.innerHTML = topMovies.map(m => {
+          const yr = (m.release_date || '').substring(0, 4);
+          return `<button type="button" data-live-id="${m.id}" class="text-xs px-3 py-1.5 rounded-full bg-cardbg hover:bg-elevated border border-lbgreen/30 text-gray-100 transition flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-lbgreen"></span>
+            <span>${m.title}${yr ? ` (${yr})` : ''}</span>
+          </button>`;
+        }).join('');
+
+        chipsContainer.querySelectorAll('[data-live-id]').forEach(btn => {
+          btn.addEventListener('click', () => loadTmdbMediaDetails(btn.dataset.liveId, 'movie'));
+        });
+      } catch (e) {}
     }
 
     async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview = false) {
       showToast('Loading TMDB artwork & credits...');
       try {
         const endpoint = mediaType === 'tv' ? `/tv/${id}` : `/movie/${id}`;
-        const [details, credits, images] = await Promise.all([
+        const requests = [
           tmdbFetch(endpoint),
           tmdbFetch(`${endpoint}/credits`),
-          tmdbFetch(`${endpoint}/images`, { include_image_language: 'en,null' })
-        ]);
+          tmdbFetch(`${endpoint}/images`, { include_image_language: 'en,null' }),
+          tmdbFetch(`${endpoint}/watch/providers`).catch(() => null)
+        ];
+        if (mediaType === 'movie') {
+          requests.push(tmdbFetch(`/movie/${id}/release_dates`).catch(() => null));
+        }
+        const [details, credits, images, providersData, releaseDatesData] = await Promise.all(requests);
 
         state.tmdbId = id;
         state.mediaType = mediaType;
@@ -3025,24 +4028,50 @@
           } else state.runtime = '';
         }
 
+        // Requirement 12: Automatically detect OTT vs Theater release from TMDB release_dates & watch/providers
+        const regionCode = detectBrowserRegion().code;
+        const regionProviders = providersData?.results?.[regionCode] || providersData?.results?.US || providersData?.results?.IN || Object.values(providersData?.results || {})[0];
+        const flatrateList = regionProviders?.flatrate || [];
+        let hasDigitalRelease = false;
+        if (releaseDatesData?.results) {
+          hasDigitalRelease = releaseDatesData.results.some(r =>
+            (r.release_dates || []).some(d => d.type >= 4) // TMDB type 4 = Digital, 5 = Physical, 6 = TV
+          );
+        }
+        const releaseYearNum = parseInt(state.year, 10);
+        const ageMonths = details.release_date ? (Date.now() - new Date(details.release_date).getTime()) / (1000 * 3600 * 24 * 30) : 0;
+
+        if (mediaType === 'tv' || flatrateList.length > 0 || hasDigitalRelease || ageMonths > 3.5 || (releaseYearNum && releaseYearNum < new Date().getFullYear())) {
+          const provNames = flatrateList.map(p => (p.provider_name || '').toLowerCase()).join(' ');
+          if (provNames.includes('netflix')) state.medium = 'NETFLIX';
+          else if (provNames.includes('hotstar') || provNames.includes('jio')) state.medium = 'JIOHOTSTAR';
+          else if (provNames.includes('prime') || provNames.includes('amazon')) state.medium = 'PRIME';
+          else state.medium = 'OTT';
+        } else {
+          state.medium = 'THEATER';
+        }
+
         state.writer = credits.crew?.filter(c => ['Writer', 'Screenplay', 'Story'].includes(c.job)).slice(0, 2).map(c => c.name).join(', ') || state.director;
         state.dop = credits.crew?.find(c => ['Director of Photography', 'Cinematography'].includes(c.job))?.name || '';
         state.music = credits.crew?.find(c => ['Original Music Composer', 'Music'].includes(c.job))?.name || '';
         state.cast = credits.cast?.slice(0, 4).map(c => c.name).join(', ') || '';
         state.genre = details.genres?.slice(0, 3).map(g => g.name).join(' | ') || '';
 
-        // Generate a movie-specific review mentioning the actual Director & Cast unless preserved from Screenshot OCR
         if (!preserveCustomReview) {
+          state.isFromLetterboxd = false;
+          state.letterboxdUrl = '';
+          state.showQrCode = false;
           state.review = buildRelevantMovieReview(state.title, state.director, state.cast, state.genre, state.mediaType);
-          state.detailedReview = details.overview || '';
+          // Do NOT dump TMDB's plot synopsis into Detailed Review by default (keeps posters uncluttered!)
+          state.detailedReview = '';
         }
+        syncQrToggleVisibility();
 
         const posterUrls = Array.from(new Set([details.poster_path, ...(images.posters || []).slice(0, 8).map(p => p.file_path)].filter(Boolean)))
           .map(p => `https://image.tmdb.org/t/p/w780${p}`);
         const backdropUrls = Array.from(new Set([details.backdrop_path, ...(images.backdrops || []).slice(0, 8).map(b => b.file_path)].filter(Boolean)))
           .map(b => `https://image.tmdb.org/t/p/w1280${b}`);
 
-        // Unify all images in BOTH groups so any combination of poster and backdrop can be chosen
         const allCombinedImages = Array.from(new Set([...posterUrls, ...backdropUrls]));
         state.posters = allCombinedImages;
         state.backdrops = allCombinedImages;
@@ -3070,188 +4099,222 @@
         }
         renderAssetPickerStrips();
         syncReviewFormState();
+        recordCurrentFetchToHistory();
         switchView('review');
-        showToast(`Selected "${state.title}"`);
+        showToast(`Selected "${state.title}" (${state.medium})`);
       } catch (err) {
         showToast(`Could not load TMDB details: ${err.message}`, true);
       }
     }
 
-    // Pixel Color Scanner to count Green Rating Stars (★ and ½) directly from a Review Screenshot
-    function detectGreenStarsFromScreenshot(img) {
-      try {
-        const c = document.createElement('canvas');
-        const targetW = 400;
-        const scale = targetW / img.width;
-        const targetH = Math.round(img.height * scale);
-        c.width = targetW;
-        c.height = targetH;
-        const ctx = c.getContext('2d');
-        ctx.drawImage(img, 0, 0, targetW, targetH);
+    // Helper: Clean Letterboxd's formatted title (e.g. "A ★★ review of Drishyam 3 (2026)" -> { title: "Drishyam 3", year: "2026" })
+    function cleanLetterboxdRawTitle(rawTitle, fallbackYear = '') {
+      let t = String(rawTitle || '').replace(/\u00A0/g, ' ').trim();
+      t = t.replace(/^A\s+[★☆½\s]*review\s+of\s+/i, '').trim();
+      t = t.replace(/^Review\s+of\s+/i, '').trim();
+      t = t.replace(/^[★☆½\s]+/g, '').trim();
+      let extractedYear = fallbackYear || '';
+      const yearMatch = t.match(/^(.*?)\s*\((\d{4})\)\s*$/);
+      if (yearMatch) {
+        t = yearMatch[1].trim();
+        if (!extractedYear) extractedYear = yearMatch[2];
+      }
+      return { title: t, year: extractedYear };
+    }
 
-        // Scan upper-middle region (where stars sit below Movie Title)
-        const yStart = Math.floor(targetH * 0.14);
-        const yEnd = Math.floor(targetH * 0.36);
-        const xEnd = Math.floor(targetW * 0.65);
-        const { data } = ctx.getImageData(0, yStart, xEnd, yEnd - yStart);
+    // Helper: Strip HTML tags (<br>, <b>, <a>) and filter out Letterboxd's Pro-account promotional boilerplate paragraph
+    function cleanLetterboxdParagraphs(paragraphsArray) {
+      const cleaned = [];
+      for (const rawP of (paragraphsArray || [])) {
+        if (!rawP) continue;
+        // Skip Letterboxd's standard promotional footer paragraph
+        if (/Letterboxd is an independent service|upgrade to a Pro account|support of our members/i.test(rawP)) {
+          continue;
+        }
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = String(rawP).replace(/<br\s*\/?>/gi, '\n');
+        const lines = (tempDiv.textContent || '')
+          .split(/\n+/)
+          .map(l => l.trim())
+          .filter(Boolean);
+        cleaned.push(...lines);
+      }
+      return cleaned;
+    }
 
-        const rowGreenCols = [];
-        for (let y = 0; y < yEnd - yStart; y++) {
-          const cols = [];
-          for (let x = 0; x < xEnd; x++) {
-            const idx = (y * xEnd + x) * 4;
-            const r = data[idx], g = data[idx + 1], b = data[idx + 2];
-            // Match signature bright green star pixels (#00E054 / #00C030)
-            if (g > 155 && r < 105 && b < 130 && (g - r) > 70) {
-              cols.push(x);
+    // Fetch and parse a Letterboxd review URL directly using DOMParser & CORS proxy
+    async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https://cors-anywhere.herokuapp.com/') {
+      const proxyAttempts = [
+        {
+          url: corsAnywhereBase + reviewUrl,
+          options: { headers: { 'X-Requested-With': 'XMLHttpRequest' } }
+        },
+        {
+          url: `https://api.allorigins.win/raw?url=${encodeURIComponent(reviewUrl)}`,
+          options: {}
+        },
+        {
+          url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(reviewUrl)}`,
+          options: {}
+        }
+      ];
+
+      let htmlText = '';
+      for (const attempt of proxyAttempts) {
+        try {
+          const response = await fetch(attempt.url, attempt.options);
+          if (response.ok) {
+            const text = await response.text();
+            if (text && text.includes('<html')) {
+              htmlText = text;
+              break;
             }
           }
-          if (cols.length >= 2) rowGreenCols.push(cols);
+        } catch (e) {}
+      }
+
+      if (!htmlText) {
+        console.error('Failed to fetch Letterboxd HTML through proxies');
+        return null;
+      }
+
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlText, 'text/html');
+
+        // Extract fields using Letterboxd's CSS selectors + fallbacks
+        const rawTitle =
+          doc.querySelector('.headline-1.film-title-wrapper a')?.textContent.trim() ||
+          doc.querySelector('.film-title-wrapper a')?.textContent.trim() ||
+          doc.querySelector('.inline-production-masthead .name a')?.textContent.trim() ||
+          doc.querySelector('meta[property="og:title"]')?.getAttribute('content') ||
+          '';
+
+        const rawYear =
+          doc.querySelector('.release-year')?.textContent.trim() ||
+          doc.querySelector('.releasedate a')?.textContent.trim() ||
+          '';
+
+        const { title: movieTitle, year: releaseYear } = cleanLetterboxdRawTitle(rawTitle, rawYear);
+
+        let reviewer =
+          doc.querySelector('.person-summary .name span')?.textContent.trim() ||
+          doc.querySelector('.name')?.textContent.trim() ||
+          doc.querySelector('.user-name')?.textContent.trim() ||
+          '';
+
+        if (!reviewer && reviewUrl) {
+          try {
+            const pathParts = new URL(reviewUrl).pathname.split('/').filter(Boolean);
+            if (pathParts.length >= 2 && pathParts[1] === 'film') {
+              reviewer = pathParts[0];
+            }
+          } catch (e) {}
         }
 
-        if (rowGreenCols.length === 0) return null;
-
-        // Collect all x-positions with green star pixels and cluster horizontally
-        const activeX = new Set();
-        rowGreenCols.forEach(cols => cols.forEach(x => activeX.add(x)));
-        const sortedX = Array.from(activeX).sort((a, b) => a - b);
-
-        const segments = [];
-        let segStart = sortedX[0], prev = sortedX[0];
-        for (let i = 1; i < sortedX.length; i++) {
-          if (sortedX[i] - prev > 3) {
-            segments.push({ start: segStart, end: prev, width: prev - segStart + 1 });
-            segStart = sortedX[i];
-          }
-          prev = sortedX[i];
-        }
-        segments.push({ start: segStart, end: prev, width: prev - segStart + 1 });
-
-        const validSegs = segments.filter(s => s.width >= 3);
-        if (validSegs.length === 0) return null;
-
-        if (validSegs.length === 1) {
-          return 1.0;
+        let rating = 0;
+        const ratingEl = doc.querySelector('.rating');
+        const ratedMatch = ratingEl?.className?.match(/rated-(\d+)/);
+        if (ratedMatch && ratedMatch[1]) {
+          rating = Number(ratedMatch[1]) / 2;
+        } else {
+          const starText = ratingEl?.textContent || doc.querySelector('meta[name="twitter:data2"]')?.getAttribute('content') || '';
+          const fullStars = (starText.match(/★/g) || []).length;
+          const halfStar = /½/.test(starText) ? 0.5 : 0;
+          if (fullStars > 0 || halfStar > 0) rating = fullStars + halfStar;
         }
 
-        const maxW = Math.max(...validSegs.map(s => s.width));
-        const lastSeg = validSegs[validSegs.length - 1];
-        const isLastHalf = lastSeg.width < maxW * 0.68;
-        const computed = isLastHalf ? (validSegs.length - 0.5) : validSegs.length;
-        return Math.max(0.5, Math.min(5.0, computed));
-      } catch (e) {
+        const isLiked = Boolean(
+          doc.querySelector('.icon-liked') ||
+          doc.querySelector('.content-reactions-strip .inline-liked') ||
+          doc.querySelector('svg[aria-label="Liked"]')
+        );
+
+        let watchedDate = '';
+        const viewDateLinks = doc.querySelectorAll('.view-date.date-links a');
+        if (viewDateLinks.length >= 3) {
+          watchedDate = `${viewDateLinks[0].textContent.trim()} ${viewDateLinks[1].textContent.trim()} ${viewDateLinks[2].textContent.trim()}`;
+        }
+
+        const rawParagraphs = Array.from(doc.querySelectorAll('.review-body p, .js-review-body p')).map(p => p.innerHTML);
+        const cleanedLines = cleanLetterboxdParagraphs(rawParagraphs);
+        const reviewBody = cleanedLines.join('\n\n');
+
+        const posterImg =
+          doc.querySelector('.film-poster img')?.getAttribute('src') ||
+          doc.querySelector('meta[property="og:image"]')?.getAttribute('content') ||
+          '';
+
+        return {
+          url: reviewUrl,
+          movieTitle,
+          releaseYear,
+          reviewer,
+          rating,
+          isLiked,
+          watchedDate,
+          reviewLines: cleanedLines,
+          reviewBody,
+          posterImg
+        };
+      } catch (error) {
+        console.error('Failed to parse Letterboxd HTML:', error);
         return null;
       }
     }
 
-    // Parse OCR Text from Uploaded Review Screenshot (Extracts Movie Name, Year, Username, Watched Date & Review)
-    async function processReviewScreenshotFile(file) {
-      if (!file) return;
-      const banner = document.getElementById('ocr-status-banner');
-      const statusText = document.getElementById('ocr-status-text');
+    // Apply parsed Letterboxd data (from either URL fetch or pasted JSON) to app state and fetch TMDB assets
+    async function applyLetterboxdReviewData(reviewData) {
+      if (!reviewData) return false;
+
+      const banner = document.getElementById('lb-fetch-status-banner');
+      const statusText = document.getElementById('lb-fetch-status-text');
       if (banner) {
         banner.classList.remove('hidden');
         banner.classList.add('inline-flex');
       }
-      if (statusText) statusText.textContent = 'Reading screenshot (Title, Review, Username & Stars)...';
 
       try {
-        const imgUrl = URL.createObjectURL(file);
-        const img = await loadCorsImage(imgUrl);
-        const detectedStarRating = img ? detectGreenStarsFromScreenshot(img) : null;
+        let movieTitle = reviewData.movieTitle || '';
+        let releaseYear = reviewData.releaseYear || '';
+        let reviewer = reviewData.reviewer || '';
+        let rating = Number(reviewData.rating) || 0;
+        let isLiked = Boolean(reviewData.isLiked);
+        let watchedDate = reviewData.watchedDate || '';
+        let reviewLines = reviewData.reviewLines || [];
+        let posterImgUrl = reviewData.posterImg || '';
+        let reviewUrl = reviewData.url || '';
 
-        let rawText = '';
-        if (typeof Tesseract !== 'undefined') {
-          const result = await Tesseract.recognize(file, 'eng');
-          rawText = result?.data?.text || '';
-        }
-        URL.revokeObjectURL(imgUrl);
-
-        const lines = rawText
-          .split(/\r?\n/)
-          .map(l => l.trim())
-          .filter(l => l.length > 0);
-
-        let extractedTitle = '';
-        let extractedYear = '';
-        let extractedUsername = '';
-        let extractedDate = '';
-        let extractedRating = detectedStarRating || 4.0;
-        const reviewLines = [];
-
-        // 1. Find Movie Title + Year line (e.g., "Lucifer 2019", "Backrooms 2026", "Athiradi 2026")
-        let titleLineIdx = -1;
-        for (let i = 0; i < lines.length; i++) {
-          const ln = lines[i];
-          if (/^Watched\s+/i.test(ln)) continue;
-          const m = ln.match(/^([A-Za-z0-9][A-Za-z0-9\s:'’&.,!-]{1,45}?)\s+((?:19|20)\d{2})\b/);
-          if (m && !/Review|Remove Ads|Comment|Reply/i.test(m[1])) {
-            extractedTitle = m[1].trim();
-            extractedYear = m[2].trim();
-            titleLineIdx = i;
-            break;
-          }
+        // Support raw JSON structure like { url, movie: { title, year, posterUrl }, reviewer: { name }, review: { ratingStars, paragraphs, date } }
+        if (reviewData.movie || reviewData.review) {
+          const parsedTitleObj = cleanLetterboxdRawTitle(
+            reviewData.movie?.title || '',
+            reviewData.movie?.year || ''
+          );
+          movieTitle = parsedTitleObj.title;
+          releaseYear = parsedTitleObj.year;
+          posterImgUrl = reviewData.movie?.posterUrl || '';
+          reviewer = reviewData.reviewer?.name || reviewer;
+          rating = Number(reviewData.review?.ratingStars ?? rating) || 0;
+          watchedDate = reviewData.review?.date || '';
+          reviewLines = cleanLetterboxdParagraphs(reviewData.review?.paragraphs || []);
+          reviewUrl = reviewData.url || '';
         }
 
-        // 2. Find Username above Title line (e.g., "< emzit Review" or "@emzit")
-        const searchLimit = titleLineIdx > 0 ? titleLineIdx : Math.min(6, lines.length);
-        for (let i = 0; i < searchLimit; i++) {
-          const ln = lines[i];
-          const headerMatch = ln.match(/[‹<]\s*([A-Za-z0-9_.-]{2,25})\s+Review/i);
-          if (headerMatch) {
-            extractedUsername = headerMatch[1].trim();
-            break;
-          }
-          const cleanToken = ln.replace(/^[^A-Za-z0-9]+/, '').split(/\s+/)[0];
-          if (
-            cleanToken &&
-            /^[A-Za-z0-9_.-]{3,22}$/.test(cleanToken) &&
-            !/^(Review|Film|Reply|Watched)$/i.test(cleanToken) &&
-            !/^\d/.test(cleanToken)
-          ) {
-            extractedUsername = cleanToken;
-          }
-        }
+        state.isFromLetterboxd = true;
+        state.showQrCode = true;
+        state.letterboxdUrl = reviewUrl;
+        syncQrToggleVisibility();
 
-        // 3. Check for explicit star or ½ symbols in OCR text
-        for (const ln of lines) {
-          if (/[★☆½]/.test(ln)) {
-            const full = (ln.match(/★/g) || []).length;
-            const half = /½|1\/2/.test(ln) ? 0.5 : 0;
-            if (full + half > 0) extractedRating = Math.min(5, full + half);
-          }
+        if (reviewer) {
+          state.username = reviewer;
+          localStorage.setItem('posterboxd_username', reviewer);
         }
+        if (rating > 0) state.rating = rating;
+        state.isLiked = isLiked;
 
-        // 4. Find "Watched DD Mon YYYY" and collect Review Lines below it
-        let collectingReview = false;
-        for (let i = (titleLineIdx !== -1 ? titleLineIdx + 1 : 0); i < lines.length; i++) {
-          const ln = lines[i];
-          const watchMatch = ln.match(/Watched\s+(\d{1,2}\s+[A-Za-z]{3,9}\s+\d{4})/i);
-          if (watchMatch) {
-            extractedDate = watchMatch[1];
-            collectingReview = true;
-            continue;
-          }
-          if (collectingReview) {
-            if (/^(\d+\s*likes?|♡|❤️|YOU LIKED|Reply|1\s*comment|\d+\s*comments?|REMOVE ADS|Film\s*>)/i.test(ln)) {
-              break;
-            }
-            if (ln.length >= 3 && !/^[★☆½\s*]+$/.test(ln)) {
-              reviewLines.push(ln.replace(/^[^A-Za-z0-9"“'(]+/, '').trim());
-            }
-          }
-        }
-
-        const fullReview = reviewLines.join(' ').trim();
-        const oneLineSummary = reviewLines.slice(0, 2).join(' ').substring(0, 220).trim();
-
-        if (extractedUsername) {
-          state.username = extractedUsername;
-          localStorage.setItem('posterboxd_username', extractedUsername);
-        }
-        if (extractedRating) state.rating = extractedRating;
-        if (extractedDate) {
-          const parsedD = new Date(extractedDate);
+        if (watchedDate && !/recently/i.test(watchedDate)) {
+          const parsedD = new Date(watchedDate);
           if (!isNaN(parsedD.getTime())) {
             const yyyy = parsedD.getFullYear();
             const mm = String(parsedD.getMonth() + 1).padStart(2, '0');
@@ -3259,64 +4322,58 @@
             state.watchedDate = `${yyyy}-${mm}-${dd}`;
           }
         }
-        if (oneLineSummary) state.review = oneLineSummary;
-        if (fullReview) state.detailedReview = fullReview;
 
-        // Extract the right-side movie poster thumbnail directly from the screenshot as an instant fallback artwork
-        if (img) {
-          try {
-            const cropCanvas = document.createElement('canvas');
-            cropCanvas.width = 600;
-            cropCanvas.height = 900;
-            const cctx = cropCanvas.getContext('2d');
-            const sx = Math.round(img.width * 0.76);
-            const sy = Math.round(img.height * 0.12);
-            const sw = Math.round(img.width * 0.20);
-            const sh = Math.round(sw * 1.48);
-            cctx.drawImage(img, sx, sy, sw, sh, 0, 0, 600, 900);
-            const croppedPosterDataUrl = cropCanvas.toDataURL('image/jpeg', 0.92);
-            state.posters = [croppedPosterDataUrl, ...state.posters];
-            state.backdrops = [croppedPosterDataUrl, ...state.backdrops];
-            state.selectedPosterIndex = 0;
-            state.selectedBackdropIndex = 0;
-            state.posterImg = await loadCorsImage(croppedPosterDataUrl);
-            state.backdropImg = state.posterImg;
-            if (state.posterImg) {
-              state.palette = extractDominantPalette(state.posterImg);
-              renderPaletteSwatchesUI();
-            }
-            renderAssetPickerStrips();
-          } catch (cropErr) {}
+        // Split review into punchy first-line headline and remaining detailed review notes
+        if (reviewLines.length > 0) {
+          state.review = reviewLines[0].substring(0, 220);
+          state.detailedReview = reviewLines.slice(1).join(' ').trim();
         }
 
-        if (extractedTitle && state.tmdbApiKey) {
-          if (statusText) statusText.textContent = `Matched "${extractedTitle}" (${extractedYear}) — Fetching TMDB...`;
-          try {
-            // Try exact year first, then fallback to title-only search if year doesn't match
-            let searchData = await tmdbFetch('/search/movie', { query: extractedTitle, year: extractedYear });
-            let firstHit = searchData.results?.[0];
-            if (!firstHit && extractedYear) {
-              searchData = await tmdbFetch('/search/movie', { query: extractedTitle });
-              firstHit = searchData.results?.[0];
-            }
-            if (firstHit) {
-              await loadTmdbMediaDetails(firstHit.id, 'movie', Boolean(oneLineSummary));
-              showToast(`Mapped screenshot: ${state.title} (${state.rating}★)`);
-              return;
-            }
-          } catch (tmdbErr) {
-            console.warn('TMDB lookup after OCR fell back to local screenshot data:', tmdbErr);
+        // Load non-empty Letterboxd poster if available before TMDB enrichment
+        if (posterImgUrl && !posterImgUrl.includes('empty-poster')) {
+          const loadedPoster = await loadCorsImage(posterImgUrl);
+          if (loadedPoster) {
+            state.posters = [posterImgUrl, ...state.posters];
+            state.backdrops = [posterImgUrl, ...state.backdrops];
+            state.selectedPosterIndex = 0;
+            state.posterImg = loadedPoster;
+            state.palette = extractDominantPalette(loadedPoster);
+            renderPaletteSwatchesUI();
           }
         }
 
-        if (extractedTitle) state.title = extractedTitle;
-        if (extractedYear) state.year = extractedYear;
+        // Automatically match on TMDB to pull high-res posters, backdrops, logos, director & cast
+        if (movieTitle && state.tmdbApiKey) {
+          if (statusText) statusText.textContent = `Matched "${movieTitle}" (${releaseYear}) — Fetching TMDB artwork...`;
+          try {
+            let searchData = await tmdbFetch('/search/movie', { query: movieTitle, year: releaseYear });
+            let firstHit = searchData.results?.[0];
+            if (!firstHit && releaseYear) {
+              searchData = await tmdbFetch('/search/movie', { query: movieTitle });
+              firstHit = searchData.results?.[0];
+            }
+            if (firstHit) {
+              await loadTmdbMediaDetails(firstHit.id, 'movie', true);
+              state.isFromLetterboxd = true;
+              state.showQrCode = true;
+              state.letterboxdUrl = reviewUrl;
+              syncQrToggleVisibility();
+              syncReviewFormState();
+              recordCurrentFetchToHistory();
+              showToast(`Imported Letterboxd review for "${state.title}" (${state.rating}★)`);
+              return true;
+            }
+          } catch (tmdbErr) {}
+        }
+
+        if (movieTitle) state.title = movieTitle;
+        if (releaseYear) state.year = releaseYear;
         syncReviewFormState();
+        recordCurrentFetchToHistory();
         switchView('review');
         scheduleCanvasRender();
-        showToast(extractedTitle ? `Mapped "${extractedTitle}" (${state.rating}★) from screenshot!` : 'Screenshot text mapped to review form');
-      } catch (err) {
-        showToast(`Could not parse screenshot: ${err.message}`, true);
+        showToast(`Imported Letterboxd review: ${state.title} (${state.rating}★)`);
+        return true;
       } finally {
         if (banner) {
           banner.classList.add('hidden');
@@ -3333,16 +4390,6 @@
         await document.fonts.ready;
       }
 
-      // Screenshot Upload Input Handler
-      const screenshotInput = document.getElementById('screenshot-upload-input');
-      screenshotInput?.addEventListener('change', (e) => {
-        const file = e.target.files?.[0];
-        if (file) {
-          processReviewScreenshotFile(file);
-          e.target.value = '';
-        }
-      });
-
       // Smart Movie-Specific Review Generator Button
       document.getElementById('auto-fill-review-btn')?.addEventListener('click', () => {
         state.review = buildRelevantMovieReview(state.title, state.director, state.cast, state.genre, state.mediaType);
@@ -3352,10 +4399,67 @@
         showToast('Generated review with director & cast!');
       });
 
-      // Reusable search function for both Home Search and Header Search
+      // Reusable search function for both Home Search and Header Search (Supports Letterboxd URLs, Raw JSON, and TMDB Search)
       const runLiveSearch = async (inputEl, resultsEl) => {
         const q = inputEl.value.trim();
         if (!q) return;
+
+        // 1. Check if user pasted raw Letterboxd JSON output directly
+        if (q.startsWith('{') && q.endsWith('}')) {
+          try {
+            const parsedJson = JSON.parse(q);
+            if (parsedJson.movie || parsedJson.review || parsedJson.url) {
+              resultsEl.classList.add('hidden');
+              await applyLetterboxdReviewData(parsedJson);
+              return;
+            }
+          } catch (e) {}
+        }
+
+        // 2. Check if user pasted a Letterboxd URL
+        const lbUrlMatch = q.match(/https?:\/\/(?:www\.)?(?:letterboxd\.com|boxd\.it)\/[^\s]+/i);
+        if (lbUrlMatch) {
+          const reviewUrl = lbUrlMatch[0];
+          const banner = document.getElementById('lb-fetch-status-banner');
+          const statusText = document.getElementById('lb-fetch-status-text');
+          if (banner) {
+            banner.classList.remove('hidden');
+            banner.classList.add('inline-flex');
+          }
+          if (statusText) statusText.textContent = 'Fetching Letterboxd review page...';
+          resultsEl.classList.remove('hidden');
+          resultsEl.innerHTML = `<div class="text-xs font-mono text-lbblue py-3 text-center"><i class="fa-solid fa-circle-notch fa-spin mr-1.5"></i>Fetching Letterboxd review...</div>`;
+
+          const reviewData = await fetchLetterboxdReview(reviewUrl);
+          if (reviewData && reviewData.movieTitle) {
+            resultsEl.classList.add('hidden');
+            await applyLetterboxdReviewData(reviewData);
+            return;
+          } else {
+            // Fallback: Extract username & film slug from the URL itself so it still works even if CORS proxies are rate-limited
+            try {
+              const u = new URL(reviewUrl);
+              const parts = u.pathname.split('/').filter(Boolean);
+              const filmIdx = parts.indexOf('film');
+              const slug = filmIdx !== -1 ? parts[filmIdx + 1] : '';
+              const user = filmIdx > 0 ? parts[0] : '';
+              if (slug) {
+                const yearInSlug = slug.match(/-(\d{4})$/);
+                const cleanSlugTitle = slug.replace(/-(\d{4})$/, '').replace(/-/g, ' ');
+                resultsEl.classList.add('hidden');
+                await applyLetterboxdReviewData({
+                  url: reviewUrl,
+                  movieTitle: cleanSlugTitle,
+                  releaseYear: yearInSlug ? yearInSlug[1] : '',
+                  reviewer: user,
+                  rating: state.rating,
+                  reviewLines: []
+                });
+                return;
+              }
+            } catch (err) {}
+          }
+        }
 
         if (!state.tmdbApiKey) {
           document.getElementById('api-modal').classList.remove('hidden');
@@ -3442,7 +4546,14 @@
           if (target === 'review') switchView('review', false);
           else if (target === 'design') switchView('preview', false);
           else if (target === 'settings') switchView('preview', true);
+          else if (target === 'history') switchView('history', false);
         });
+      });
+
+      document.getElementById('clear-all-history-btn')?.addEventListener('click', () => {
+        saveHistoryArray([]);
+        renderHistoryListUI();
+        showToast('Cleared all saved fetch history');
       });
 
       // TV Season & Episode Listeners in Review View
@@ -3535,6 +4646,11 @@
       bindReviewInput('input-username', 'username');
       bindReviewInput('input-watched-date', 'watchedDate');
 
+      document.getElementById('chk-show-detailed-review')?.addEventListener('change', (e) => {
+        state.showDetailedReview = e.target.checked;
+        scheduleCanvasRender();
+      });
+
       // 11 Archetype Carousel & Pill Selection
       const archetypeNames = {
         floatingticket: '1 / 11 · Floating Vintage Ticket',
@@ -3617,6 +4733,14 @@
         state.filmGrain = e.target.checked;
         scheduleCanvasRender();
       });
+      document.getElementById('chk-qrcode')?.addEventListener('change', (e) => {
+        state.showQrCode = e.target.checked;
+        scheduleCanvasRender();
+      });
+      document.getElementById('chk-marquee-bulb')?.addEventListener('change', (e) => {
+        state.marqueeBulbMode = e.target.checked;
+        scheduleCanvasRender();
+      });
       document.getElementById('toggle-use-logo').addEventListener('change', (e) => {
         state.useLogoImage = e.target.checked;
         scheduleCanvasRender();
@@ -3682,6 +4806,7 @@
           await tmdbFetch('/configuration');
           localStorage.setItem('posterboxd_tmdb_key', candidate);
           updateApiStatusPill();
+          loadRegionalNowPlayingMovies();
           showToast('TMDB API Key connected!');
           closeApiModal();
         } catch (err) {
@@ -3787,18 +4912,32 @@
         if (!state.selectedElementId) return;
         const t = getElTransform(state.selectedElementId);
         t.scale = Math.min(2.0, +(t.scale + 0.08).toFixed(2));
+        saveTransformsToStorage();
         scheduleCanvasRender();
       });
       document.getElementById('el-scale-down-btn')?.addEventListener('click', () => {
         if (!state.selectedElementId) return;
         const t = getElTransform(state.selectedElementId);
         t.scale = Math.max(0.4, +(t.scale - 0.08).toFixed(2));
+        saveTransformsToStorage();
         scheduleCanvasRender();
       });
       document.getElementById('el-reset-single-btn')?.addEventListener('click', () => {
-        state.elementTransforms = {};
+        if (state.elementTransformsByArchetype[state.archetype]) {
+          state.elementTransformsByArchetype[state.archetype] = {};
+          saveTransformsToStorage();
+        }
         scheduleCanvasRender();
-        showToast('Element positions reset');
+        showToast('Current design element positions reset');
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (draggingId) saveTransformsToStorage();
+        draggingId = null;
+      });
+      canvas.addEventListener('touchend', () => {
+        if (draggingId) saveTransformsToStorage();
+        draggingId = null;
       });
 
       document.getElementById('download-poster-btn').addEventListener('click', () => {
@@ -3851,6 +4990,7 @@
       // Initialize default demo preset in background and start on clean Search Home
       try {
         await loadDemoPreset('dune2');
+        await loadRegionalNowPlayingMovies();
       } catch (e) {}
       switchView('home');
 
