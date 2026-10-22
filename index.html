@@ -16,7 +16,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 
   <script>
-    tailwind.config = {
+    if (window.tailwind) {
+      window.tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
@@ -37,7 +38,8 @@
           }
         }
       }
-    };
+      };
+    }
   </script>
 
   <style>
@@ -5031,10 +5033,6 @@
     });
     }
   </script>
-  <script type="module">
-    if (window.location.protocol !== 'file:') {
-      import('./src/main.js');
-    }
-  </script>
+  <script type="module" src="./src/main.js"></script>
 </body>
 </html>
