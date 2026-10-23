@@ -1,5 +1,6 @@
 import { state } from '../state.js';
 import { loadCorsImage, extractDominantPalette } from '../services/media-assets.js';
+import { recordCurrentFetchToHistory } from '../services/storage.js';
 import { scheduleCanvasRender } from '../rendering/canvas-renderer.js';
 import { showToast } from './toast.js';
 
@@ -45,6 +46,7 @@ async function selectAndLoadAsset(type, index) {
     state.logoImg = await loadCorsImage(state.logos[index]);
   }
   renderAssetPickerStrips();
+  recordCurrentFetchToHistory();
   scheduleCanvasRender();
 }
 

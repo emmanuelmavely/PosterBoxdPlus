@@ -1,7 +1,7 @@
 import { state } from '../state.js';
 
 export function getLetterboxdReviewUrl() {
-  if (state.letterboxdUrl && /^https?:\/\/(www\.)?letterboxd\.com\//i.test(state.letterboxdUrl)) {
+  if (state.letterboxdUrl && /^https?:\/\/(www\.)?(letterboxd\.com|boxd\.it)\//i.test(state.letterboxdUrl)) {
     return state.letterboxdUrl;
   }
   const slug = (state.title || 'film')
@@ -48,26 +48,64 @@ export function cleanLetterboxdParagraphs(paragraphsArray) {
   return cleaned;
 }
 
-export async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https://cors-anywhere.herokuapp.com/') {
+/**
+ * Resolves short boxd.it URLs (e.g., https://boxd.it/gUpRkb) to full Letterboxd review URLs.
+ */
+export async function resolveBoxdShortUrl(shortUrl) {
+  try {
+    const res = await fetch(`https://api.microlink.io?url=${encodeURIComponent(shortUrl)}`, {
+      signal: AbortSignal.timeout(6000)
+    });
+    if (res.ok) {
+      const json = await res.json();
+      const resolved = json.data?.url;
+      if (resolved && /^https?:\/\/(www\.)?letterboxd\.com\//i.test(resolved)) {
+        return {
+          resolvedUrl: resolved,
+          metaData: json.data
+        };
+      }
+    }
+  } catch (e) {
+    // Fall back to direct fetching if microlink fails
+  }
+  return { resolvedUrl: shortUrl, metaData: null };
+}
+
+export async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https://cors.tyxc.org/') {
+  let targetUrl = reviewUrl;
+  let preloadedMeta = null;
+
+  // Handle boxd.it short URLs
+  if (/boxd\.it/i.test(targetUrl)) {
+    const { resolvedUrl, metaData } = await resolveBoxdShortUrl(targetUrl);
+    targetUrl = resolvedUrl;
+    preloadedMeta = metaData;
+  }
+
   const proxyAttempts = [
     {
-      url: corsAnywhereBase + reviewUrl,
+      url: (corsAnywhereBase.endsWith('/') ? corsAnywhereBase : corsAnywhereBase + '/') + targetUrl,
       options: { headers: { 'X-Requested-With': 'XMLHttpRequest' } }
     },
     {
-      url: `https://api.allorigins.win/raw?url=${encodeURIComponent(reviewUrl)}`,
+      url: `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`,
       options: {}
     },
     {
-      url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(reviewUrl)}`,
+      url: `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
       options: {}
+    },
+    {
+      url: 'https://cors-anywhere.herokuapp.com/' + targetUrl,
+      options: { headers: { 'X-Requested-With': 'XMLHttpRequest' } }
     }
   ];
 
   let htmlText = '';
   for (const attempt of proxyAttempts) {
     try {
-      const response = await fetch(attempt.url, attempt.options);
+      const response = await fetch(attempt.url, { ...attempt.options, signal: AbortSignal.timeout(3500) });
       if (response.ok) {
         const text = await response.text();
         if (text && text.includes('<html')) {
@@ -80,7 +118,68 @@ export async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https
     }
   }
 
+  // If HTML could not be fetched through public proxies, fall back to metadata from microlink
+  if (!htmlText && preloadedMeta && preloadedMeta.title) {
+    const rawTitle = preloadedMeta.title || '';
+    const { title: movieTitle, year: releaseYear } = cleanLetterboxdRawTitle(rawTitle);
+    const starMatches = (rawTitle.match(/★/g) || []).length;
+    const halfStar = /½/.test(rawTitle) ? 0.5 : 0;
+    const rating = starMatches > 0 || halfStar > 0 ? starMatches + halfStar : 0;
+    const reviewer = preloadedMeta.author || '';
+    const description = (preloadedMeta.description || '').trim();
+    const reviewLines = description ? [description] : [];
+    const posterImg = preloadedMeta.image?.url || '';
+
+    return {
+      url: targetUrl,
+      movieTitle,
+      releaseYear,
+      reviewer,
+      rating,
+      isLiked: false,
+      watchedDate: preloadedMeta.date ? new Date(preloadedMeta.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '',
+      reviewLines,
+      reviewBody: description,
+      posterImg
+    };
+  }
+
   if (!htmlText) {
+    // If microlink wasn't called yet (e.g. was already full letterboxd.com URL), try it now as fallback
+    try {
+      const res = await fetch(`https://api.microlink.io?url=${encodeURIComponent(targetUrl)}`, {
+        signal: AbortSignal.timeout(6000)
+      });
+      if (res.ok) {
+        const json = await res.json();
+        const m = json.data;
+        if (m && m.title) {
+          const rawTitle = m.title || '';
+          const { title: movieTitle, year: releaseYear } = cleanLetterboxdRawTitle(rawTitle);
+          const starMatches = (rawTitle.match(/★/g) || []).length;
+          const halfStar = /½/.test(rawTitle) ? 0.5 : 0;
+          const rating = starMatches > 0 || halfStar > 0 ? starMatches + halfStar : 0;
+          const reviewer = m.author || '';
+          const description = (m.description || '').trim();
+          const reviewLines = description ? [description] : [];
+          const posterImg = m.image?.url || '';
+
+          return {
+            url: targetUrl,
+            movieTitle,
+            releaseYear,
+            reviewer,
+            rating,
+            isLiked: false,
+            watchedDate: m.date ? new Date(m.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '',
+            reviewLines,
+            reviewBody: description,
+            posterImg
+          };
+        }
+      }
+    } catch (e) {}
+
     console.error('Failed to fetch Letterboxd HTML through proxies');
     return null;
   }
@@ -105,9 +204,9 @@ export async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https
       documentNode.querySelector('.name')?.textContent.trim() ||
       documentNode.querySelector('.user-name')?.textContent.trim() ||
       '';
-    if (!reviewer && reviewUrl) {
+    if (!reviewer && targetUrl) {
       try {
-        const pathParts = new URL(reviewUrl).pathname.split('/').filter(Boolean);
+        const pathParts = new URL(targetUrl).pathname.split('/').filter(Boolean);
         if (pathParts.length >= 2 && pathParts[1] === 'film') reviewer = pathParts[0];
       } catch (error) {
         // Keep the reviewer empty when the URL is malformed.
@@ -145,7 +244,7 @@ export async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https
       '';
 
     return {
-      url: reviewUrl,
+      url: targetUrl,
       movieTitle,
       releaseYear,
       reviewer,

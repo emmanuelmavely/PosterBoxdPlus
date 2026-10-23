@@ -58,7 +58,10 @@ export function renderScoreboardPoster(ctx, w, h) {
     my += Math.round(34 * fs);
     ctx.font = `600 ${Math.round(25 * fs)}px "Plus Jakarta Sans", sans-serif`;
     ctx.fillStyle = '#E5E7EB';
-    ctx.fillText(`Directed by ${state.director || 'Unknown'}`, metaX, my);
+    const creditLabel = state.mediaType === 'tv'
+      ? (state.episodeTitle ? 'Episode Director' : 'Created by')
+      : 'Directed by';
+    ctx.fillText(`${creditLabel} ${state.director || 'Unknown'}`, metaX, my);
 
     if (state.genre) {
       my += Math.round(32 * fs);
@@ -107,34 +110,37 @@ export function renderScoreboardPoster(ctx, w, h) {
   });
 
   const quoteY = centerBlockTopY + totalScoreBlockH + Math.round(58 * fs);
-  const quoteText = state.review || 'An unforgettable cinema experience.';
+  const quoteText = state.review || '';
   const revPx = Math.round(42 * fs);
   ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-  const qLines = getWrappedLines(ctx, `“${quoteText}”`, innerW, 3);
+  const qLines = quoteText ? getWrappedLines(ctx, `“${quoteText}”`, innerW, 3) : [];
   const detPx = Math.round(23 * fs);
   ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
   const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW - 30, 3);
-  const revBlockH = qLines.length * (revPx + 10) + dLines.length * (detPx + 8) + 24;
+  const hasReviewBlock = qLines.length > 0 || dLines.length > 0;
+  const revBlockH = hasReviewBlock ? qLines.length * (revPx + 10) + dLines.length * (detPx + 8) + 24 : 0;
 
-  drawMovableGroup(ctx, 'review', 'Headline & Detailed Review', { x: pad, y: quoteY, w: innerW, h: revBlockH }, () => {
-    let ry = quoteY;
-    ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.textAlign = 'center';
-    qLines.forEach((l) => {
-      ry += revPx + 8;
-      ctx.fillText(l, w / 2, ry);
-    });
-    if (dLines.length) {
-      ry += 20;
-      ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-      ctx.fillStyle = '#D1D5DB';
-      dLines.forEach((dl) => {
-        ry += detPx + 6;
-        ctx.fillText(dl, w / 2, ry);
+  if (hasReviewBlock) {
+    drawMovableGroup(ctx, 'review', 'Headline & Detailed Review', { x: pad, y: quoteY, w: innerW, h: revBlockH }, () => {
+      let ry = quoteY;
+      ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      qLines.forEach((l) => {
+        ry += revPx + 8;
+        ctx.fillText(l, w / 2, ry);
       });
-    }
-  });
+      if (dLines.length) {
+        ry += 20;
+        ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = '#D1D5DB';
+        dLines.forEach((dl) => {
+          ry += detPx + 6;
+          ctx.fillText(dl, w / 2, ry);
+        });
+      }
+    });
+  }
 
   const bottomSpecY = h - 140;
   if (quoteY + revBlockH < bottomSpecY - 30) {

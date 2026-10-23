@@ -15,7 +15,8 @@ export function buildRelevantMovieReview(title, director, cast, genre, mediaType
   const trio = castList.slice(0, 3).join(', ');
   const primaryGenre = (genre || '').split('|')[0]?.trim()?.toLowerCase() || (mediaType === 'tv' ? 'series' : 'cinema');
   const cleanTitle = title || (mediaType === 'tv' ? 'this series' : 'this film');
-  const numRating = Number(rating) || 4.5;
+  const parsedRating = Number(rating);
+  const numRating = Number.isFinite(parsedRating) ? parsedRating : 4.5;
 
   const isMasterpiece = numRating >= 4.5;
   const isPositive = numRating >= 3.5 && numRating < 4.5;
@@ -49,7 +50,7 @@ export function buildRelevantMovieReview(title, director, cast, genre, mediaType
       templates.push(`A thoroughly entertaining ${primaryGenre} ride from ${director}, carried by the sheer charisma of ${duo}.`);
     }
     if (director && lead) {
-      templates.push(`${director} delivers a stylish, well-crafted ${primaryGenre} powered by an magnetic turn from ${lead}.`);
+      templates.push(`${director} delivers a stylish, well-crafted ${primaryGenre} powered by a magnetic turn from ${lead}.`);
       templates.push(`${lead} commands every single frame under ${director}'s confident, kinetic direction.`);
     }
     if (lead) {
@@ -67,19 +68,40 @@ export function buildRelevantMovieReview(title, director, cast, genre, mediaType
     templates.push(`A bold, curious ${primaryGenre} swing with distinct flashes of brilliance scattered across its runtime.`);
   }
 
-  // Genre-flavored spices
-  if (primaryGenre.includes('sci-fi') || primaryGenre.includes('science fiction')) {
-    if (director && lead) templates.push(`${director} builds a colossal, mind-bending sci-fi tapestry anchored by ${lead}'s magnetic soul.`);
-    templates.push(`A jaw-dropping sci-fi spectacle that pairs staggering scale with intimate existential dread.`);
+  // Genre-flavored spices stay inside the rating bucket so a low-rated
+  // thriller cannot randomly receive masterpiece-level praise.
+  if (isMasterpiece) {
+    if (primaryGenre.includes('sci-fi') || primaryGenre.includes('science fiction')) {
+      if (director && lead) templates.push(`${director} builds a colossal, mind-bending sci-fi tapestry anchored by ${lead}'s magnetic soul.`);
+      templates.push(`A jaw-dropping sci-fi spectacle that pairs staggering scale with intimate existential dread.`);
+    } else if (primaryGenre.includes('horror') || primaryGenre.includes('thriller')) {
+      if (director && lead) templates.push(`${director} ratchets up relentless dread, pushing ${lead} to heart-stopping extremes.`);
+      templates.push(`Tense, claustrophobic, and utterly unpredictable. A masterclass in sustained suspense.`);
+    } else if (primaryGenre.includes('romance') || primaryGenre.includes('drama')) {
+      if (duo) templates.push(`The unspoken longing between ${duo} burns right through the screen in this tender ${primaryGenre}.`);
+      templates.push(`An aching, melancholic study of human connection that hits straight in the chest.`);
+    } else if (primaryGenre.includes('action') || primaryGenre.includes('adventure')) {
+      if (lead) templates.push(`Pure kinetic adrenaline. ${lead} powers through breathtaking set-pieces with relentless grit.`);
+      templates.push(`A pulse-pounding thrill ride that rarely pauses to let you catch your breath.`);
+    }
+  } else if (isPositive) {
+    if (primaryGenre.includes('sci-fi') || primaryGenre.includes('science fiction')) {
+      templates.push(`A striking sci-fi ride that balances ambitious ideas with immersive world-building.`);
+    } else if (primaryGenre.includes('horror') || primaryGenre.includes('thriller')) {
+      templates.push(`A tense, well-calibrated thriller with enough sharp turns to keep the suspense alive.`);
+    } else if (primaryGenre.includes('romance') || primaryGenre.includes('drama')) {
+      if (duo) templates.push(`The chemistry between ${duo} gives this thoughtful ${primaryGenre} real emotional pull.`);
+    } else if (primaryGenre.includes('action') || primaryGenre.includes('adventure')) {
+      templates.push(`A confident action-adventure with tactile set pieces and a satisfying sense of momentum.`);
+    }
+  } else if (primaryGenre.includes('sci-fi') || primaryGenre.includes('science fiction')) {
+    templates.push(`An ambitious sci-fi experiment with striking ideas that do not always fully land.`);
   } else if (primaryGenre.includes('horror') || primaryGenre.includes('thriller')) {
-    if (director && lead) templates.push(`${director} ratchets up relentless dread, pushing ${lead} to heart-stopping extremes.`);
-    templates.push(`Tense, claustrophobic, and utterly unpredictable. A masterclass in sustained suspense.`);
+    templates.push(`A fitfully tense thriller with a few effective jolts amid uneven pacing.`);
   } else if (primaryGenre.includes('romance') || primaryGenre.includes('drama')) {
-    if (duo) templates.push(`The unspoken longing between ${duo} burns right through the screen in this tender ${primaryGenre}.`);
-    templates.push(`An aching, melancholic study of human connection that hits straight in the chest.`);
+    templates.push(`A sincere but uneven ${primaryGenre} with flashes of feeling beneath the surface.`);
   } else if (primaryGenre.includes('action') || primaryGenre.includes('adventure')) {
-    if (lead) templates.push(`Pure kinetic adrenaline. ${lead} powers through breathtaking set-pieces with relentless grit.`);
-    templates.push(`A pulse-pounding thrill ride that rarely pauses to let you catch your breath.`);
+    templates.push(`A lively action-adventure with standout moments, even when the momentum dips.`);
   }
 
   const selected = templates[Math.floor(Math.random() * templates.length)];

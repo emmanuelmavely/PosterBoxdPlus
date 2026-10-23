@@ -94,18 +94,6 @@
       <div id="header-search-results" class="hidden absolute left-0 right-0 top-full mt-2 bg-slatepanel border border-white/15 rounded-2xl shadow-2xl z-50 max-h-72 overflow-y-auto p-1.5 space-y-1 text-left"></div>
     </div>
 
-    <!-- Desktop Navigation Links (Visible on desktop only) -->
-    <div class="hidden lg:flex items-center gap-1 bg-obsidian/80 p-1 rounded-xl border border-white/10 shrink-0">
-      <button type="button" id="desktop-nav-review-btn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5">
-        <i class="fa-solid fa-pen-to-square text-xs text-lbgreen"></i>
-        <span>Review Form</span>
-      </button>
-      <button type="button" id="desktop-nav-design-btn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-300 hover:text-white hover:bg-white/10 transition flex items-center gap-1.5">
-        <i class="fa-solid fa-wand-magic-sparkles text-xs text-lbblue"></i>
-        <span>Poster Studio</span>
-      </button>
-    </div>
-
     <!-- Right Action: History Button + TMDB Key Button -->
     <div class="flex items-center gap-2 shrink-0">
       <button id="header-history-btn" type="button" title="View Saved History" aria-label="View Saved History"
@@ -123,6 +111,21 @@
       </button>
     </div>
   </header>
+
+  <!-- Desktop context navigation: kept below the header so the home header stays quiet. -->
+  <nav id="breadcrumb-nav" aria-label="Breadcrumb navigation" class="hidden lg:block border-b border-white/5 bg-slatepanel/45">
+    <div class="w-full max-w-7xl mx-auto px-3 sm:px-6 py-2">
+      <div class="flex items-center gap-2 text-[11px] font-mono text-gray-500">
+        <button type="button" id="breadcrumb-home-btn" data-breadcrumb-target="home" class="breadcrumb-item text-gray-300 hover:text-white transition">Home</button>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-600" aria-hidden="true"></i>
+        <button type="button" id="breadcrumb-review-btn" data-breadcrumb-target="review" class="breadcrumb-item hover:text-white transition">Review Form</button>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-600" aria-hidden="true"></i>
+        <button type="button" id="breadcrumb-design-btn" data-breadcrumb-target="preview" class="breadcrumb-item hover:text-white transition">Poster Studio</button>
+        <i class="fa-solid fa-chevron-right text-[9px] text-gray-600" aria-hidden="true"></i>
+        <button type="button" id="breadcrumb-history-btn" data-breadcrumb-target="history" class="breadcrumb-item hover:text-white transition">History</button>
+      </div>
+    </div>
+  </nav>
 
   <!-- VIEW 1: CLEAN GOOGLE-STYLE SEARCH HOME -->
   <section id="view-home" class="flex-1 flex flex-col items-center justify-center px-4 py-10 max-w-2xl mx-auto w-full text-center">
@@ -159,7 +162,7 @@
     <div class="mb-6 flex flex-col items-center gap-2">
       <div class="inline-flex items-center gap-2 text-[11px] font-mono text-gray-400">
         <i class="fa-solid fa-link text-lbgreen"></i>
-        <span>Tip: Paste any <code class="text-gray-200">letterboxd.com/&lt;user&gt;/film/&lt;slug&gt;/</code> link or raw JSON directly above</span>
+        <span>Tip: Paste you letterboxd review URL</span>
       </div>
       <div id="lb-fetch-status-banner" class="hidden items-center gap-2 text-xs font-mono text-lbblue bg-lbblue/10 border border-lbblue/30 px-3.5 py-1.5 rounded-full">
         <i class="fa-solid fa-circle-notch fa-spin"></i>
@@ -281,12 +284,12 @@
         </div>
         <div id="medium-pills-container" class="flex flex-wrap gap-1.5">
           <button type="button" data-medium="" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono border border-white/10 bg-obsidian text-gray-400 hover:text-white transition">None</button>
-          <button type="button" data-medium="THEATER" class="medium-pill active px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-lbblue bg-lbblue/20 text-white transition">Theater</button>
-          <button type="button" data-medium="IMAX" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">IMAX</button>
-          <button type="button" data-medium="DOLBY" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">Dolby Cinema</button>
-          <button type="button" data-medium="70MM" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">70mm</button>
-          <button type="button" data-medium="4DX" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">4DX</button>
-          <button type="button" data-medium="3D" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">REALD 3D</button>
+          <button type="button" data-medium="THEATER" data-movie-only="true" class="medium-pill active px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-lbblue bg-lbblue/20 text-white transition">Theater</button>
+          <button type="button" data-medium="IMAX" data-movie-only="true" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">IMAX</button>
+          <button type="button" data-medium="DOLBY" data-movie-only="true" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">Dolby Cinema</button>
+          <button type="button" data-medium="70MM" data-movie-only="true" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">70mm</button>
+          <button type="button" data-medium="4DX" data-movie-only="true" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">4DX</button>
+          <button type="button" data-medium="3D" data-movie-only="true" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">REALD 3D</button>
           <button type="button" data-medium="OTT" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">OTT</button>
           <button type="button" data-medium="NETFLIX" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">Netflix</button>
           <button type="button" data-medium="JIOHOTSTAR" class="medium-pill px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-white/10 bg-obsidian text-gray-300 hover:text-white transition">JioHotstar</button>
@@ -356,11 +359,11 @@
       <button type="button" data-archetype="editorial" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">3. Editorial</button>
       <button type="button" data-archetype="polaroid" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">4. Polaroid</button>
       <button type="button" data-archetype="criterion" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">5. Criterion</button>
-      <button type="button" data-archetype="ticket" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">6. Full Ticket</button>
+      <button type="button" data-archetype="ticket" data-movie-only="true" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">6. Full Ticket</button>
       <button type="button" data-archetype="iosglass" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">7. iOS Glass</button>
       <button type="button" data-archetype="scoreboard" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">8. Big Score</button>
       <button type="button" data-archetype="retro" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">9. 70s Retro</button>
-      <button type="button" data-archetype="marquee" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">10. Marquee</button>
+      <button type="button" data-archetype="marquee" data-movie-only="true" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">10. Marquee</button>
       <button type="button" data-archetype="vippass" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">11. VIP Pass</button>
     </div>
 
@@ -579,21 +582,6 @@
   </div><!-- /#desktop-poster-col -->
 
 </div><!-- /#desktop-studio-grid -->
-
-    <!-- Required Footer Credits -->
-    <footer class="w-full max-w-xl flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400 px-2 pt-2 pb-10">
-      <div class="flex items-center gap-2">
-        <a href="https://github.com/emmanuelmavely/PosterBoxdPlus" target="_blank" rel="noopener noreferrer" class="hover:text-white transition inline-flex items-center gap-1.5">
-          <i class="fa-brands fa-github text-sm"></i>
-          <span>emmanuelmavely/PosterBoxdPlus</span>
-        </a>
-        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-gray-300">v1.2.1</span>
-      </div>
-      <div class="flex items-center gap-1.5">
-        <span>Artwork & metadata powered by</span>
-        <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="text-lbblue hover:underline font-semibold">TMDB API</a>
-      </div>
-    </footer>
   </main>
 
   <!-- VIEW 4: FETCH & POSTER HISTORY TAB -->
@@ -617,6 +605,27 @@
       <div id="history-list-container" class="space-y-2.5 max-h-[65dvh] overflow-y-auto pr-1"></div>
     </div>
   </section>
+
+  <!-- PAGE FOOTER (GitHub repo & TMDB attribution) -->
+  <footer class="w-full mt-auto border-t border-white/10 bg-obsidian/80 backdrop-blur-sm py-5 px-4 z-10 pb-20 md:pb-6">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-400">
+      <div class="flex items-center gap-2">
+        <span class="font-display font-semibold text-gray-200">PosterBoxd Studio</span>
+        <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-gray-300">v1.2.1</span>
+        <span class="text-gray-600">&bull;</span>
+        <a href="https://github.com/emmanuelmavely/PosterBoxdPlus" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 text-gray-300 hover:text-white transition font-mono hover:underline">
+          <i class="fa-brands fa-github text-sm"></i>
+          <span>GitHub</span>
+        </a>
+      </div>
+      <div class="flex items-center gap-2 text-center sm:text-right text-[11px] text-gray-400">
+        <span>This product uses the TMDB API but is not endorsed or certified by TMDB.</span>
+        <a href="https://www.themoviedb.org/" target="_blank" rel="noopener noreferrer" class="shrink-0 inline-flex items-center hover:opacity-80 transition" title="The Movie Database (TMDB)">
+          <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_square_1-5bdc75aaebeb75dc7ae79426ddd9be3b2be1e342510f8202baf6bffa71d7f5c4.svg" alt="TMDB Logo" class="h-3.5 w-auto" />
+        </a>
+      </div>
+    </div>
+  </footer>
 
   <!-- ANIMATED MOBILE-FIRST BOTTOM NAVIGATION BAR (Safe spacing, never overlaps controls) -->
   <nav id="mobile-bottom-nav" aria-label="App Navigation"

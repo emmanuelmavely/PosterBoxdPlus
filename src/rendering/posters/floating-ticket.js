@@ -1,5 +1,4 @@
 import { state } from '../../state.js';
-import { buildRelevantMovieReview } from '../../utils.js';
 import {
   computeAdaptiveTitleLayout,
   drawFooterBrand,
@@ -141,7 +140,9 @@ export function renderFloatingTicketPoster(ctx, w, h) {
     ctx.fillStyle = '#57534E';
     const creditCaption = state.watchedAt
       ? `SCREENED AT ${state.watchedAt.toUpperCase()}`
-      : (state.director ? `A ${state.director.toUpperCase()} FILM` : state.year);
+      : (state.director
+        ? `A ${state.director.toUpperCase()} ${state.mediaType === 'tv' ? 'SERIES' : 'FILM'}`
+        : state.year);
     ctx.fillText(getWrappedLines(ctx, creditCaption, mainW, 1)[0] || '', mainCx, ty + ticketH - 22);
 
     const divX = mainX + mainW + 16;
@@ -233,7 +234,7 @@ export function renderFloatingTicketPoster(ctx, w, h) {
     botY += starR * 2 + (h < 1500 ? 18 : 26);
   }
 
-  const activeQuote = state.review || buildRelevantMovieReview(state.title, state.director, state.cast, state.genre, state.mediaType);
+  const activeQuote = state.review || '';
   const quoteMaxW = w - 150;
   if (activeQuote || (state.showDetailedReview && state.detailedReview)) {
     const revPx = Math.round(35 * fs);

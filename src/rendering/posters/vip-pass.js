@@ -111,7 +111,10 @@ export function renderVipPassPoster(ctx, w, h) {
       }
     });
 
-    const subCred = [state.episodeTitle ? state.episodeTitle.toUpperCase() : (state.director ? `DIR. ${state.director.toUpperCase()}` : ''), state.runtime, state.genre ? state.genre.toUpperCase() : ''].filter(Boolean).join('  ·  ');
+    const credit = state.mediaType === 'tv'
+      ? (state.episodeTitle ? state.episodeTitle.toUpperCase() : (state.director ? `CREATED BY ${state.director.toUpperCase()}` : ''))
+      : (state.director ? `DIR. ${state.director.toUpperCase()}` : '');
+    const subCred = [credit, state.runtime, state.genre ? state.genre.toUpperCase() : ''].filter(Boolean).join('  ·  ');
     if (subCred) {
       ctx.font = `600 ${Math.round(20 * fs)}px "JetBrains Mono", monospace`;
       ctx.fillStyle = '#9CA3AF';

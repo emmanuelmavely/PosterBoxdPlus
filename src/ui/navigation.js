@@ -39,6 +39,14 @@ export function switchView(viewName, openSettingsDrawer = false) {
   historyView?.classList.toggle('hidden', viewName !== 'history');
   updateHeaderHistoryVisibility();
 
+  document.querySelectorAll('[data-breadcrumb-target]').forEach((button) => {
+    const isActive = button.dataset.breadcrumbTarget === viewName;
+    button.classList.toggle('text-white', isActive);
+    button.classList.toggle('text-lbgreen', isActive);
+    button.classList.toggle('font-semibold', isActive);
+    button.setAttribute('aria-current', isActive ? 'page' : 'false');
+  });
+
   if (viewName === 'home') {
     headerSearch?.classList.add('hidden');
     bottomNavigation?.classList.remove('bottom-nav-enter');
@@ -84,8 +92,10 @@ export function initNavigation() {
   document.getElementById('brand-home-trigger')?.addEventListener('click', () => switchView('home'));
   document.getElementById('header-history-btn')?.addEventListener('click', () => switchView('history'));
   document.getElementById('proceed-to-preview-btn')?.addEventListener('click', () => switchView('preview', false));
-  document.getElementById('desktop-nav-review-btn')?.addEventListener('click', () => switchView('review', false));
-  document.getElementById('desktop-nav-design-btn')?.addEventListener('click', () => switchView('preview', false));
+
+  document.querySelectorAll('[data-breadcrumb-target]').forEach((button) => {
+    button.addEventListener('click', () => switchView(button.dataset.breadcrumbTarget, false));
+  });
 
   document.querySelectorAll('.bottom-nav-btn').forEach((button) => {
     button.addEventListener('click', () => {

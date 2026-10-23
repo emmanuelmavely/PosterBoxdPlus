@@ -1,26 +1,82 @@
 import { state } from '../state.js';
 import { ARCHETYPE_NAMES, ARCHETYPE_KEYS } from '../constants.js';
 import { scheduleCanvasRender } from '../rendering/canvas-renderer.js';
+import { recordCurrentFetchToHistory } from '../services/storage.js';
 import { showToast } from './toast.js';
+
+const MOVIE_ONLY_ARCHETYPES = new Set(['ticket', 'marquee']);
+
+export function syncArchetypeUI() {
+  const isTv = state.mediaType === 'tv';
+  if (isTv && MOVIE_ONLY_ARCHETYPES.has(state.archetype)) state.archetype = 'classic';
+
+  document.querySelectorAll('.arch-select-btn').forEach((button) => {
+    const hidden = isTv && button.dataset.movieOnly === 'true';
+    const active = button.dataset.archetype === state.archetype;
+    button.classList.toggle('hidden', hidden);
+    button.disabled = hidden;
+    button.setAttribute('aria-hidden', String(hidden));
+    button.classList.toggle('active', active);
+    button.classList.toggle('bg-lbgreen', active);
+    button.classList.toggle('text-obsidian', active);
+    button.classList.toggle('bg-slatepanel', !active);
+    button.classList.toggle('text-gray-300', !active);
+    button.classList.toggle('border-lbgreen/30', active);
+    button.classList.toggle('border-white/10', !active);
+  });
+
+  const currentName = document.getElementById('current-archetype-name');
+  if (currentName) currentName.textContent = ARCHETYPE_NAMES[state.archetype];
+}
+
+export function syncDesignControlsUI() {
+  syncArchetypeUI();
+
+  document.querySelectorAll('.ratio-pill').forEach((button) => {
+    const active = button.dataset.ratio === state.aspectRatio;
+    button.classList.toggle('active', active);
+    button.classList.toggle('bg-lbgreen', active);
+    button.classList.toggle('text-obsidian', active);
+    button.classList.toggle('text-gray-300', !active);
+  });
+
+  const sliderState = [
+    ['slider-brightness', 'val-brightness', state.backdropBrightness, (value) => `${value}%`],
+    ['slider-blur', 'val-blur', state.backdropBlur, (value) => `${value}px`],
+    ['slider-poster-scale', 'val-poster-scale', state.posterScale, (value) => `${value.toFixed(2)}x`],
+    ['slider-font-scale', 'val-font-scale', state.fontScale, (value) => `${value.toFixed(2)}x`],
+    ['slider-poster-offset-x', 'val-poster-offset-x', state.posterOffsetX, (value) => `${value > 0 ? `+${value}` : value}%`],
+    ['slider-poster-offset-y', 'val-poster-offset-y', state.posterOffsetY, (value) => `${value > 0 ? `+${value}` : value}%`]
+  ];
+  sliderState.forEach(([sliderId, valueId, value, formatValue]) => {
+    const slider = document.getElementById(sliderId);
+    const label = document.getElementById(valueId);
+    if (slider) slider.value = value;
+    if (label) label.textContent = formatValue(Number(value));
+  });
+
+  const checkboxState = [
+    ['chk-gradient', state.gradientOverlay],
+    ['chk-grain', state.filmGrain],
+    ['chk-qrcode', state.showQrCode],
+    ['chk-marquee-bulb', state.marqueeBulbMode],
+    ['toggle-use-logo', state.useLogoImage]
+  ];
+  checkboxState.forEach(([id, checked]) => {
+    const checkbox = document.getElementById(id);
+    if (checkbox) checkbox.checked = Boolean(checked);
+  });
+}
 
 export function initDesignControls() {
   const setArchetype = (archetype) => {
+    if (state.mediaType === 'tv' && MOVIE_ONLY_ARCHETYPES.has(archetype)) return;
     state.archetype = archetype;
-    document.querySelectorAll('.arch-select-btn').forEach((button) => {
-      const active = button.dataset.archetype === archetype;
-      button.classList.toggle('active', active);
-      button.classList.toggle('bg-lbgreen', active);
-      button.classList.toggle('text-obsidian', active);
-      button.classList.toggle('bg-slatepanel', !active);
-      button.classList.toggle('text-gray-300', !active);
-      if (active) {
-        button.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-      }
-    });
-
-    const currentName = document.getElementById('current-archetype-name');
-    if (currentName) currentName.textContent = ARCHETYPE_NAMES[archetype];
+    syncArchetypeUI();
+    const activeButton = document.querySelector(`.arch-select-btn[data-archetype="${archetype}"]`);
+    activeButton?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
   };
 
   document.querySelectorAll('.arch-select-btn').forEach((button) => {
@@ -48,6 +104,7 @@ export function initDesignControls() {
         ratioButton.classList.toggle('text-gray-300', !active);
       });
       scheduleCanvasRender();
+      recordCurrentFetchToHistory();
     });
   });
 
@@ -60,6 +117,7 @@ export function initDesignControls() {
       state[stateKey] = number;
       if (valueLabel) valueLabel.textContent = formatValue(number);
       scheduleCanvasRender();
+      recordCurrentFetchToHistory();
     });
   };
 
@@ -82,32 +140,38 @@ export function initDesignControls() {
     if (ySlider) ySlider.value = 0;
     if (yVal) yVal.textContent = '0%';
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
     showToast('Photo crop centered (0, 0)');
   });
 
   document.getElementById('chk-gradient')?.addEventListener('change', (event) => {
     state.gradientOverlay = event.target.checked;
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
   });
 
   document.getElementById('chk-grain')?.addEventListener('change', (event) => {
     state.filmGrain = event.target.checked;
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
   });
 
   document.getElementById('chk-qrcode')?.addEventListener('change', (event) => {
     state.showQrCode = event.target.checked;
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
   });
 
   document.getElementById('chk-marquee-bulb')?.addEventListener('change', (event) => {
     state.marqueeBulbMode = event.target.checked;
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
   });
 
   document.getElementById('toggle-use-logo')?.addEventListener('change', (event) => {
     state.useLogoImage = event.target.checked;
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
   });
 
   document.getElementById('reset-sliders-btn')?.addEventListener('click', () => {
@@ -148,6 +212,9 @@ export function initDesignControls() {
     if (yVal) yVal.textContent = '0%';
 
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
     showToast('Sliders reset');
   });
+
+  syncDesignControlsUI();
 }

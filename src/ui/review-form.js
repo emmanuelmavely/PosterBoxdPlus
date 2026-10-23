@@ -25,6 +25,262 @@ function updateMediumPillsUI(activeMedium) {
   });
 }
 
+export function syncMediaTypeControls() {
+  const isTv = state.mediaType === 'tv';
+  const selectedMediumIsMovieOnly = isTv && document.querySelector(`.medium-pill[data-medium="${state.medium}"][data-movie-only="true"]`);
+
+  if (selectedMediumIsMovieOnly) state.medium = 'OTT';
+
+  document.querySelectorAll('.medium-pill[data-movie-only="true"]').forEach((button) => {
+    const hidden = isTv;
+    button.classList.toggle('hidden', hidden);
+    button.disabled = hidden;
+    button.setAttribute('aria-hidden', String(hidden));
+  });
+}
+
+function getAssetSnapshot() {
+  return {
+    posters: [...state.posters],
+    backdrops: [...state.backdrops],
+    logos: [...state.logos],
+    selectedPosterIndex: state.selectedPosterIndex,
+    selectedBackdropIndex: state.selectedBackdropIndex,
+    selectedLogoIndex: state.selectedLogoIndex,
+    posterImg: state.posterImg,
+    backdropImg: state.backdropImg,
+    logoImg: state.logoImg,
+    palette: [...state.palette]
+  };
+}
+
+function applyAssetSnapshot(snapshot) {
+  if (!snapshot) return;
+  state.posters = [...(snapshot.posters || [])];
+  state.backdrops = [...(snapshot.backdrops || [])];
+  state.logos = [...(snapshot.logos || [])];
+  state.selectedPosterIndex = snapshot.selectedPosterIndex || 0;
+  state.selectedBackdropIndex = snapshot.selectedBackdropIndex || 0;
+  state.selectedLogoIndex = snapshot.selectedLogoIndex || 0;
+  state.posterImg = snapshot.posterImg || null;
+  state.backdropImg = snapshot.backdropImg || null;
+  state.logoImg = snapshot.logoImg || null;
+  state.palette = [...(snapshot.palette || state.palette)];
+}
+
+function restoreTvBaseMetadata() {
+  const base = state._baseTvDetails;
+  if (!base) return;
+  state.director = base.director || '';
+  state.writer = base.writer || '';
+  state.cast = base.cast || '';
+  state.runtime = base.runtime || '';
+  state.rating = base.rating ?? 4.5;
+  state.spine = base.spine || state.spine;
+}
+
+async function hydrateSelectedAssets() {
+  if (!state.posterImg && state.posters[state.selectedPosterIndex]) {
+    state.posterImg = await loadCorsImage(state.posters[state.selectedPosterIndex]);
+  }
+  if (!state.backdropImg && state.backdrops[state.selectedBackdropIndex]) {
+    state.backdropImg = await loadCorsImage(state.backdrops[state.selectedBackdropIndex]);
+  }
+  if (!state.logoImg && state.logos[state.selectedLogoIndex]) {
+    state.logoImg = await loadCorsImage(state.logos[state.selectedLogoIndex]);
+  }
+}
+
+export function captureTvBaseState() {
+  if (state.mediaType !== 'tv') {
+    state._baseTvDetails = null;
+    state._currentSeasonData = null;
+    state._currentSeasonAssets = null;
+    return;
+  }
+
+  const assets = getAssetSnapshot();
+  state._showAllImages = [...state.posters];
+  state._baseTvDetails = {
+    director: state.director,
+    writer: state.writer,
+    cast: state.cast,
+    runtime: state.runtime,
+    rating: state.rating,
+    spine: state.spine,
+    assets
+  };
+  state._currentSeasonData = null;
+  state._currentSeasonAssets = null;
+}
+
+export async function restoreTvBaseState() {
+  const base = state._baseTvDetails;
+  if (!base) return;
+
+  restoreTvBaseMetadata();
+  applyAssetSnapshot(base.assets);
+  state._showAllImages = [...state.posters];
+  state._currentSeasonData = null;
+  state._currentSeasonAssets = null;
+  state.seasonNumber = '';
+  state.episodeNumber = '';
+  state.episodeTitle = '';
+  await hydrateSelectedAssets();
+  renderPaletteSwatchesUI();
+  renderAssetPickerStrips();
+}
+
+async function selectTvSeason(seasonNumber, episodeSelect) {
+  const base = state._baseTvDetails;
+  if (!base) return;
+
+  restoreTvBaseMetadata();
+  applyAssetSnapshot(base.assets);
+  state._currentSeasonData = null;
+  state._currentSeasonAssets = null;
+  state.seasonNumber = String(seasonNumber);
+  state.episodeNumber = '';
+  state.episodeTitle = `Season ${seasonNumber}`;
+  state.spine = `#S${String(seasonNumber).padStart(2, '0')}`;
+
+  episodeSelect.innerHTML = '<option value="">All Episodes</option>';
+  episodeSelect.disabled = true;
+
+  if (state.tmdbId && state.tmdbApiKey) {
+    try {
+      const [seasonData, seasonImages] = await Promise.all([
+        tmdbFetch(`/tv/${state.tmdbId}/season/${seasonNumber}`),
+        tmdbFetch(`/tv/${state.tmdbId}/season/${seasonNumber}/images`).catch(() => null)
+      ]);
+      state._currentSeasonData = seasonData;
+
+      const seasonPosters = (seasonImages?.posters || [])
+        .slice(0, 8)
+        .map((poster) => `https://image.tmdb.org/t/p/w780${poster.file_path}`);
+      if (seasonData.poster_path) seasonPosters.unshift(`https://image.tmdb.org/t/p/w780${seasonData.poster_path}`);
+      const uniqueSeasonPosters = Array.from(new Set(seasonPosters.filter(Boolean)));
+
+      if (uniqueSeasonPosters.length > 0) {
+        state.posters = uniqueSeasonPosters;
+        state.backdrops = uniqueSeasonPosters;
+        state.selectedPosterIndex = 0;
+        state.selectedBackdropIndex = 0;
+        const seasonImage = await loadCorsImage(uniqueSeasonPosters[0]);
+        state.posterImg = seasonImage || base.assets.posterImg;
+        state.backdropImg = seasonImage || base.assets.backdropImg;
+        if (state.posterImg) state.palette = extractDominantPalette(state.posterImg, state.palette);
+      }
+
+      state._currentSeasonAssets = getAssetSnapshot();
+      episodeSelect.innerHTML += (seasonData.episodes || [])
+        .map((episode) => `<option value="${episode.episode_number}">E${episode.episode_number} · ${episode.name}</option>`)
+        .join('');
+      episodeSelect.disabled = false;
+    } catch (error) {
+      // Keep the season label and base artwork usable when optional season data fails.
+      state._currentSeasonAssets = getAssetSnapshot();
+    }
+  } else {
+    state._currentSeasonAssets = getAssetSnapshot();
+  }
+
+  renderPaletteSwatchesUI();
+  renderAssetPickerStrips();
+}
+
+async function selectTvEpisode(seasonNumber, episodeNumber, episodeSelect, preserveRating = false) {
+  const base = state._baseTvDetails;
+  if (!base || !seasonNumber) return;
+
+  const seasonData = state._currentSeasonData;
+  const seasonAssets = state._currentSeasonAssets || base.assets;
+  restoreTvBaseMetadata();
+  applyAssetSnapshot(seasonAssets);
+  state._currentSeasonData = seasonData;
+  state._currentSeasonAssets = seasonAssets;
+  state.seasonNumber = String(seasonNumber);
+  state.episodeNumber = episodeNumber ? String(episodeNumber) : '';
+
+  const seasonNumberPadded = String(seasonNumber).padStart(2, '0');
+  if (!episodeNumber) {
+    state.episodeTitle = `Season ${seasonNumber}`;
+    state.spine = `#S${seasonNumberPadded}`;
+    await hydrateSelectedAssets();
+    renderPaletteSwatchesUI();
+    renderAssetPickerStrips();
+    return;
+  }
+
+  const episodeNumberPadded = String(episodeNumber).padStart(2, '0');
+  const episode = seasonData?.episodes?.find((item) => String(item.episode_number) === String(episodeNumber));
+  const episodeName = episode?.name
+    || episodeSelect.options[episodeSelect.selectedIndex]?.text?.replace(/^E\d+\s*·\s*/, '')
+    || '';
+  state.episodeTitle = `S${seasonNumberPadded}E${episodeNumberPadded} - ${episodeName}`;
+  state.spine = `#S${seasonNumberPadded}E${episodeNumberPadded}`;
+
+  if (episode) {
+    const episodeDirector = episode.crew?.find((crew) => crew.job === 'Director')?.name;
+    const episodeWriters = episode.crew
+      ?.filter((crew) => ['Writer', 'Screenplay', 'Story'].includes(crew.job))
+      .slice(0, 2)
+      .map((crew) => crew.name)
+      .join(', ');
+    const episodeCast = (episode.guest_stars || []).slice(0, 4).map((cast) => cast.name).join(', ');
+
+    state.director = episodeDirector || base.director || '';
+    state.writer = episodeWriters || base.writer || '';
+    state.cast = episodeCast || base.cast || '';
+    if (episode.runtime) {
+      const hours = Math.floor(episode.runtime / 60);
+      const minutes = episode.runtime % 60;
+      state.runtime = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    }
+    if (!preserveRating && typeof episode.vote_average === 'number' && episode.vote_average > 0) {
+      state.rating = Math.max(0.5, Math.min(5, Math.round((episode.vote_average / 2) * 2) / 2));
+    }
+
+    if (episode.still_path) {
+      const stillUrl = `https://image.tmdb.org/t/p/w1280${episode.still_path}`;
+      state.backdrops = [stillUrl, ...state.backdrops.filter((url) => url !== stillUrl)];
+      state.selectedBackdropIndex = 0;
+      state.backdropImg = await loadCorsImage(stillUrl) || state.backdropImg;
+    }
+  }
+
+  renderPaletteSwatchesUI();
+  renderAssetPickerStrips();
+}
+
+export async function restoreTvSelectionFromHistory() {
+  const seasonSelect = document.getElementById('tv-season-select');
+  const episodeSelect = document.getElementById('tv-episode-select');
+  if (!seasonSelect || !episodeSelect || state.mediaType !== 'tv' || !state.tmdbId || !state.tmdbApiKey || !state.seasonNumber) return;
+
+  try {
+    const requestedSeason = String(state.seasonNumber);
+    const requestedEpisode = String(state.episodeNumber || '');
+    const details = await tmdbFetch(`/tv/${state.tmdbId}`);
+    const validSeasons = (details.seasons || []).filter((season) => season.season_number > 0);
+    seasonSelect.innerHTML = '<option value="">All Seasons</option>' +
+      validSeasons.map((season) => `<option value="${season.season_number}">Season ${season.season_number} (${season.episode_count} eps)</option>`).join('');
+    seasonSelect.value = requestedSeason;
+    if (seasonSelect.value !== requestedSeason) return;
+
+    await selectTvSeason(requestedSeason, episodeSelect);
+    if (requestedEpisode) {
+      episodeSelect.value = requestedEpisode;
+      if (episodeSelect.value === requestedEpisode) {
+        await selectTvEpisode(requestedSeason, requestedEpisode, episodeSelect, true);
+      }
+    }
+    syncReviewFormState();
+  } catch (error) {
+    // The history entry remains usable even when TMDB is temporarily unavailable.
+  }
+}
+
 function updateStarRatingUI(ratingValue) {
   const starsContainer = document.getElementById('interactive-stars');
   const badge = document.getElementById('rating-numeric-badge');
@@ -95,6 +351,7 @@ export function syncReviewFormState() {
   if (characterCount) characterCount.textContent = `${review.length} / 220`;
 
   syncQrToggleVisibility();
+  syncMediaTypeControls();
   syncQrUrlPreview();
   updateMediumPillsUI(state.medium);
   updateStarRatingUI(state.rating);
@@ -142,20 +399,9 @@ export function initReviewForm() {
     seasonSelect.addEventListener('change', async () => {
       const seasonNumber = seasonSelect.value;
       if (!seasonNumber) {
-        state.episodeTitle = '';
         episodeSelect.innerHTML = '<option value="">All Episodes</option>';
         episodeSelect.disabled = true;
-        if (state._baseTvDetails) {
-          state.director = state._baseTvDetails.director || '';
-          state.writer = state._baseTvDetails.writer || '';
-          state.cast = state._baseTvDetails.cast || '';
-          state.runtime = state._baseTvDetails.runtime || '';
-        }
-        if (state._showAllImages) {
-          state.posters = [...state._showAllImages];
-          state.backdrops = [...state._showAllImages];
-          renderAssetPickerStrips();
-        }
+        await restoreTvBaseState();
         syncReviewFormState();
         scheduleCanvasRender();
         recordCurrentFetchToHistory();
@@ -163,47 +409,7 @@ export function initReviewForm() {
         return;
       }
 
-      state.episodeTitle = `Season ${seasonNumber}`;
-      if (state.tmdbId && state.tmdbApiKey) {
-        try {
-          const [seasonData, seasonImages] = await Promise.all([
-            tmdbFetch(`/tv/${state.tmdbId}/season/${seasonNumber}`),
-            tmdbFetch(`/tv/${state.tmdbId}/season/${seasonNumber}/images`).catch(() => null)
-          ]);
-          state._currentSeasonData = seasonData;
-
-          // Filter posters to relevant Season posters only (fallback to all show images if none)
-          const seasonPosters = (seasonImages?.posters || []).slice(0, 8).map(p => `https://image.tmdb.org/t/p/w780${p.file_path}`);
-          if (seasonData.poster_path) {
-            seasonPosters.unshift(`https://image.tmdb.org/t/p/w780${seasonData.poster_path}`);
-          }
-          const uniqueSeasonPosters = Array.from(new Set(seasonPosters.filter(Boolean)));
-          if (uniqueSeasonPosters.length > 0) {
-            state.posters = uniqueSeasonPosters;
-            state.backdrops = uniqueSeasonPosters;
-            state.selectedPosterIndex = 0;
-            state.selectedBackdropIndex = 0;
-            const pImg = await loadCorsImage(state.posters[0]);
-            if (pImg) {
-              state.posterImg = pImg;
-              state.backdropImg = pImg;
-              state.palette = extractDominantPalette(pImg, state.palette);
-              renderPaletteSwatchesUI();
-            }
-            renderAssetPickerStrips();
-          } else if (state._showAllImages) {
-            state.posters = [...state._showAllImages];
-            state.backdrops = [...state._showAllImages];
-            renderAssetPickerStrips();
-          }
-
-          episodeSelect.innerHTML = '<option value="">All Episodes</option>' +
-            (seasonData.episodes || []).map((episode) => `<option value="${episode.episode_number}">E${episode.episode_number} · ${episode.name}</option>`).join('');
-          episodeSelect.disabled = false;
-        } catch (error) {
-          // Keep the selector usable when the optional episode request fails.
-        }
-      }
+      await selectTvSeason(seasonNumber, episodeSelect);
       syncReviewFormState();
       scheduleCanvasRender();
       recordCurrentFetchToHistory();
@@ -214,13 +420,7 @@ export function initReviewForm() {
       const seasonNumber = seasonSelect.value;
       const episodeNumber = episodeSelect.value;
       if (!seasonNumber || !episodeNumber) {
-        if (seasonNumber) state.episodeTitle = `Season ${seasonNumber}`;
-        if (state._baseTvDetails) {
-          state.director = state._baseTvDetails.director || '';
-          state.writer = state._baseTvDetails.writer || '';
-          state.cast = state._baseTvDetails.cast || '';
-          state.runtime = state._baseTvDetails.runtime || '';
-        }
+        if (seasonNumber) await selectTvEpisode(seasonNumber, '', episodeSelect);
         syncReviewFormState();
         scheduleCanvasRender();
         recordCurrentFetchToHistory();
@@ -228,49 +428,7 @@ export function initReviewForm() {
         return;
       }
 
-      const epNumPad = String(episodeNumber).padStart(2, '0');
-      const seNumPad = String(seasonNumber).padStart(2, '0');
-      const epObj = state._currentSeasonData?.episodes?.find(e => String(e.episode_number) === String(episodeNumber));
-      const epName = epObj?.name || episodeSelect.options[episodeSelect.selectedIndex]?.text?.replace(/^E\d+\s*·\s*/, '') || '';
-      
-      // Emphasized single episode format: "S01E01 - Episode title"
-      state.episodeTitle = `S${seNumPad}E${epNumPad} - ${epName}`;
-      state.spine = `#S${seNumPad}E${epNumPad}`;
-
-      // Update episode director, cast, and runtime if available from TMDB episode data
-      if (epObj) {
-        const epDirector = epObj.crew?.find(c => c.job === 'Director')?.name;
-        if (epDirector) state.director = epDirector;
-        else if (state._baseTvDetails) state.director = state._baseTvDetails.director;
-
-        const epWriters = epObj.crew?.filter(c => ['Writer', 'Screenplay', 'Story'].includes(c.job)).slice(0, 2).map(c => c.name).join(', ');
-        if (epWriters) state.writer = epWriters;
-
-        const epCast = (epObj.guest_stars || []).concat(state._baseTvDetails?.cast ? [] : []).slice(0, 4).map(c => c.name).join(', ');
-        if (epCast) state.cast = epCast;
-        else if (state._baseTvDetails) state.cast = state._baseTvDetails.cast;
-
-        if (epObj.runtime) {
-          const h = Math.floor(epObj.runtime / 60);
-          const m = epObj.runtime % 60;
-          state.runtime = h > 0 ? `${h}h ${m}m` : `${m}m`;
-        }
-
-        // Add episode still as a backdrop option if available
-        if (epObj.still_path) {
-          const stillUrl = `https://image.tmdb.org/t/p/w1280${epObj.still_path}`;
-          state.backdrops = [stillUrl, ...state.backdrops];
-          state.selectedBackdropIndex = 0;
-          const bImg = await loadCorsImage(stillUrl);
-          if (bImg) state.backdropImg = bImg;
-          renderAssetPickerStrips();
-        }
-
-        if (typeof epObj.vote_average === 'number' && epObj.vote_average > 0) {
-          state.rating = Math.max(0.5, Math.min(5, Math.round((epObj.vote_average / 2) * 2) / 2));
-        }
-      }
-
+      await selectTvEpisode(seasonNumber, episodeNumber, episodeSelect);
       syncReviewFormState();
       scheduleCanvasRender();
       recordCurrentFetchToHistory();
@@ -280,7 +438,9 @@ export function initReviewForm() {
 
   document.querySelectorAll('.medium-pill').forEach((button) => {
     button.addEventListener('click', () => {
+      if (state.mediaType === 'tv' && button.dataset.movieOnly === 'true') return;
       state.medium = button.dataset.medium;
+      syncMediaTypeControls();
       updateMediumPillsUI(state.medium);
       scheduleCanvasRender();
       recordCurrentFetchToHistory();

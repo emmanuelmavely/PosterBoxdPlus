@@ -6,7 +6,8 @@ import { loadCorsImage, extractDominantPalette } from '../services/media-assets.
 import { recordCurrentFetchToHistory } from '../services/storage.js';
 import { renderHistoryListUI } from '../ui/history.js';
 import { renderPaletteSwatchesUI, renderAssetPickerStrips } from '../ui/assets.js';
-import { syncReviewFormState } from '../ui/review-form.js';
+import { captureTvBaseState, syncMediaTypeControls, syncReviewFormState } from '../ui/review-form.js';
+import { syncArchetypeUI } from '../ui/design-controls.js';
 import { syncQrToggleVisibility } from '../ui/qr-controls.js';
 import { showToast } from '../ui/toast.js';
 import { switchView } from '../ui/navigation.js';
@@ -22,6 +23,13 @@ export async function loadDemoPreset(key) {
 
   state.tmdbId = null;
   state.mediaType = item.mediaType;
+  state._baseTvDetails = null;
+  state._currentSeasonData = null;
+  state._currentSeasonAssets = null;
+  state.seasonNumber = '';
+  state.episodeNumber = '';
+  state.posterOffsetX = 0;
+  state.posterOffsetY = 0;
   state.title = item.title;
   state.year = item.year;
   state.director = item.director;
@@ -52,6 +60,8 @@ export async function loadDemoPreset(key) {
   state.selectedBackdropIndex = item.posters.length < unifiedPool.length ? item.posters.length : 0;
   state.selectedLogoIndex = 0;
 
+  syncArchetypeUI();
+  syncMediaTypeControls();
   syncReviewFormState();
 
   const [pImg, bImg, lImg] = await Promise.all([
@@ -63,10 +73,13 @@ export async function loadDemoPreset(key) {
   state.backdropImg = bImg;
   state.logoImg = lImg;
 
+  syncArchetypeUI();
+
   if (pImg) {
     state.palette = extractDominantPalette(pImg, state.palette);
     renderPaletteSwatchesUI();
   }
+  captureTvBaseState();
   renderAssetPickerStrips();
   switchView('review');
 }
@@ -109,7 +122,7 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     const requests = [
       tmdbFetch(endpoint),
       tmdbFetch(`${endpoint}/credits`),
-      tmdbFetch(`${endpoint}/images`, { include_image_language: 'en,null' }),
+      tmdbFetch(`${endpoint}/images`),
       tmdbFetch(`${endpoint}/watch/providers`).catch(() => null)
     ];
     if (mediaType === 'movie') {
@@ -119,9 +132,15 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
 
     state.tmdbId = id;
     state.mediaType = mediaType;
+    state._baseTvDetails = null;
+    state._currentSeasonData = null;
+    state._currentSeasonAssets = null;
+    state.seasonNumber = '';
+    state.episodeNumber = '';
     state.title = details.title || details.name || '';
     state.spine = `#${String(id).slice(-4)}`;
     state.episodeTitle = '';
+    syncArchetypeUI();
 
     // Default rating to actual rating of the movie (TMDB vote_average / 2, rounded to nearest 0.5), fallback to 4.5
     if (!preserveCustomReview) {
@@ -183,16 +202,6 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     state.cast = credits.cast?.slice(0, 4).map(c => c.name).join(', ') || '';
     state.genre = details.genres?.slice(0, 3).map(g => g.name).join(' | ') || '';
 
-    // Cache base TV show credits for season/episode fallback
-    if (mediaType === 'tv') {
-      state._baseTvDetails = {
-        director: state.director,
-        writer: state.writer,
-        cast: state.cast,
-        runtime: state.runtime
-      };
-    }
-
     if (!preserveCustomReview) {
       state.isFromLetterboxd = false;
       state.letterboxdUrl = '';
@@ -210,9 +219,9 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
       }
     }
 
-    const posterUrls = Array.from(new Set([details.poster_path, ...(images.posters || []).slice(0, 8).map(p => p.file_path)].filter(Boolean)))
+    const posterUrls = Array.from(new Set([details.poster_path, ...(images.posters || []).slice(0, 16).map(p => p.file_path)].filter(Boolean)))
       .map(p => `https://image.tmdb.org/t/p/w780${p}`);
-    const backdropUrls = Array.from(new Set([details.backdrop_path, ...(images.backdrops || []).slice(0, 8).map(b => b.file_path)].filter(Boolean)))
+    const backdropUrls = Array.from(new Set([details.backdrop_path, ...(images.backdrops || []).slice(0, 16).map(b => b.file_path)].filter(Boolean)))
       .map(b => `https://image.tmdb.org/t/p/w1280${b}`);
 
     const allCombinedImages = Array.from(new Set([...posterUrls, ...backdropUrls]));
@@ -220,7 +229,7 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     state.backdrops = allCombinedImages;
     state._showAllImages = allCombinedImages;
 
-    const rawLogos = (images.logos || []).slice(0, 5).map(l => `https://image.tmdb.org/t/p/w500${l.file_path}`);
+    const rawLogos = (images.logos || []).slice(0, 16).map(l => `https://image.tmdb.org/t/p/w500${l.file_path}`);
     state.logos = Array.from(new Set(rawLogos));
 
     state.selectedPosterIndex = 0;
@@ -239,10 +248,14 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     state.backdropImg = bImg;
     state.logoImg = lImg;
 
+    syncArchetypeUI();
+    syncMediaTypeControls();
+
     if (pImg) {
       state.palette = extractDominantPalette(pImg, state.palette);
       renderPaletteSwatchesUI();
     }
+    captureTvBaseState();
     renderAssetPickerStrips();
     syncReviewFormState();
     recordCurrentFetchToHistory();

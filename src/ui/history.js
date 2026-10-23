@@ -2,7 +2,8 @@ import { state } from '../state.js';
 import { loadCorsImage, extractDominantPalette } from '../services/media-assets.js';
 import { getSavedHistory, saveHistoryArray } from '../services/storage.js';
 import { renderPaletteSwatchesUI, renderAssetPickerStrips } from './assets.js';
-import { syncReviewFormState } from './review-form.js';
+import { captureTvBaseState, restoreTvSelectionFromHistory, syncReviewFormState } from './review-form.js';
+import { syncDesignControlsUI } from './design-controls.js';
 import { showToast } from './toast.js';
 import { switchView, updateHeaderHistoryVisibility } from './navigation.js';
 
@@ -69,6 +70,8 @@ export function renderHistoryListUI() {
         runtime: item.runtime || '',
         spine: item.spine || '#2026',
         episodeTitle: item.episodeTitle || '',
+        seasonNumber: item.seasonNumber || '',
+        episodeNumber: item.episodeNumber || '',
         rating: item.rating ?? 4.5,
         isLiked: Boolean(item.isLiked),
         medium: item.medium || 'THEATER',
@@ -83,14 +86,29 @@ export function renderHistoryListUI() {
         showQrCode: Boolean(item.showQrCode),
         posterOffsetX: item.posterOffsetX || 0,
         posterOffsetY: item.posterOffsetY || 0,
+        archetype: item.archetype || state.archetype,
+        aspectRatio: item.aspectRatio || state.aspectRatio,
+        backdropBrightness: item.backdropBrightness ?? state.backdropBrightness,
+        backdropBlur: item.backdropBlur ?? state.backdropBlur,
+        posterScale: item.posterScale ?? state.posterScale,
+        fontScale: item.fontScale ?? state.fontScale,
+        gradientOverlay: item.gradientOverlay !== undefined ? item.gradientOverlay : state.gradientOverlay,
+        filmGrain: item.filmGrain !== undefined ? item.filmGrain : state.filmGrain,
+        marqueeBulbMode: item.marqueeBulbMode !== undefined ? item.marqueeBulbMode : state.marqueeBulbMode,
+        useLogoImage: item.useLogoImage !== undefined ? item.useLogoImage : state.useLogoImage,
         posters: item.posters || [],
         backdrops: item.backdrops || [],
         logos: item.logos || [],
         selectedPosterIndex: 0,
-        selectedBackdropIndex: (item.backdrops && item.backdrops.length > 1) ? 1 : 0,
+        selectedBackdropIndex: 0,
         selectedLogoIndex: 0
       });
-      syncReviewFormState();
+      const selectedPosterIndex = item.selectedPosterUrl ? state.posters.indexOf(item.selectedPosterUrl) : -1;
+      const selectedBackdropIndex = item.selectedBackdropUrl ? state.backdrops.indexOf(item.selectedBackdropUrl) : -1;
+      const selectedLogoIndex = item.selectedLogoUrl ? state.logos.indexOf(item.selectedLogoUrl) : -1;
+      state.selectedPosterIndex = selectedPosterIndex >= 0 ? selectedPosterIndex : 0;
+      state.selectedBackdropIndex = selectedBackdropIndex >= 0 ? selectedBackdropIndex : ((state.backdrops && state.backdrops.length > 1) ? 1 : 0);
+      state.selectedLogoIndex = selectedLogoIndex >= 0 ? selectedLogoIndex : 0;
       const [pImg, bImg, lImg] = await Promise.all([
         loadCorsImage(state.posters[state.selectedPosterIndex]),
         loadCorsImage(state.backdrops[state.selectedBackdropIndex]),
@@ -103,7 +121,12 @@ export function renderHistoryListUI() {
         state.palette = extractDominantPalette(pImg, state.palette);
         renderPaletteSwatchesUI();
       }
+      captureTvBaseState();
+      if (item.baseSpine && state._baseTvDetails) state._baseTvDetails.spine = item.baseSpine;
+      syncReviewFormState();
+      syncDesignControlsUI();
       renderAssetPickerStrips();
+      await restoreTvSelectionFromHistory();
       switchView('preview');
       showToast(`Restored "${state.title}" from History`);
     });

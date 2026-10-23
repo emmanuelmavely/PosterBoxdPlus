@@ -32,6 +32,8 @@ export const state = {
   runtime: '2h 46m',
   spine: '#2024',
   episodeTitle: '',
+  seasonNumber: '',
+  episodeNumber: '',
   rating: 4.5,
   isLiked: true,
   medium: 'THEATER',
