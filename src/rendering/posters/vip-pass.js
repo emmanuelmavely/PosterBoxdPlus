@@ -42,7 +42,7 @@ export function renderVipPassPoster(ctx, w, h) {
     ctx.save();
     ctx.globalAlpha = 0.18;
     ctx.filter = 'blur(8px) contrast(115%)';
-    drawImageCover(ctx, mainBackdrop, px, py, passW, passH);
+    drawImageCover(ctx, mainBackdrop, px, py, passW, passH, 0, 0);
     ctx.restore();
   }
   ctx.restore();
@@ -111,7 +111,7 @@ export function renderVipPassPoster(ctx, w, h) {
       }
     });
 
-    const subCred = [state.director ? `DIR. ${state.director.toUpperCase()}` : '', state.runtime, state.genre ? state.genre.toUpperCase() : ''].filter(Boolean).join('  ·  ');
+    const subCred = [state.episodeTitle ? state.episodeTitle.toUpperCase() : (state.director ? `DIR. ${state.director.toUpperCase()}` : ''), state.runtime, state.genre ? state.genre.toUpperCase() : ''].filter(Boolean).join('  ·  ');
     if (subCred) {
       ctx.font = `600 ${Math.round(20 * fs)}px "JetBrains Mono", monospace`;
       ctx.fillStyle = '#9CA3AF';

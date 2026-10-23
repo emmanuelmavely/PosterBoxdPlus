@@ -76,7 +76,7 @@ export function renderMarqueePoster(ctx, w, h) {
     ctx.save();
     ctx.globalAlpha = 0.24;
     ctx.filter = 'contrast(115%) brightness(65%)';
-    drawImageCover(ctx, boxArtImg, pad, mqY, innerW, mqH);
+    drawImageCover(ctx, boxArtImg, pad, mqY, innerW, mqH, 0, 0);
     ctx.restore();
   }
   const mqGrad = ctx.createLinearGradient(0, mqY, 0, mqY + mqH);

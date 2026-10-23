@@ -15,7 +15,7 @@ export function updateHeaderHistoryVisibility() {
 
   const history = getSavedHistory();
   if (countBadge) countBadge.textContent = String(history.length);
-  if (state.currentView === 'home' && history.length > 0) {
+  if (history.length > 0) {
     historyButton.classList.remove('hidden');
     historyButton.classList.add('flex');
   } else {
@@ -84,6 +84,8 @@ export function initNavigation() {
   document.getElementById('brand-home-trigger')?.addEventListener('click', () => switchView('home'));
   document.getElementById('header-history-btn')?.addEventListener('click', () => switchView('history'));
   document.getElementById('proceed-to-preview-btn')?.addEventListener('click', () => switchView('preview', false));
+  document.getElementById('desktop-nav-review-btn')?.addEventListener('click', () => switchView('review', false));
+  document.getElementById('desktop-nav-design-btn')?.addEventListener('click', () => switchView('preview', false));
 
   document.querySelectorAll('.bottom-nav-btn').forEach((button) => {
     button.addEventListener('click', () => {

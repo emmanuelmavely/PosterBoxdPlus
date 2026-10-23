@@ -80,10 +80,11 @@ export function renderEditorialPoster(ctx, w, h) {
 
   const credPx = Math.round(24 * fs);
   const rows = [
-    state.director ? { role: state.mediaType === 'tv' ? 'Created by' : 'Director', val: state.director } : null,
+    state.episodeTitle ? { role: /^S\d+E\d+/i.test(state.episodeTitle) ? 'Episode' : 'Season', val: state.episodeTitle } : null,
+    state.director ? { role: state.mediaType === 'tv' ? (state.episodeTitle ? 'Episode Director' : 'Created by') : 'Director', val: state.director } : null,
     state.dop ? { role: 'Cinematography', val: state.dop } : null,
     state.music ? { role: 'Original Score', val: state.music } : null,
-    state.cast ? { role: 'Cast', val: state.cast } : null,
+    state.cast ? { role: state.episodeTitle ? 'Starring' : 'Cast', val: state.cast } : null,
     (state.year || state.runtime || state.genre) ? { role: 'Specs', val: [state.year, state.runtime, state.genre].filter(Boolean).join(' · ') } : null
   ].filter(Boolean);
   const rowStep = Math.round(35 * fs);

@@ -12,7 +12,7 @@ export function drawRoundedRectPath(context, x, y, width, height, radius) {
   context.closePath();
 }
 
-export function drawImageCover(context, image, x, y, width, height) {
+export function drawImageCover(context, image, x, y, width, height, offsetX = (state.posterOffsetX || 0), offsetY = (state.posterOffsetY || 0)) {
   if (!image || !image.width || !image.height) return;
   const imageRatio = image.width / image.height;
   const boxRatio = width / height;
@@ -22,10 +22,14 @@ export function drawImageCover(context, image, x, y, width, height) {
   let sourceHeight = image.height;
   if (imageRatio > boxRatio) {
     sourceWidth = image.height * boxRatio;
-    sourceX = (image.width - sourceWidth) / 2;
+    const maxShiftX = image.width - sourceWidth;
+    // offsetX is -100 to +100 (%)
+    sourceX = Math.max(0, Math.min(maxShiftX, (maxShiftX / 2) + (offsetX / 100) * (maxShiftX / 2)));
   } else {
     sourceHeight = image.width / boxRatio;
-    sourceY = (image.height - sourceHeight) / 2;
+    const maxShiftY = image.height - sourceHeight;
+    // offsetY is -100 to +100 (%)
+    sourceY = Math.max(0, Math.min(maxShiftY, (maxShiftY / 2) + (offsetY / 100) * (maxShiftY / 2)));
   }
   context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
 }
@@ -385,7 +389,7 @@ export function drawProcessedBackdrop(context, width, height, image, customBlur 
   if (image) {
     const bleed = blur * 2.5;
     context.filter = `blur(${blur}px) brightness(${brightness}%)`;
-    drawImageCover(context, image, -bleed, -bleed, width + bleed * 2, height + bleed * 2);
+    drawImageCover(context, image, -bleed, -bleed, width + bleed * 2, height + bleed * 2, 0, 0);
     context.filter = 'none';
   }
   if (state.tintBackdropWithPalette && state.palette[0]) {

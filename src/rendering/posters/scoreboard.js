@@ -44,7 +44,7 @@ export function renderScoreboardPoster(ctx, w, h) {
     ctx.font = `700 ${Math.round(21 * fs)}px "JetBrains Mono", monospace`;
     ctx.fillStyle = '#00E054';
     ctx.textAlign = 'left';
-    const topSpecs = [state.year, state.medium, state.runtime].filter(Boolean).join('  ·  ').toUpperCase();
+    const topSpecs = [state.episodeTitle || state.year, state.medium, state.runtime].filter(Boolean).join('  ·  ').toUpperCase();
     ctx.fillText(getWrappedLines(ctx, topSpecs, metaW, 1)[0] || '', metaX, my);
 
     const tLayout = computeAdaptiveTitleLayout(ctx, state.title, metaW, Math.round(54 * fs), '"Syne", sans-serif', '800', 2);

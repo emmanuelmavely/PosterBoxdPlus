@@ -114,10 +114,14 @@ export function renderTicketPoster(ctx, w, h) {
     ctx.fillStyle = '#18181B';
     ctx.fillText(getWrappedLines(ctx, val || '—', colW - 14, 1)[0] || '—', xPos, yPos + 26);
   };
-  drawStubCell('WATCHED AT', state.watchedAt || 'Cinema / Stream', metaStartX, curY + 10);
-  drawStubCell('FORMAT / RUNTIME', [state.medium, state.runtime].filter(Boolean).join(' · ') || 'Standard', metaStartX + colW, curY + 10);
+  drawStubCell('WATCHED AT', state.watchedAt || (state.mediaType === 'tv' ? 'Digital Stream' : 'Cinema / Stream'), metaStartX, curY + 10);
+  if (state.episodeTitle) {
+    drawStubCell('EPISODE', state.episodeTitle, metaStartX + colW, curY + 10);
+  } else {
+    drawStubCell('FORMAT / RUNTIME', [state.medium, state.runtime].filter(Boolean).join(' · ') || 'Standard', metaStartX + colW, curY + 10);
+  }
   drawStubCell('DATE LOGGED', formatSafeDate(state.watchedDate) || state.year, metaStartX, curY + 72);
-  drawStubCell('DIRECTOR', state.director || '—', metaStartX + colW, curY + 72);
+  drawStubCell(state.mediaType === 'tv' ? (state.episodeTitle ? 'EP. DIRECTOR' : 'CREATOR') : 'DIRECTOR', state.director || '—', metaStartX + colW, curY + 72);
 
   curY += 132;
 

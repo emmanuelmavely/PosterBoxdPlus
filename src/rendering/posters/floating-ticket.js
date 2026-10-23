@@ -22,7 +22,7 @@ export function renderFloatingTicketPoster(ctx, w, h) {
   ctx.fillRect(0, 0, w, h);
   if (bgImg) {
     ctx.filter = `brightness(${Math.min(95, state.backdropBrightness + 20)}%) contrast(106%)`;
-    drawImageCover(ctx, bgImg, 0, 0, w, h * 0.78);
+    drawImageCover(ctx, bgImg, 0, 0, w, h * 0.78, 0, 0);
     ctx.filter = 'none';
   }
   const topVig = ctx.createLinearGradient(0, 0, 0, h * 0.28);
@@ -47,10 +47,12 @@ export function renderFloatingTicketPoster(ctx, w, h) {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.font = `600 ${Math.round(18 * fs)}px "JetBrains Mono", monospace`;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-    const dirHeader = state.director
+    let dirHeader = state.director
       ? `A ${state.director.toUpperCase()} ${state.mediaType === 'tv' ? 'SERIES' : 'FILM'}`
       : `FEATURE PRESENTATION · ${state.year}`;
+    if (state.episodeTitle) {
+      dirHeader = `${state.episodeTitle} · ${state.director || state.year}`;
+    }
     ctx.fillText(dirHeader, cx, 84);
 
     if (state.useLogoImage && state.logoImg) {

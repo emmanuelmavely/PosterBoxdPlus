@@ -38,6 +38,7 @@ export function recordCurrentFetchToHistory() {
     genre: state.genre,
     runtime: state.runtime,
     spine: state.spine,
+    episodeTitle: state.episodeTitle || '',
     rating: state.rating,
     isLiked: state.isLiked,
     medium: state.medium,
@@ -50,6 +51,8 @@ export function recordCurrentFetchToHistory() {
     isFromLetterboxd: state.isFromLetterboxd,
     letterboxdUrl: state.letterboxdUrl,
     showQrCode: state.showQrCode,
+    posterOffsetX: state.posterOffsetX || 0,
+    posterOffsetY: state.posterOffsetY || 0,
     posters: state.posters.slice(0, 8),
     backdrops: state.backdrops.slice(0, 8),
     logos: state.logos.slice(0, 4)

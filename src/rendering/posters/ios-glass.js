@@ -82,7 +82,7 @@ export function renderIosGlassPoster(ctx, w, h) {
 
     ctx.font = `600 ${Math.round(24 * fs)}px "Plus Jakarta Sans", sans-serif`;
     ctx.fillStyle = 'rgba(255,255,255,0.78)';
-    const meta = [state.director, state.year, state.runtime || state.medium].filter(Boolean).join('  •  ');
+    const meta = [state.episodeTitle || state.director, state.year, state.runtime || state.medium].filter(Boolean).join('  •  ');
     ctx.fillText(getWrappedLines(ctx, meta, cardW - 90, 1)[0] || '', cx, curY + tLayout.lines.length * tLayout.lineHeight + 30);
   });
   curY += titleGroupH + 24;

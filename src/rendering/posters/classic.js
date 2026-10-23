@@ -67,10 +67,17 @@ export function renderClassicPoster(ctx, w, h) {
       ctx.fillText(line, cx, ty);
       ty += 6;
     });
-    const subLine = [state.year, state.director ? `Directed by ${state.director}` : '', state.runtime].filter(Boolean).join('  ·  ');
+    if (state.episodeTitle) {
+      ty += Math.round(30 * fs);
+      const isSingleEp = /^S\d+E\d+/i.test(state.episodeTitle);
+      ctx.font = `${isSingleEp ? '800' : '700'} ${Math.round((isSingleEp ? 28 : 25) * fs)}px "JetBrains Mono", monospace`;
+      ctx.fillStyle = isSingleEp ? '#00E054' : '#40BCF4';
+      ctx.fillText(getWrappedLines(ctx, state.episodeTitle, maxW, 1)[0] || '', cx, ty);
+    }
+    const subLine = [state.year, state.director ? (state.mediaType === 'tv' ? `Created by ${state.director}` : `Directed by ${state.director}`) : '', state.runtime].filter(Boolean).join('  ·  ');
     if (subLine) {
       ty += Math.round(26 * fs);
-      ctx.font = `600 ${Math.round(24 * fs)}px "Plus Jakarta Sans", sans-serif`;
+      ctx.font = `600 ${Math.round(23 * fs)}px "Plus Jakarta Sans", sans-serif`;
       ctx.fillStyle = '#D1D5DB';
       ctx.fillText(getWrappedLines(ctx, subLine, maxW, 1)[0] || '', cx, ty);
     }

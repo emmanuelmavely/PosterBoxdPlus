@@ -62,7 +62,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 /* Poster Canvas */
 #poster-canvas {
-  max-height: calc(100dvh - 300px);
+  max-height: calc(100dvh - 280px);
   max-width: 100%;
   width: auto;
   height: auto;
@@ -82,7 +82,26 @@ input[type="range"]::-webkit-slider-thumb:hover {
   }
 }
 
-/* Bottom Navigation Transitions */
+/* Desktop Split Screen Optimization */
+@media (min-width: 1024px) {
+  #poster-canvas {
+    max-height: calc(100dvh - 170px);
+    width: 100%;
+  }
+  #desktop-poster-col {
+    position: sticky;
+    top: 5rem;
+  }
+  /* Keep mobile bottom menu strictly hidden on desktop */
+  #mobile-bottom-nav {
+    display: none !important;
+  }
+  body {
+    padding-bottom: 2rem !important;
+  }
+}
+
+/* Bottom Navigation Transitions (Mobile Only) */
 .bottom-nav-enter {
   transform: translate(-50%, 0%);
   opacity: 1;

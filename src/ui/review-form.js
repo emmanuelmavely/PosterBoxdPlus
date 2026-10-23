@@ -1,6 +1,10 @@
 import { state } from '../state.js';
 import { buildRelevantMovieReview } from '../utils.js';
 import { tmdbFetch } from '../services/tmdb.js';
+import { loadCorsImage, extractDominantPalette } from '../services/media-assets.js';
+import { recordCurrentFetchToHistory } from '../services/storage.js';
+import { renderAssetPickerStrips, renderPaletteSwatchesUI } from './assets.js';
+import { renderHistoryListUI } from './history.js';
 import { scheduleCanvasRender } from '../rendering/canvas-renderer.js';
 import { showToast } from './toast.js';
 import { syncQrToggleVisibility, syncQrUrlPreview } from './qr-controls.js';
@@ -99,13 +103,37 @@ export function syncReviewFormState() {
 
 export function initReviewForm() {
   document.getElementById('auto-fill-review-btn')?.addEventListener('click', () => {
-    state.review = buildRelevantMovieReview(state.title, state.director, state.cast, state.genre, state.mediaType);
+    state.review = buildRelevantMovieReview(state.title, state.director, state.cast, state.genre, state.mediaType, state.rating);
     const reviewInput = document.getElementById('input-review');
     const characterCount = document.getElementById('review-char-count');
     if (reviewInput) reviewInput.value = state.review;
     if (characterCount) characterCount.textContent = `${state.review.length} / 220`;
     scheduleCanvasRender();
-    showToast('Generated review with director & cast!');
+    recordCurrentFetchToHistory();
+    renderHistoryListUI();
+    showToast('Generated review based on genre & rating!');
+  });
+
+  document.getElementById('clear-review-btn')?.addEventListener('click', () => {
+    state.review = '';
+    const reviewInput = document.getElementById('input-review');
+    const characterCount = document.getElementById('review-char-count');
+    if (reviewInput) reviewInput.value = '';
+    if (characterCount) characterCount.textContent = '0 / 220';
+    scheduleCanvasRender();
+    recordCurrentFetchToHistory();
+    renderHistoryListUI();
+    showToast('Cleared one-line review');
+  });
+
+  document.getElementById('clear-detailed-review-btn')?.addEventListener('click', () => {
+    state.detailedReview = '';
+    const detailedReviewInput = document.getElementById('input-detailed-review');
+    if (detailedReviewInput) detailedReviewInput.value = '';
+    scheduleCanvasRender();
+    recordCurrentFetchToHistory();
+    renderHistoryListUI();
+    showToast('Cleared detailed review');
   });
 
   const seasonSelect = document.getElementById('tv-season-select');
@@ -117,13 +145,58 @@ export function initReviewForm() {
         state.episodeTitle = '';
         episodeSelect.innerHTML = '<option value="">All Episodes</option>';
         episodeSelect.disabled = true;
+        if (state._baseTvDetails) {
+          state.director = state._baseTvDetails.director || '';
+          state.writer = state._baseTvDetails.writer || '';
+          state.cast = state._baseTvDetails.cast || '';
+          state.runtime = state._baseTvDetails.runtime || '';
+        }
+        if (state._showAllImages) {
+          state.posters = [...state._showAllImages];
+          state.backdrops = [...state._showAllImages];
+          renderAssetPickerStrips();
+        }
+        syncReviewFormState();
+        scheduleCanvasRender();
+        recordCurrentFetchToHistory();
+        renderHistoryListUI();
         return;
       }
 
       state.episodeTitle = `Season ${seasonNumber}`;
       if (state.tmdbId && state.tmdbApiKey) {
         try {
-          const seasonData = await tmdbFetch(`/tv/${state.tmdbId}/season/${seasonNumber}`);
+          const [seasonData, seasonImages] = await Promise.all([
+            tmdbFetch(`/tv/${state.tmdbId}/season/${seasonNumber}`),
+            tmdbFetch(`/tv/${state.tmdbId}/season/${seasonNumber}/images`).catch(() => null)
+          ]);
+          state._currentSeasonData = seasonData;
+
+          // Filter posters to relevant Season posters only (fallback to all show images if none)
+          const seasonPosters = (seasonImages?.posters || []).slice(0, 8).map(p => `https://image.tmdb.org/t/p/w780${p.file_path}`);
+          if (seasonData.poster_path) {
+            seasonPosters.unshift(`https://image.tmdb.org/t/p/w780${seasonData.poster_path}`);
+          }
+          const uniqueSeasonPosters = Array.from(new Set(seasonPosters.filter(Boolean)));
+          if (uniqueSeasonPosters.length > 0) {
+            state.posters = uniqueSeasonPosters;
+            state.backdrops = uniqueSeasonPosters;
+            state.selectedPosterIndex = 0;
+            state.selectedBackdropIndex = 0;
+            const pImg = await loadCorsImage(state.posters[0]);
+            if (pImg) {
+              state.posterImg = pImg;
+              state.backdropImg = pImg;
+              state.palette = extractDominantPalette(pImg, state.palette);
+              renderPaletteSwatchesUI();
+            }
+            renderAssetPickerStrips();
+          } else if (state._showAllImages) {
+            state.posters = [...state._showAllImages];
+            state.backdrops = [...state._showAllImages];
+            renderAssetPickerStrips();
+          }
+
           episodeSelect.innerHTML = '<option value="">All Episodes</option>' +
             (seasonData.episodes || []).map((episode) => `<option value="${episode.episode_number}">E${episode.episode_number} · ${episode.name}</option>`).join('');
           episodeSelect.disabled = false;
@@ -131,14 +204,77 @@ export function initReviewForm() {
           // Keep the selector usable when the optional episode request fails.
         }
       }
+      syncReviewFormState();
+      scheduleCanvasRender();
+      recordCurrentFetchToHistory();
+      renderHistoryListUI();
     });
 
     episodeSelect.addEventListener('change', async () => {
       const seasonNumber = seasonSelect.value;
       const episodeNumber = episodeSelect.value;
-      if (!seasonNumber || !episodeNumber) return;
-      const episodeText = episodeSelect.options[episodeSelect.selectedIndex]?.text || '';
-      state.episodeTitle = `S${String(seasonNumber).padStart(2, '0')}${episodeText}`;
+      if (!seasonNumber || !episodeNumber) {
+        if (seasonNumber) state.episodeTitle = `Season ${seasonNumber}`;
+        if (state._baseTvDetails) {
+          state.director = state._baseTvDetails.director || '';
+          state.writer = state._baseTvDetails.writer || '';
+          state.cast = state._baseTvDetails.cast || '';
+          state.runtime = state._baseTvDetails.runtime || '';
+        }
+        syncReviewFormState();
+        scheduleCanvasRender();
+        recordCurrentFetchToHistory();
+        renderHistoryListUI();
+        return;
+      }
+
+      const epNumPad = String(episodeNumber).padStart(2, '0');
+      const seNumPad = String(seasonNumber).padStart(2, '0');
+      const epObj = state._currentSeasonData?.episodes?.find(e => String(e.episode_number) === String(episodeNumber));
+      const epName = epObj?.name || episodeSelect.options[episodeSelect.selectedIndex]?.text?.replace(/^E\d+\s*·\s*/, '') || '';
+      
+      // Emphasized single episode format: "S01E01 - Episode title"
+      state.episodeTitle = `S${seNumPad}E${epNumPad} - ${epName}`;
+      state.spine = `#S${seNumPad}E${epNumPad}`;
+
+      // Update episode director, cast, and runtime if available from TMDB episode data
+      if (epObj) {
+        const epDirector = epObj.crew?.find(c => c.job === 'Director')?.name;
+        if (epDirector) state.director = epDirector;
+        else if (state._baseTvDetails) state.director = state._baseTvDetails.director;
+
+        const epWriters = epObj.crew?.filter(c => ['Writer', 'Screenplay', 'Story'].includes(c.job)).slice(0, 2).map(c => c.name).join(', ');
+        if (epWriters) state.writer = epWriters;
+
+        const epCast = (epObj.guest_stars || []).concat(state._baseTvDetails?.cast ? [] : []).slice(0, 4).map(c => c.name).join(', ');
+        if (epCast) state.cast = epCast;
+        else if (state._baseTvDetails) state.cast = state._baseTvDetails.cast;
+
+        if (epObj.runtime) {
+          const h = Math.floor(epObj.runtime / 60);
+          const m = epObj.runtime % 60;
+          state.runtime = h > 0 ? `${h}h ${m}m` : `${m}m`;
+        }
+
+        // Add episode still as a backdrop option if available
+        if (epObj.still_path) {
+          const stillUrl = `https://image.tmdb.org/t/p/w1280${epObj.still_path}`;
+          state.backdrops = [stillUrl, ...state.backdrops];
+          state.selectedBackdropIndex = 0;
+          const bImg = await loadCorsImage(stillUrl);
+          if (bImg) state.backdropImg = bImg;
+          renderAssetPickerStrips();
+        }
+
+        if (typeof epObj.vote_average === 'number' && epObj.vote_average > 0) {
+          state.rating = Math.max(0.5, Math.min(5, Math.round((epObj.vote_average / 2) * 2) / 2));
+        }
+      }
+
+      syncReviewFormState();
+      scheduleCanvasRender();
+      recordCurrentFetchToHistory();
+      renderHistoryListUI();
     });
   }
 
@@ -147,6 +283,8 @@ export function initReviewForm() {
       state.medium = button.dataset.medium;
       updateMediumPillsUI(state.medium);
       scheduleCanvasRender();
+      recordCurrentFetchToHistory();
+      renderHistoryListUI();
     });
   });
 
@@ -160,6 +298,8 @@ export function initReviewForm() {
       if (commit) {
         state.rating = snapped;
         scheduleCanvasRender();
+        recordCurrentFetchToHistory();
+        renderHistoryListUI();
       }
     };
 
@@ -172,18 +312,24 @@ export function initReviewForm() {
     state.rating = parseFloat(event.target.value);
     updateStarRatingUI(state.rating);
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
+    renderHistoryListUI();
   });
 
   document.getElementById('clear-rating-btn')?.addEventListener('click', () => {
     state.rating = 0;
     updateStarRatingUI(0);
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
+    renderHistoryListUI();
   });
 
   document.getElementById('heart-toggle-btn')?.addEventListener('click', () => {
     state.isLiked = !state.isLiked;
     updateHeartButtonUI(state.isLiked);
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
+    renderHistoryListUI();
   });
 
   const bindReviewInput = (id, stateKey) => {
@@ -200,6 +346,8 @@ export function initReviewForm() {
         if (characterCount) characterCount.textContent = `${input.value.length} / 220`;
       }
       scheduleCanvasRender();
+      recordCurrentFetchToHistory();
+      renderHistoryListUI();
     });
   };
 
@@ -212,5 +360,7 @@ export function initReviewForm() {
   document.getElementById('chk-show-detailed-review')?.addEventListener('change', (event) => {
     state.showDetailedReview = event.target.checked;
     scheduleCanvasRender();
+    recordCurrentFetchToHistory();
+    renderHistoryListUI();
   });
 }

@@ -123,6 +123,15 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     state.spine = `#${String(id).slice(-4)}`;
     state.episodeTitle = '';
 
+    // Default rating to actual rating of the movie (TMDB vote_average / 2, rounded to nearest 0.5), fallback to 4.5
+    if (!preserveCustomReview) {
+      if (typeof details.vote_average === 'number' && details.vote_average > 0) {
+        state.rating = Math.max(0.5, Math.min(5, Math.round((details.vote_average / 2) * 2) / 2));
+      } else {
+        state.rating = 4.5;
+      }
+    }
+
     if (mediaType === 'tv') {
       const firstY = details.first_air_date ? details.first_air_date.substring(0, 4) : '';
       const lastY = details.last_air_date ? details.last_air_date.substring(0, 4) : '';
@@ -174,15 +183,32 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     state.cast = credits.cast?.slice(0, 4).map(c => c.name).join(', ') || '';
     state.genre = details.genres?.slice(0, 3).map(g => g.name).join(' | ') || '';
 
+    // Cache base TV show credits for season/episode fallback
+    if (mediaType === 'tv') {
+      state._baseTvDetails = {
+        director: state.director,
+        writer: state.writer,
+        cast: state.cast,
+        runtime: state.runtime
+      };
+    }
+
     if (!preserveCustomReview) {
       state.isFromLetterboxd = false;
       state.letterboxdUrl = '';
       state.showQrCode = false;
-      state.review = buildRelevantMovieReview(state.title, state.director, state.cast, state.genre, state.mediaType);
+      state.review = buildRelevantMovieReview(state.title, state.director, state.cast, state.genre, state.mediaType, state.rating);
       // Do NOT dump TMDB's plot synopsis into Detailed Review by default (keeps posters uncluttered!)
       state.detailedReview = '';
     }
     syncQrToggleVisibility();
+
+    // In TV Series, skip movie-only poster styles if user is currently on a cinema ticket style
+    if (mediaType === 'tv') {
+      if (['ticket', 'marquee'].includes(state.archetype)) {
+        state.archetype = 'classic';
+      }
+    }
 
     const posterUrls = Array.from(new Set([details.poster_path, ...(images.posters || []).slice(0, 8).map(p => p.file_path)].filter(Boolean)))
       .map(p => `https://image.tmdb.org/t/p/w780${p}`);
@@ -192,6 +218,7 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     const allCombinedImages = Array.from(new Set([...posterUrls, ...backdropUrls]));
     state.posters = allCombinedImages;
     state.backdrops = allCombinedImages;
+    state._showAllImages = allCombinedImages;
 
     const rawLogos = (images.logos || []).slice(0, 5).map(l => `https://image.tmdb.org/t/p/w500${l.file_path}`);
     state.logos = Array.from(new Set(rawLogos));
@@ -200,6 +227,8 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     const firstBackdropIdx = posterUrls.length < allCombinedImages.length ? posterUrls.length : 0;
     state.selectedBackdropIndex = firstBackdropIdx;
     state.selectedLogoIndex = 0;
+    state.posterOffsetX = 0;
+    state.posterOffsetY = 0;
 
     const [pImg, bImg, lImg] = await Promise.all([
       loadCorsImage(state.posters[state.selectedPosterIndex]),

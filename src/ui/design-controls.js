@@ -67,6 +67,23 @@ export function initDesignControls() {
   bindSlider('slider-blur', 'val-blur', 'backdropBlur', (value) => `${value}px`);
   bindSlider('slider-poster-scale', 'val-poster-scale', 'posterScale', (value) => `${value.toFixed(2)}x`);
   bindSlider('slider-font-scale', 'val-font-scale', 'fontScale', (value) => `${value.toFixed(2)}x`);
+  bindSlider('slider-poster-offset-x', 'val-poster-offset-x', 'posterOffsetX', (value) => `${value > 0 ? `+${value}` : value}%`);
+  bindSlider('slider-poster-offset-y', 'val-poster-offset-y', 'posterOffsetY', (value) => `${value > 0 ? `+${value}` : value}%`);
+
+  document.getElementById('reset-photo-offsets-btn')?.addEventListener('click', () => {
+    state.posterOffsetX = 0;
+    state.posterOffsetY = 0;
+    const xSlider = document.getElementById('slider-poster-offset-x');
+    const xVal = document.getElementById('val-poster-offset-x');
+    const ySlider = document.getElementById('slider-poster-offset-y');
+    const yVal = document.getElementById('val-poster-offset-y');
+    if (xSlider) xSlider.value = 0;
+    if (xVal) xVal.textContent = '0%';
+    if (ySlider) ySlider.value = 0;
+    if (yVal) yVal.textContent = '0%';
+    scheduleCanvasRender();
+    showToast('Photo crop centered (0, 0)');
+  });
 
   document.getElementById('chk-gradient')?.addEventListener('change', (event) => {
     state.gradientOverlay = event.target.checked;
@@ -98,6 +115,8 @@ export function initDesignControls() {
     state.backdropBlur = 14;
     state.posterScale = 1.0;
     state.fontScale = 1.0;
+    state.posterOffsetX = 0;
+    state.posterOffsetY = 0;
 
     const brightnessSlider = document.getElementById('slider-brightness');
     const brightnessValue = document.getElementById('val-brightness');
@@ -118,6 +137,15 @@ export function initDesignControls() {
     const fontScaleValue = document.getElementById('val-font-scale');
     if (fontScaleSlider) fontScaleSlider.value = 1.0;
     if (fontScaleValue) fontScaleValue.textContent = '1.00x';
+
+    const xSlider = document.getElementById('slider-poster-offset-x');
+    const xVal = document.getElementById('val-poster-offset-x');
+    const ySlider = document.getElementById('slider-poster-offset-y');
+    const yVal = document.getElementById('val-poster-offset-y');
+    if (xSlider) xSlider.value = 0;
+    if (xVal) xVal.textContent = '0%';
+    if (ySlider) ySlider.value = 0;
+    if (yVal) yVal.textContent = '0%';
 
     scheduleCanvasRender();
     showToast('Sliders reset');

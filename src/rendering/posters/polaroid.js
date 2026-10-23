@@ -66,7 +66,7 @@ export function renderPolaroidPoster(ctx, w, h) {
     ctx.font = `600 ${Math.round(22 * fs)}px "JetBrains Mono", monospace`;
     ctx.fillStyle = '#57534E';
     ctx.textAlign = 'left';
-    const sub = [state.year, state.director ? `DIR. ${state.director.toUpperCase()}` : '', state.medium, state.runtime].filter(Boolean).join('  /  ');
+    const sub = [state.episodeTitle ? state.episodeTitle.toUpperCase() : state.year, state.director ? `DIR. ${state.director.toUpperCase()}` : '', state.medium, state.runtime].filter(Boolean).join('  /  ');
     ctx.fillText(getWrappedLines(ctx, sub, artW, 1)[0] || '', pad, subY);
   });
 

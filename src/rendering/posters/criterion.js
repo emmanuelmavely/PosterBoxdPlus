@@ -45,8 +45,10 @@ export function renderCriterionPoster(ctx, w, h) {
   drawMovableGroup(ctx, 'title', 'Criterion Title', { x: pad, y: topY, w: innerW, h: headerH }, () => {
     ctx.font = `600 ${Math.round(21 * fs)}px "JetBrains Mono", monospace`;
     ctx.fillStyle = ensureVisibleAccentOnDark(state.palette[2], '#40BCF4');
-    ctx.textAlign = 'left';
-    ctx.fillText(`A ${state.mediaType === 'tv' ? 'SERIES' : 'FILM'} BY ${(state.director || 'UNKNOWN').toUpperCase()}`, pad, topY + 20);
+    const byline = state.episodeTitle
+      ? `${state.episodeTitle.toUpperCase()} · ${(state.director || 'SERIES').toUpperCase()}`
+      : `A ${state.mediaType === 'tv' ? 'SERIES' : 'FILM'} BY ${(state.director || 'UNKNOWN').toUpperCase()}`;
+    ctx.fillText(byline, pad, topY + 20);
 
     ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
     ctx.fillStyle = '#FFFFFF';

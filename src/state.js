@@ -63,6 +63,8 @@ export const state = {
   backdropBrightness: 55,
   backdropBlur: 14,
   posterScale: 1.0,
+  posterOffsetX: 0,
+  posterOffsetY: 0,
   posterRadius: 20,
   fontScale: 1.0,
   sectionSpacing: 1.0,
