@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [v1.2.1] - 2026-10-23
+
+### Fixed
+- **API Key Button Interaction & Accessibility**: Replaced external webfont icon with an inline vector SVG so the TMDB key button is immediately recognizable and never appears empty or invisible before font assets load. Added explicit `cursor-pointer` and hover feedback.
+- **Backdrop & Keyboard Dismissal**: Clicking anywhere outside the TMDB API Key dialog on the dimmed backdrop or pressing the `Escape` key now immediately closes the modal.
+
+---
+
 ## [v1.2.0] - 2026-10-23
 
 ### Added

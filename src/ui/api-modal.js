@@ -44,6 +44,20 @@ export function initApiModal() {
   closeButton?.addEventListener('click', closeApiModal);
   cancelButton?.addEventListener('click', closeApiModal);
 
+  // Close modal when clicking on the dimmed backdrop outside the inner modal
+  const apiModal = document.getElementById('api-modal');
+  apiModal?.addEventListener('click', (e) => {
+    if (e.target === apiModal) {
+      closeApiModal();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && apiModal && !apiModal.classList.contains('hidden')) {
+      closeApiModal();
+    }
+  });
+
   keyInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
