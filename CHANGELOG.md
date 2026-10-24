@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to **PosterBoxd Studio** are documented here.
+All notable changes to **PosterBoxd** are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Fuzzy Title Matching & Query Fallbacks (`search-logic.js`)**: Pure, UI-independent algorithmic module providing Levenshtein edit distance, token-level scoring, and fallback search query ranking to find close matches for misspellings.
 - **Poster Footer Multi-Select Choice Chips**: Choice chips in Poster Studio settings allowing users to independently toggle footer elements drawn on canvas (`@Username`, `PosterBoxd`, `Letterboxd`, `Venue / Logged`).
 - **Marquee Segmented Title Mode Switcher**: Replaced the single checkbox with a 3-way segmented switch (`| Normal text | Bulb | Logo artwork |`) for Design 10 (Marquee).
+- **Progressive Web App (PWA) Support**: Full offline caching and "Add to Home Screen" support enabled via [manifest.json](file:///c:/Users/emz/Documents/GitHub/PosterBoxdPlus/manifest.json) and [sw.js](file:///c:/Users/emz/Documents/GitHub/PosterBoxdPlus/sw.js). Includes desktop/Android `beforeinstallprompt` handling and guided iOS Home Screen installation modal.
+- **Authentic App Icon Suite**: Exported pixel-perfect icons from master [favicon.png](file:///c:/Users/emz/Documents/GitHub/PosterBoxdPlus/favicon.png) for [favicon.ico](file:///c:/Users/emz/Documents/GitHub/PosterBoxdPlus/favicon.ico) (48×48), [apple-touch-icon.png](file:///c:/Users/emz/Documents/GitHub/PosterBoxdPlus/apple-touch-icon.png) (180×180), [icon-192.png](file:///c:/Users/emz/Documents/GitHub/PosterBoxdPlus/icon-192.png) (192×192), and [icon-512.png](file:///c:/Users/emz/Documents/GitHub/PosterBoxdPlus/icon-512.png) (512×512) without artificial colors or altered styling.
+- **Social Preview Banner & SEO Schema**: Configured [PosterBoxd-Banner.jpg](file:///c:/Users/emz/Documents/GitHub/PosterBoxdPlus/PosterBoxd-Banner.jpg) across Open Graph, Twitter cards, and WebSite/WebApplication JSON-LD schemas in [index.html](file:///c:/Users/emz/Documents/GitHub/PosterBoxdPlus/index.html).
 - **Artwork-Aware Crop Sliders**: Photo Crop Offset Correction (X & Y) sliders and Center button are automatically disabled and dimmed when no image artwork is present to crop.
 
 ### Changed

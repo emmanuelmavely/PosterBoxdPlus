@@ -10,6 +10,7 @@ import { initAssetControls } from './ui/assets.js';
 import { initDesignControls } from './ui/design-controls.js';
 import { initCanvasInteractions } from './ui/canvas-interactions.js';
 import { initExportControls } from './ui/export-controls.js';
+import { initPwaInstall } from './ui/pwa-install.js';
 
 function setSplashProgress(pct, msg) {
   const bar = document.getElementById('splash-progress-bar');
@@ -45,6 +46,7 @@ async function bootstrap() {
   initDesignControls();
   initCanvasInteractions();
   initExportControls();
+  initPwaInstall();
 
   setSplashProgress(45, 'Loading archival typography & fonts...');
   if (document.fonts && document.fonts.ready) {
@@ -58,7 +60,7 @@ async function bootstrap() {
     // Graceful fallback when network is offline
   }
 
-  setSplashProgress(90, 'Finalizing PosterBoxd Studio interface...');
+  setSplashProgress(90, 'Finalizing PosterBoxd interface...');
   switchView('home');
 
   await dismissSplashScreen();

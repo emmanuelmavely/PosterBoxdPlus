@@ -3,27 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>PosterBoxd Studio — Cinema & TV Review Poster Generator</title>
-  <link rel="icon" type="image/svg+xml" href="./favicon.svg">
+  <title>PosterBoxd — Cinema & TV Review Poster Generator</title>
+  <link rel="icon" type="image/x-icon" href="./favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png">
+  <link rel="icon" type="image/svg+xml" href="./assets/icons/favicon.svg">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/icons/apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.json">
   <link rel="canonical" href="https://emmanuelmavely.github.io/PosterBoxdPlus/">
 
+  <!-- Mobile PWA Capable -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PosterBoxd">
+  <meta name="theme-color" content="#0B0C0E">
+
   <!-- SEO Meta -->
-  <meta name="description" content="Create stunning cinema review posters for any movie or TV series. Search TMDB, import Letterboxd reviews, pick from 11 premium poster styles, and download high-res PNGs — all free, no sign-up.">
+  <meta name="description" content="Create stunning cinema review posters for any movie or TV series. Search TMDB, import Letterboxd reviews, pick from 11 designer poster styles, and export high-res PNGs — all free, no sign-up.">
   <meta name="keywords" content="PosterBoxd, movie poster generator, Letterboxd poster, cinema review poster, film poster maker, TMDB, TV series poster, movie review art">
   <meta name="author" content="Emmanuel Mavely">
-  <meta name="theme-color" content="#0B0C0E">
 
   <!-- Open Graph (Facebook, Discord, WhatsApp, iMessage link previews) -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://emmanuelmavely.github.io/PosterBoxdPlus/">
-  <meta property="og:title" content="PosterBoxd Studio — Cinema & TV Review Poster Generator">
+  <meta property="og:title" content="PosterBoxd — Cinema & TV Review Poster Generator">
   <meta property="og:description" content="Search any movie or TV series, import Letterboxd reviews, and craft beautiful cinema posters in 11 unique styles. Free and open-source.">
-  <meta property="og:site_name" content="PosterBoxd Studio">
+  <meta property="og:site_name" content="PosterBoxd">
+  <meta property="og:image" content="https://emmanuelmavely.github.io/PosterBoxdPlus/assets/PosterBoxd-Banner.jpg">
+  <meta property="og:image:secure_url" content="https://emmanuelmavely.github.io/PosterBoxdPlus/assets/PosterBoxd-Banner.jpg">
+  <meta property="og:image:type" content="image/jpeg">
+  <meta property="og:image:width" content="1344">
+  <meta property="og:image:height" content="756">
+  <meta property="og:image:alt" content="PosterBoxd — Cinema & TV Review Poster Generator Banner">
 
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="PosterBoxd Studio — Cinema & TV Review Poster Generator">
+  <meta name="twitter:title" content="PosterBoxd — Cinema & TV Review Poster Generator">
   <meta name="twitter:description" content="Create stunning cinema review posters for any movie or TV series. 11 premium styles, Letterboxd import, TMDB search — all free.">
+  <meta name="twitter:image" content="https://emmanuelmavely.github.io/PosterBoxdPlus/assets/PosterBoxd-Banner.jpg">
+
+  <!-- WebSite & WebApplication JSON-LD Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://emmanuelmavely.github.io/PosterBoxdPlus/#website",
+        "url": "https://emmanuelmavely.github.io/PosterBoxdPlus/",
+        "name": "PosterBoxd",
+        "description": "Create stunning cinema review posters for any movie or TV series. Search TMDB, import Letterboxd reviews, pick from 11 designer styles, and export high-res PNGs.",
+        "inLanguage": "en-US",
+        "author": {
+          "@type": "Person",
+          "name": "Emmanuel Mavely"
+        }
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://emmanuelmavely.github.io/PosterBoxdPlus/#app",
+        "name": "PosterBoxd",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires HTML5 Canvas support",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    ]
+  }
+  </script>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts -->
@@ -122,8 +173,13 @@
       <div id="header-search-results" class="hidden absolute left-0 right-0 top-full mt-2 bg-slatepanel border border-white/15 rounded-2xl shadow-2xl z-50 max-h-72 overflow-y-auto p-1.5 space-y-1 text-left"></div>
     </div>
 
-    <!-- Right Action: History Button + TMDB Key Button -->
+    <!-- Right Action: Install Button + History Button + TMDB Key Button -->
     <div class="flex items-center gap-2 shrink-0">
+      <button id="install-pwa-btn" type="button" title="Install PosterBoxd App" aria-label="Install PosterBoxd App"
+        class="hidden px-2.5 sm:px-3 h-10 rounded-xl bg-cardbg hover:bg-elevated border border-lbgreen/40 hover:border-lbgreen/80 items-center justify-center gap-1.5 text-xs font-semibold text-lbgreen transition shadow-md group">
+        <i class="fa-solid fa-download text-xs text-lbgreen group-hover:translate-y-0.5 transition-transform pointer-events-none"></i>
+        <span class="hidden sm:inline text-xs font-mono pointer-events-none">Install</span>
+      </button>
       <button id="header-history-btn" type="button" title="View Saved History" aria-label="View Saved History"
         class="hidden px-3 h-10 rounded-xl bg-cardbg hover:bg-elevated border border-white/15 items-center justify-center gap-1.5 text-xs font-semibold text-gray-200 hover:text-lbgreen transition shadow-md">
         <i class="fa-solid fa-clock-rotate-left text-sm pointer-events-none text-lbblue"></i>
@@ -665,7 +721,7 @@
   <footer class="w-full mt-auto border-t border-white/5 bg-obsidian/95 py-3 px-4 z-10 text-[11px] text-gray-400">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
       <div class="flex items-center gap-2">
-        <span class="font-display font-semibold text-gray-300">PosterBoxd Studio</span>
+        <span class="font-display font-semibold text-gray-300">PosterBoxd</span>
         <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-gray-400">v1.3.1</span>
         <span class="text-gray-600">&bull;</span>
         <a href="https://github.com/emmanuelmavely/PosterBoxdPlus" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition font-mono hover:underline inline-flex items-center gap-1">
@@ -760,6 +816,22 @@
     <span id="toast-message">Updated</span>
   </div>
 
+  <!-- PWA UPDATE NOTIFICATION BANNER -->
+  <div id="pwa-update-banner" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slatepanel/95 backdrop-blur-md border border-lbgreen/40 shadow-2xl rounded-2xl px-4 py-2.5 items-center gap-3 text-xs text-white animate-in fade-in slide-in-from-bottom-3 duration-200">
+    <div class="flex items-center gap-2 font-medium">
+      <i class="fa-solid fa-sparkles text-lbgreen"></i>
+      <span>New update available!</span>
+    </div>
+    <div class="flex items-center gap-1.5">
+      <button id="pwa-refresh-btn" type="button" class="px-3 py-1 bg-lbgreen hover:bg-[#1ed760] text-obsidian font-bold rounded-lg transition text-xs shadow-md">
+        Update Now
+      </button>
+      <button id="pwa-dismiss-update-btn" type="button" title="Dismiss" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
+        <i class="fa-solid fa-xmark text-xs"></i>
+      </button>
+    </div>
+  </div>
+
   <!-- POPUP WARNING: PROCEEDING WITH LETTERBOXD FIND WITHOUT TMDB API KEY -->
   <div id="tmdb-lb-warning-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md items-center justify-center p-4">
     <div class="bg-slatepanel border border-amber-500/30 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 text-left animate-in fade-in zoom-in-95 duration-150">
@@ -795,6 +867,47 @@
         <button type="button" id="lb-warning-add-key-btn" class="px-4 py-2 rounded-xl bg-lbgreen hover:bg-[#1ed760] text-obsidian font-bold text-xs flex items-center gap-1.5 transition">
           <i class="fa-solid fa-key"></i>
           <span>Add TMDb Key</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP: PWA INSTALL GUIDE FOR IOS / MOBILE -->
+  <div id="pwa-install-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md items-center justify-center p-4">
+    <div class="bg-slatepanel border border-white/15 rounded-3xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-left animate-in fade-in zoom-in-95 duration-150">
+      <div class="flex items-start gap-3">
+        <img src="./assets/icons/apple-touch-icon.png" alt="PosterBoxd Icon" class="w-12 h-12 rounded-2xl shadow-md shrink-0 border border-white/10" />
+        <div class="flex-1 min-w-0">
+          <h3 class="font-display font-bold text-base text-white">Install PosterBoxd</h3>
+          <p class="text-xs text-lbgreen font-mono mt-0.5">Add to Home Screen</p>
+        </div>
+        <button type="button" id="close-pwa-modal-btn" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-gray-300 leading-relaxed">
+        Install PosterBoxd on your device for instant launch, offline capability, and a full-screen native app experience:
+      </p>
+
+      <ol class="space-y-2.5 text-xs text-gray-300">
+        <li class="flex items-start gap-2.5 bg-cardbg p-2.5 rounded-xl border border-white/5">
+          <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-[10px] text-white shrink-0 mt-0.5">1</span>
+          <span>Tap the <strong class="text-white">Share</strong> button <i class="fa-solid fa-arrow-up-from-bracket text-lbblue mx-0.5"></i> in Safari's toolbar.</span>
+        </li>
+        <li class="flex items-start gap-2.5 bg-cardbg p-2.5 rounded-xl border border-white/5">
+          <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-[10px] text-white shrink-0 mt-0.5">2</span>
+          <span>Scroll down and select <strong class="text-white">"Add to Home Screen"</strong> <i class="fa-regular fa-square-plus text-lbgreen mx-0.5"></i>.</span>
+        </li>
+        <li class="flex items-start gap-2.5 bg-cardbg p-2.5 rounded-xl border border-white/5">
+          <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center font-mono font-bold text-[10px] text-white shrink-0 mt-0.5">3</span>
+          <span>Tap <strong class="text-white">Add</strong> in the top right to install!</span>
+        </li>
+      </ol>
+
+      <div class="flex items-center justify-end pt-1">
+        <button type="button" id="dismiss-pwa-modal-btn" class="w-full py-2.5 rounded-xl bg-lbgreen hover:bg-[#1ed760] text-obsidian font-bold text-xs transition">
+          Got it
         </button>
       </div>
     </div>

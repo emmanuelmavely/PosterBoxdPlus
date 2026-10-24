@@ -1,0 +1,51 @@
+{
+  "name": "PosterBoxd — Cinema & TV Review Poster Generator",
+  "short_name": "PosterBoxd",
+  "description": "Create stunning cinema review posters for any movie or TV series. Search TMDB, import Letterboxd reviews, pick from 11 designer styles, and export high-res PNGs.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0B0C0E",
+  "theme_color": "#0B0C0E",
+  "lang": "en",
+  "categories": [
+    "entertainment",
+    "photo",
+    "design",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "./favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "./assets/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./assets/PosterBoxd-Banner.jpg",
+      "sizes": "1344x756",
+      "type": "image/jpeg",
+      "form_factor": "wide",
+      "label": "PosterBoxd Banner"
+    }
+  ]
+}

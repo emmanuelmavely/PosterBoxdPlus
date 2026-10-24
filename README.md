@@ -1,8 +1,10 @@
 <div align="center">
 
-<img src="./favicon.svg" alt="PosterBoxd Studio Logo" width="96" height="96" style="border-radius: 22px; margin-bottom: 8px;" />
+<img src="./assets/icons/favicon.svg" alt="PosterBoxd Logo" width="96" height="96" style="border-radius: 22px; margin-bottom: 8px;" />
 
-# PosterBoxd Studio
+# PosterBoxd
+
+<img src="./assets/PosterBoxd-Banner.jpg" alt="PosterBoxd Banner" width="100%" style="border-radius: 14px; margin: 12px 0 16px 0;" />
 
 [![Live on GitHub Pages](https://img.shields.io/badge/Live_Site-posterboxd.com-00E054?style=flat-square&logo=githubpages&logoColor=white)](https://posterboxd.com/)
 [![Version](https://img.shields.io/badge/version-v1.3.1-00E054?style=flat-square)](CHANGELOG.md)
@@ -160,7 +162,7 @@ Here are sample high-resolution posters generated across different archetypes:
 ## Live Site & Running Locally
 
 ### Live Site
-PosterBoxd Studio is live and hosted via GitHub Pages with a custom domain:
+PosterBoxd is live and hosted via GitHub Pages with a custom domain:
 ```
 https://posterboxd.com/
 ```
@@ -210,7 +212,7 @@ https://posterboxd.com/
 
 ## Configuration & Storage
 
-PosterBoxd Studio requires no server backend; all user settings and cache are persisted in browser `localStorage`:
+PosterBoxd requires no server backend; all user settings and cache are persisted in browser `localStorage`:
 
 | Key | Storage Target | Description |
 |-----|----------------|-------------|
