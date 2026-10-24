@@ -30,9 +30,11 @@ export function renderCriterionPoster(ctx, w, h) {
   ctx.fillStyle = '#E5E7EB';
   ctx.textAlign = 'left';
   ctx.fillText('THE POSTERBOXD ARCHIVE EDITION', pad, topY);
-  ctx.textAlign = 'right';
-  ctx.fillStyle = accentColor;
-  ctx.fillText(`SPINE ${state.spine || '#0101'}`, w - pad, topY);
+  if (state.spine) {
+    ctx.textAlign = 'right';
+    ctx.fillStyle = accentColor;
+    ctx.fillText(`SPINE ${state.spine}`, w - pad, topY);
+  }
 
   topY += 20;
   ctx.fillStyle = 'rgba(255,255,255,0.22)';
@@ -43,18 +45,32 @@ export function renderCriterionPoster(ctx, w, h) {
   const headerH = tLayout.lines.length * tLayout.lineHeight + 42;
 
   drawMovableGroup(ctx, 'title', 'Criterion Title', { x: pad, y: topY, w: innerW, h: headerH }, () => {
+    ctx.save();
+    ctx.textAlign = 'left';
     ctx.font = `600 ${Math.round(21 * fs)}px "JetBrains Mono", monospace`;
     ctx.fillStyle = ensureVisibleAccentOnDark(state.palette[2], '#40BCF4');
     const byline = state.episodeTitle
-      ? `${state.episodeTitle.toUpperCase()} · ${(state.director || 'SERIES').toUpperCase()}`
-      : `A ${state.mediaType === 'tv' ? 'SERIES' : 'FILM'} BY ${(state.director || 'UNKNOWN').toUpperCase()}`;
-    ctx.fillText(byline, pad, topY + 20);
+      ? `${state.episodeTitle.toUpperCase()} · ${(state.director || '').toUpperCase()}`
+      : (state.director ? `A ${state.mediaType === 'tv' ? 'SERIES' : 'FILM'} BY ${state.director.toUpperCase()}` : (state.year ? `FEATURE PRESENTATION · ${state.year}` : ''));
+    if (byline) {
+      ctx.fillText(byline, pad, topY + 20);
+    }
 
-    ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
-    ctx.fillStyle = '#FFFFFF';
-    tLayout.lines.forEach((line, idx) => {
-      ctx.fillText(line, pad, topY + 30 + (idx + 1) * tLayout.fontPx + idx * 4);
-    });
+    if (state.useLogoImage && state.logoImg) {
+      const maxLW = Math.round(innerW * 0.7);
+      const maxLH = Math.round(headerH - 24);
+      const ratio = Math.min(maxLW / state.logoImg.width, maxLH / state.logoImg.height);
+      const lw = Math.round(state.logoImg.width * ratio);
+      const lh = Math.round(state.logoImg.height * ratio);
+      ctx.drawImage(state.logoImg, pad, topY + 28, lw, lh);
+    } else {
+      ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
+      ctx.fillStyle = '#FFFFFF';
+      tLayout.lines.forEach((line, idx) => {
+        ctx.fillText(line, pad, topY + 30 + (idx + 1) * tLayout.fontPx + idx * 4);
+      });
+    }
+    ctx.restore();
   });
 
   topY += headerH + 22;

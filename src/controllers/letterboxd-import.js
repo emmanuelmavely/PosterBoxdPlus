@@ -1,4 +1,4 @@
-import { state } from '../state.js';
+import { state, resetMediaState } from '../state.js';
 import { tmdbFetch } from '../services/tmdb.js';
 import {
   cleanLetterboxdRawTitle,
@@ -8,11 +8,11 @@ import { loadCorsImage, extractDominantPalette } from '../services/media-assets.
 import { recordCurrentFetchToHistory } from '../services/storage.js';
 import { loadTmdbMediaDetails } from './media.js';
 import { renderHistoryListUI } from '../ui/history.js';
-import { renderPaletteSwatchesUI } from '../ui/assets.js';
+import { renderPaletteSwatchesUI, renderAssetPickerStrips } from '../ui/assets.js';
 import { syncReviewFormState } from '../ui/review-form.js';
 import { syncQrToggleVisibility } from '../ui/qr-controls.js';
 import { showToast } from '../ui/toast.js';
-import { switchView } from '../ui/navigation.js';
+import { switchView, updateNavigationButtonsDisabledState } from '../ui/navigation.js';
 import { scheduleCanvasRender } from '../rendering/canvas-renderer.js';
 
 export async function applyLetterboxdReviewData(reviewData) {
@@ -52,16 +52,25 @@ export async function applyLetterboxdReviewData(reviewData) {
       reviewUrl = reviewData.url || '';
     }
 
+    resetMediaState();
     state.isFromLetterboxd = true;
-    state.showQrCode = true;
+    state.showQrCode = Boolean(reviewUrl);
     state.letterboxdUrl = reviewUrl;
+    state.hasSelectedMedia = true;
+    updateNavigationButtonsDisabledState();
     syncQrToggleVisibility();
 
+    if (movieTitle) state.title = movieTitle;
+    if (releaseYear) {
+      state.year = releaseYear;
+      state.spine = `#${releaseYear}`;
+    }
     if (reviewer) {
       state.username = reviewer;
       localStorage.setItem('posterboxd_username', reviewer);
     }
-    if (rating > 0) state.rating = rating;
+    const importedRating = rating;
+    state.rating = importedRating;
     state.isLiked = isLiked;
 
     if (watchedDate && !/recently/i.test(watchedDate)) {
@@ -84,10 +93,12 @@ export async function applyLetterboxdReviewData(reviewData) {
     if (posterImgUrl && !posterImgUrl.includes('empty-poster')) {
       const loadedPoster = await loadCorsImage(posterImgUrl);
       if (loadedPoster) {
-        state.posters = [posterImgUrl, ...state.posters];
-        state.backdrops = [posterImgUrl, ...state.backdrops];
+        state.posters = [posterImgUrl];
+        state.backdrops = [posterImgUrl];
         state.selectedPosterIndex = 0;
+        state.selectedBackdropIndex = 0;
         state.posterImg = loadedPoster;
+        state.backdropImg = loadedPoster;
         state.palette = extractDominantPalette(loadedPoster, state.palette);
         renderPaletteSwatchesUI();
       }
@@ -106,8 +117,11 @@ export async function applyLetterboxdReviewData(reviewData) {
         if (firstHit) {
           await loadTmdbMediaDetails(firstHit.id, 'movie', true);
           state.isFromLetterboxd = true;
-          state.showQrCode = true;
+          state.rating = importedRating; // Freeze rating from PosterBoxd review strictly
+          state.showQrCode = Boolean(reviewUrl);
           state.letterboxdUrl = reviewUrl;
+          state.hasSelectedMedia = true;
+          updateNavigationButtonsDisabledState();
           syncQrToggleVisibility();
           syncReviewFormState();
           recordCurrentFetchToHistory();
@@ -120,6 +134,19 @@ export async function applyLetterboxdReviewData(reviewData) {
 
     if (movieTitle) state.title = movieTitle;
     if (releaseYear) state.year = releaseYear;
+    // Explicitly clear any stale crew/metadata/logos when no TMDB key is present
+    state.director = '';
+    state.writer = '';
+    state.dop = '';
+    state.music = '';
+    state.cast = '';
+    state.genre = '';
+    state.runtime = '';
+    state.logos = [];
+    state.logoImg = null;
+    state.selectedLogoIndex = 0;
+
+    renderAssetPickerStrips();
     syncReviewFormState();
     recordCurrentFetchToHistory();
     renderHistoryListUI();

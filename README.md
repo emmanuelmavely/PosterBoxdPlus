@@ -5,6 +5,7 @@
 # PosterBoxd Studio
 
 [![Live on GitHub Pages](https://img.shields.io/badge/Live_Site-posterboxd.com-00E054?style=flat-square&logo=githubpages&logoColor=white)](https://posterboxd.com/)
+[![Version](https://img.shields.io/badge/version-v1.3.0-00E054?style=flat-square)](CHANGELOG.md)
 [![Deploy to GitHub Pages](https://github.com/emmanuelmavely/PosterBoxdPlus/actions/workflows/static.yml/badge.svg)](https://github.com/emmanuelmavely/PosterBoxdPlus/actions/workflows/static.yml)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES_Modules-F7DF1E?logo=javascript&logoColor=black)
 ![No build step](https://img.shields.io/badge/build-none-00E054)
@@ -106,16 +107,20 @@ Here are sample high-resolution posters generated across different archetypes:
 
 ### Content & Media Discovery
 - **TMDB Integration:** Live search across movies and TV series using [The Movie Database (TMDB) API](https://developer.themoviedb.org/docs), retrieving high-res posters, backdrops, transparent title logos, cast, director/creator credits, release dates, runtime, and genres.
-- **Letterboxd Review Import:** Paste any review URL (standard `letterboxd.com/<user>/film/<slug>/` or short `https://boxd.it/<code >` links) or raw review JSON to automatically extract review text, star ratings, review date, liked status, and reviewer handle.
+- **Letterboxd Review Import:** Paste any review URL (standard `letterboxd.com/<user>/film/<slug>/` or short `https://boxd.it/<code >` links) or raw review JSON to dynamically search, preview dropdown cards, and extract review text, star ratings, review date, liked status, and reviewer handle.
+- **Rating Integrity & Lock:** Imported Letterboxd ratings are locked and prioritized strictly so user review scores remain authentic.
+- **TMDb Missing Key Awareness:** Built-in popup modal and persistent top warning banner informing users when proceeding without a TMDb key, detailing metadata expectations.
+- **State Isolation & Zero Dummy Data:** Dedicated `resetMediaState` engine ensuring every new search or review import is clean: unavailable crew or artwork fields remain blank without fallback dummy strings or bleed from previous finds.
 - **TV Series & Episode Specificity:** Dedicated TV episode selector allowing you to target specific seasons and episodes (e.g., *Succession S04E03*) with episode titles and metadata.
 - **Review Customization:** Custom 0–5★ star ratings (including half-stars), heart toggle, viewing medium pills (Theater, IMAX, Dolby Cinema, 70mm, 4DX, RealD 3D, Netflix, Prime Video, JioHotstar, OTT), tags, and custom venue/date input.
-- **Dynamic Scannable QR Codes:** Optional on-poster QR code linking directly to the original Letterboxd review or movie entry.
+- **Context-Aware Scannable QR Codes:** On-poster QR code linking directly to the authentic Letterboxd review, automatically scoped and visible only when importing from a review URL.
 
 ### Visual Design & Customization
-- **11 Curated Poster Styles:** From vintage admission tickets and classic Criterion editions to editorial layouts, retro grindhouse bills, and glassmorphism cards.
+- **11 Curated Poster Styles:** From vintage admission tickets and classic Criterion editions to editorial layouts, retro grindhouse bills, cinema marquees, and glassmorphism cards.
+- **Cinema Marquee Bulb Illumination:** Toggle between illuminated retro incandescent lightbulbs and vector typography, with a 1.3× scaled main marquee title.
+- **Adaptive Palette Color Theming:** Automatic 5-swatch palette sampling from the artwork to dynamically theme accents, ticket stubs, and header bylines with high contrast.
 - **3 Export Aspect Ratios:** 9:16 (Stories/Reels 1080×1920), 4:5 (Instagram portrait 1080×1350), and 2:3 (Classic cinema 1200×1800).
-- **Artwork & Palette Controls:** Backdrop blur, brightness tint, poster sizing, corner radius, film grain overlay, and custom gradient accents.
-- **Dominant Color Extraction:** Automatic 5-swatch palette sampling from the artwork to theme accents, borders, and typography.
+- **Artwork & Palette Controls:** Backdrop blur, brightness tint, focal-point crop offset sliders (X & Y), poster sizing, corner radius, film grain overlay, and custom gradient accents.
 - **Interactive Move & Resize Mode:** Click and drag canvas elements or scale them with hotkeys; custom transforms are automatically saved per poster style.
 
 ### Export & Workflow

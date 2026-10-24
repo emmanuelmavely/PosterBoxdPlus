@@ -66,7 +66,9 @@ export function renderTicketPoster(ctx, w, h) {
   ctx.fillText(getWrappedLines(ctx, topStubHeader, innerW * 0.72, 1)[0] || '', innerPad, curY);
   ctx.textAlign = 'right';
   ctx.fillStyle = '#18181B';
-  ctx.fillText(`NO. ${state.spine.replace('#', '') || '02049'}`, tx + ticketW - 52, curY);
+  if (state.spine) {
+    ctx.fillText(`NO. ${state.spine.replace('#', '')}`, tx + ticketW - 52, curY);
+  }
 
   curY += 22;
   const artH = Math.round((h < 1500 ? ticketH * 0.28 : ticketH * 0.32) * Math.min(1.06, state.posterScale));
@@ -114,13 +116,13 @@ export function renderTicketPoster(ctx, w, h) {
     ctx.fillStyle = '#18181B';
     ctx.fillText(getWrappedLines(ctx, val || '—', colW - 14, 1)[0] || '—', xPos, yPos + 26);
   };
-  drawStubCell('WATCHED AT', state.watchedAt || (state.mediaType === 'tv' ? 'Digital Stream' : 'Cinema / Stream'), metaStartX, curY + 10);
+  drawStubCell('WATCHED AT', state.watchedAt || '—', metaStartX, curY + 10);
   if (state.episodeTitle) {
     drawStubCell('EPISODE', state.episodeTitle, metaStartX + colW, curY + 10);
   } else {
-    drawStubCell('FORMAT / RUNTIME', [state.medium, state.runtime].filter(Boolean).join(' · ') || 'Standard', metaStartX + colW, curY + 10);
+    drawStubCell('FORMAT / RUNTIME', [state.medium, state.runtime].filter(Boolean).join(' · ') || '—', metaStartX + colW, curY + 10);
   }
-  drawStubCell('DATE LOGGED', formatSafeDate(state.watchedDate) || state.year, metaStartX, curY + 72);
+  drawStubCell('DATE LOGGED', formatSafeDate(state.watchedDate) || state.year || '—', metaStartX, curY + 72);
   drawStubCell(state.mediaType === 'tv' ? (state.episodeTitle ? 'EP. DIRECTOR' : 'CREATOR') : 'DIRECTOR', state.director || '—', metaStartX + colW, curY + 72);
 
   curY += 132;

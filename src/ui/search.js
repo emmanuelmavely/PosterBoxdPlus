@@ -3,6 +3,59 @@ import { tmdbFetch } from '../services/tmdb.js';
 import { fetchLetterboxdReview } from '../services/letterboxd.js';
 import { loadDemoPreset, loadTmdbMediaDetails } from '../controllers/media.js';
 import { applyLetterboxdReviewData } from '../controllers/letterboxd-import.js';
+import { openApiModal } from './api-modal.js';
+
+function promptLetterboxdProceedWithoutTmdb(onProceed) {
+  if (state.tmdbApiKey && state.tmdbApiKey.trim().length > 0) {
+    onProceed();
+    return;
+  }
+
+  const modal = document.getElementById('tmdb-lb-warning-modal');
+  if (!modal) {
+    onProceed();
+    return;
+  }
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+
+  const closeBtn = document.getElementById('close-lb-warning-modal-btn');
+  const proceedBtn = document.getElementById('lb-warning-proceed-btn');
+  const addKeyBtn = document.getElementById('lb-warning-add-key-btn');
+
+  const cleanup = () => {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    closeBtn?.removeEventListener('click', onClose);
+    proceedBtn?.removeEventListener('click', onAccept);
+    addKeyBtn?.removeEventListener('click', onAddKey);
+    modal.removeEventListener('click', onBackdrop);
+    window.removeEventListener('keydown', onKey);
+  };
+
+  const onClose = () => cleanup();
+  const onAccept = () => {
+    cleanup();
+    onProceed();
+  };
+  const onAddKey = () => {
+    cleanup();
+    openApiModal();
+  };
+  const onBackdrop = (e) => {
+    if (e.target === modal) cleanup();
+  };
+  const onKey = (e) => {
+    if (e.key === 'Escape') cleanup();
+  };
+
+  closeBtn?.addEventListener('click', onClose);
+  proceedBtn?.addEventListener('click', onAccept);
+  addKeyBtn?.addEventListener('click', onAddKey);
+  modal.addEventListener('click', onBackdrop);
+  window.addEventListener('keydown', onKey);
+}
 
 export function initSearch() {
   const homeInput = document.getElementById('home-search-input');
@@ -13,15 +66,58 @@ export function initSearch() {
   // Reusable search function for both Home Search and Header Search (Supports Letterboxd URLs, Raw JSON, and TMDB Search)
   const runLiveSearch = async (inputEl, resultsEl) => {
     const q = inputEl.value.trim();
-    if (!q) return;
+    if (!q) {
+      if (!state.tmdbApiKey) {
+        openApiModal();
+      } else {
+        inputEl.focus();
+      }
+      return;
+    }
 
     // 1. Check if user pasted raw Letterboxd JSON output directly
     if (q.startsWith('{') && q.endsWith('}')) {
       try {
         const parsedJson = JSON.parse(q);
-        if (parsedJson.movie || parsedJson.review || parsedJson.url) {
-          resultsEl.classList.add('hidden');
-          await applyLetterboxdReviewData(parsedJson);
+        if (parsedJson.movie || parsedJson.review || parsedJson.url || parsedJson.movieTitle) {
+          const mTitle = parsedJson.movie?.title || parsedJson.movieTitle || 'Review Film';
+          const mYear = parsedJson.movie?.year || parsedJson.releaseYear || '';
+          const mUser = parsedJson.reviewer?.name || parsedJson.reviewer || 'user';
+          const mRating = parsedJson.review?.ratingStars || parsedJson.rating || '';
+          const mText = (parsedJson.review?.paragraphs?.[0] || parsedJson.review || 'Letterboxd review import').substring(0, 110);
+          const mPoster = parsedJson.movie?.posterUrl || parsedJson.posterImg || '';
+
+          resultsEl.classList.remove('hidden');
+          resultsEl.innerHTML = `
+            <div class="p-1 space-y-1">
+              <div class="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-lbgreen flex items-center justify-between">
+                <span class="flex items-center gap-1.5"><i class="fa-solid fa-square-check"></i> Letterboxd JSON Found</span>
+                <span class="text-[9px] text-gray-400 font-mono">1 Match</span>
+              </div>
+              <button type="button" id="select-lb-json-hit"
+                class="w-full flex items-center gap-3 p-2.5 rounded-xl bg-cardbg hover:bg-elevated border border-lbgreen/30 text-left transition group">
+                ${mPoster ? `<img src="${mPoster}" class="w-10 h-14 object-cover rounded shrink-0 shadow" />` : `<div class="w-10 h-14 bg-obsidian border border-white/10 rounded flex items-center justify-center shrink-0 text-lbgreen"><i class="fa-solid fa-code text-base"></i></div>`}
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs font-bold text-white flex items-center gap-2 truncate">
+                    <span class="truncate">${mTitle} ${mYear ? `(${mYear})` : ''}</span>
+                    ${mRating ? `<span class="text-amber-400 font-mono text-[11px] shrink-0 font-normal">★ ${mRating}</span>` : ''}
+                  </div>
+                  <div class="text-[11px] text-gray-300 truncate mt-0.5">
+                    <span class="text-lbblue font-semibold">@${mUser}</span>: "${mText}"
+                  </div>
+                  <div class="text-[10px] text-lbgreen font-mono mt-1 flex items-center gap-1 group-hover:underline">
+                    <i class="fa-solid fa-arrow-pointer text-[9px]"></i> Click to select & build poster
+                  </div>
+                </div>
+              </button>
+            </div>
+          `;
+          document.getElementById('select-lb-json-hit')?.addEventListener('click', () => {
+            resultsEl.classList.add('hidden');
+            promptLetterboxdProceedWithoutTmdb(async () => {
+              await applyLetterboxdReviewData(parsedJson);
+            });
+          });
           return;
         }
       } catch (e) {}
@@ -41,12 +137,8 @@ export function initSearch() {
       resultsEl.classList.remove('hidden');
       resultsEl.innerHTML = `<div class="text-xs font-mono text-lbblue py-3 text-center"><i class="fa-solid fa-circle-notch fa-spin mr-1.5"></i>Fetching Letterboxd review...</div>`;
 
-      const reviewData = await fetchLetterboxdReview(reviewUrl);
-      if (reviewData && reviewData.movieTitle) {
-        resultsEl.classList.add('hidden');
-        await applyLetterboxdReviewData(reviewData);
-        return;
-      } else {
+      let reviewData = await fetchLetterboxdReview(reviewUrl);
+      if (!reviewData || !reviewData.movieTitle) {
         // Fallback: Extract username & film slug from the URL itself so it still works even if CORS proxies are rate-limited
         try {
           const u = new URL(reviewUrl);
@@ -57,27 +149,70 @@ export function initSearch() {
           if (slug) {
             const yearInSlug = slug.match(/-(\d{4})$/);
             const cleanSlugTitle = slug.replace(/-(\d{4})$/, '').replace(/-/g, ' ');
-            resultsEl.classList.add('hidden');
-            await applyLetterboxdReviewData({
+            reviewData = {
               url: reviewUrl,
               movieTitle: cleanSlugTitle,
               releaseYear: yearInSlug ? yearInSlug[1] : '',
               reviewer: user,
-              rating: state.rating,
+              rating: state.rating || 4.5,
               reviewLines: []
-            });
-            return;
+            };
           }
         } catch (err) {}
+      }
+
+      if (banner) {
+        banner.classList.add('hidden');
+        banner.classList.remove('inline-flex');
+      }
+
+      if (reviewData && reviewData.movieTitle) {
+        const starStr = reviewData.rating ? '★ ' + Number(reviewData.rating).toFixed(1) : '';
+        const excerpt = (reviewData.reviewLines && reviewData.reviewLines.length > 0)
+          ? reviewData.reviewLines[0].substring(0, 110)
+          : (reviewData.review ? reviewData.review.substring(0, 110) : 'Tap to import review & generate poster');
+        const posterSrc = reviewData.posterImg && !reviewData.posterImg.includes('empty-poster') ? reviewData.posterImg : '';
+
+        resultsEl.innerHTML = `
+          <div class="p-1 space-y-1">
+            <div class="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-lbgreen flex items-center justify-between">
+              <span class="flex items-center gap-1.5"><i class="fa-solid fa-square-check"></i> Letterboxd Review Found</span>
+              <span class="text-[9px] text-gray-400 font-mono">1 Match</span>
+            </div>
+            <button type="button" id="select-lb-review-hit"
+              class="w-full flex items-center gap-3 p-2.5 rounded-xl bg-cardbg hover:bg-elevated border border-lbgreen/30 text-left transition group">
+              ${posterSrc ? `<img src="${posterSrc}" class="w-10 h-14 object-cover rounded shrink-0 shadow" />` : `<div class="w-10 h-14 bg-obsidian border border-white/10 rounded flex items-center justify-center shrink-0 text-lbgreen"><i class="fa-solid fa-film text-base"></i></div>`}
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-bold text-white flex items-center gap-2 truncate">
+                  <span class="truncate">${reviewData.movieTitle} ${reviewData.releaseYear ? `(${reviewData.releaseYear})` : ''}</span>
+                  ${starStr ? `<span class="text-amber-400 font-mono text-[11px] shrink-0 font-normal">${starStr}</span>` : ''}
+                </div>
+                <div class="text-[11px] text-gray-300 truncate mt-0.5">
+                  <span class="text-lbblue font-semibold">@${reviewData.reviewer || 'user'}</span>: "${excerpt}"
+                </div>
+                <div class="text-[10px] text-lbgreen font-mono mt-1 flex items-center gap-1 group-hover:underline">
+                  <i class="fa-solid fa-arrow-pointer text-[9px]"></i> Click to select & build poster
+                </div>
+              </div>
+            </button>
+          </div>
+        `;
+
+        document.getElementById('select-lb-review-hit')?.addEventListener('click', () => {
+          resultsEl.classList.add('hidden');
+          promptLetterboxdProceedWithoutTmdb(async () => {
+            await applyLetterboxdReviewData(reviewData);
+          });
+        });
+        return;
+      } else {
+        resultsEl.innerHTML = `<div class="text-xs text-red-400 p-3">Could not load Letterboxd review from that URL. Please try again.</div>`;
+        return;
       }
     }
 
     if (!state.tmdbApiKey) {
-      const apiModal = document.getElementById('api-modal');
-      if (apiModal) {
-        apiModal.classList.remove('hidden');
-        apiModal.classList.add('flex');
-      }
+      openApiModal();
       return;
     }
 
@@ -129,12 +264,24 @@ export function initSearch() {
   homeInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); runLiveSearch(homeInput, homeResults); }
   });
-  document.getElementById('home-search-submit-btn')?.addEventListener('click', () => runLiveSearch(homeInput, homeResults));
+  document.getElementById('home-search-submit-btn')?.addEventListener('click', () => {
+    if (!state.tmdbApiKey && !homeInput.value.trim().match(/https?:\/\//i)) {
+      openApiModal();
+      return;
+    }
+    runLiveSearch(homeInput, homeResults);
+  });
 
   headerInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); runLiveSearch(headerInput, headerResults); }
   });
-  document.getElementById('header-search-btn')?.addEventListener('click', () => runLiveSearch(headerInput, headerResults));
+  document.getElementById('header-search-btn')?.addEventListener('click', () => {
+    if (!state.tmdbApiKey && !headerInput.value.trim().match(/https?:\/\//i)) {
+      openApiModal();
+      return;
+    }
+    runLiveSearch(headerInput, headerResults);
+  });
 
   // Close search dropdowns on outside click
   document.addEventListener('click', (e) => {
@@ -143,6 +290,6 @@ export function initSearch() {
   });
 
   document.querySelectorAll('.demo-chip').forEach(btn => {
-    btn.addEventListener('click', () => loadDemoPreset(btn.dataset.demo));
+    btn.addEventListener('click', () => loadDemoPreset(btn.dataset.demo, true));
   });
 }

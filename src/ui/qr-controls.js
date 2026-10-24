@@ -11,9 +11,20 @@ export function syncQrUrlPreview() {
 export function syncQrToggleVisibility() {
   const row = document.getElementById('qrcode-toggle-row');
   const checkbox = document.getElementById('chk-qrcode');
+  const isFromReviewUrl = Boolean(state.isFromLetterboxd && state.letterboxdUrl);
+
   if (row) {
-    row.classList.remove('hidden');
-    row.classList.add('flex');
+    if (isFromReviewUrl) {
+      row.classList.remove('hidden');
+      row.classList.add('flex');
+    } else {
+      row.classList.add('hidden');
+      row.classList.remove('flex');
+    }
+  }
+
+  if (!isFromReviewUrl) {
+    state.showQrCode = false;
   }
   if (checkbox) checkbox.checked = Boolean(state.showQrCode);
   syncQrUrlPreview();

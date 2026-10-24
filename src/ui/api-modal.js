@@ -3,14 +3,29 @@ import { tmdbFetch } from '../services/tmdb.js';
 import { loadRegionalNowPlayingMovies } from '../controllers/media.js';
 import { showToast } from './toast.js';
 
+export function updateTmdbBannerVisibility() {
+  const banner = document.getElementById('tmdb-persistent-banner');
+  if (!banner) return;
+  const hasKey = Boolean(state.tmdbApiKey && state.tmdbApiKey.trim().length > 0);
+  if (hasKey) {
+    banner.classList.add('hidden');
+    banner.style.display = 'none';
+  } else {
+    banner.classList.remove('hidden');
+    banner.style.display = 'flex';
+  }
+}
+
 function updateApiStatusPill() {
   const dot = document.getElementById('api-status-dot');
-  if (!dot) return;
-  if (state.tmdbApiKey && state.tmdbApiKey.trim().length > 0) {
-    dot.className = 'w-2.5 h-2.5 rounded-full bg-lbgreen ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none';
-  } else {
-    dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none animate-pulse';
+  if (dot) {
+    if (state.tmdbApiKey && state.tmdbApiKey.trim().length > 0) {
+      dot.className = 'w-2.5 h-2.5 rounded-full bg-lbgreen ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none';
+    } else {
+      dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none animate-pulse';
+    }
   }
+  updateTmdbBannerVisibility();
 }
 
 export function openApiModal() {
@@ -43,6 +58,7 @@ export function initApiModal() {
   openButton?.addEventListener('click', openApiModal);
   closeButton?.addEventListener('click', closeApiModal);
   cancelButton?.addEventListener('click', closeApiModal);
+  document.getElementById('banner-open-api-btn')?.addEventListener('click', openApiModal);
 
   // Close modal when clicking on the dimmed backdrop outside the inner modal
   const apiModal = document.getElementById('api-modal');

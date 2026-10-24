@@ -5,6 +5,7 @@ import {
   drawImageCover,
   drawRatingAndHeartRow,
   drawRoundedRectPath,
+  ensureVisibleAccentOnDark,
   getDetailedReviewLines,
   getReadableTextColor,
   getWrappedLines
@@ -46,13 +47,17 @@ export function renderFloatingTicketPoster(ctx, w, h) {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.font = `600 ${Math.round(18 * fs)}px "JetBrains Mono", monospace`;
+    const themeAccent = ensureVisibleAccentOnDark(state.palette[2] || state.palette[0], '#F4EFE6');
+    ctx.fillStyle = themeAccent;
     let dirHeader = state.director
       ? `A ${state.director.toUpperCase()} ${state.mediaType === 'tv' ? 'SERIES' : 'FILM'}`
-      : `FEATURE PRESENTATION · ${state.year}`;
+      : (state.year ? `FEATURE PRESENTATION · ${state.year}` : '');
     if (state.episodeTitle) {
       dirHeader = `${state.episodeTitle} · ${state.director || state.year}`;
     }
-    ctx.fillText(dirHeader, cx, 84);
+    if (dirHeader) {
+      ctx.fillText(dirHeader, cx, 84);
+    }
 
     if (state.useLogoImage && state.logoImg) {
       const maxLW = Math.round(620 * Math.min(1.15, state.posterScale));
@@ -62,12 +67,15 @@ export function renderFloatingTicketPoster(ctx, w, h) {
       const lh = Math.round(state.logoImg.height * ratio);
       ctx.drawImage(state.logoImg, cx - lw / 2, 108, lw, lh);
     } else {
-      const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), w - 140, Math.round(66 * fs), '"Instrument Serif", serif', '400', 2);
-      ctx.font = `400 ${tLayout.fontPx}px "Instrument Serif", serif`;
-      ctx.fillStyle = '#FFFFFF';
-      tLayout.lines.forEach((line, idx) => {
-        ctx.fillText(line, cx, 154 + idx * (tLayout.fontPx - 4));
-      });
+      const displayTitle = (state.title || '').toUpperCase();
+      if (displayTitle) {
+        const tLayout = computeAdaptiveTitleLayout(ctx, displayTitle, w - 140, Math.round(66 * fs), '"Instrument Serif", serif', '400', 2);
+        ctx.font = `400 ${tLayout.fontPx}px "Instrument Serif", serif`;
+        ctx.fillStyle = '#FFFFFF';
+        tLayout.lines.forEach((line, idx) => {
+          ctx.fillText(line, cx, 154 + idx * (tLayout.fontPx - 4));
+        });
+      }
     }
     ctx.restore();
   });
@@ -136,14 +144,16 @@ export function renderFloatingTicketPoster(ctx, w, h) {
       ctx.restore();
     }
 
-    ctx.font = '600 14px "JetBrains Mono", monospace';
-    ctx.fillStyle = '#57534E';
     const creditCaption = state.watchedAt
       ? `SCREENED AT ${state.watchedAt.toUpperCase()}`
       : (state.director
         ? `A ${state.director.toUpperCase()} ${state.mediaType === 'tv' ? 'SERIES' : 'FILM'}`
-        : state.year);
-    ctx.fillText(getWrappedLines(ctx, creditCaption, mainW, 1)[0] || '', mainCx, ty + ticketH - 22);
+        : (state.year || ''));
+    if (creditCaption) {
+      ctx.font = '600 14px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#57534E';
+      ctx.fillText(getWrappedLines(ctx, creditCaption, mainW, 1)[0] || '', mainCx, ty + ticketH - 22);
+    }
 
     const divX = mainX + mainW + 16;
     ctx.save();
@@ -159,26 +169,34 @@ export function renderFloatingTicketPoster(ctx, w, h) {
     const metaX = divX + 20;
     const metaW = Math.round(ticketW * 0.19);
     ctx.textAlign = 'left';
-    ctx.font = '700 28px "Instrument Serif", serif';
-    ctx.fillStyle = '#1C1917';
-    ctx.fillText((state.year || '2026').substring(0, 4), metaX, ty + 66);
 
-    ctx.fillStyle = 'rgba(28,25,23,0.25)';
-    ctx.fillRect(metaX, ty + 82, metaW - 16, 1.5);
+    if (state.year) {
+      ctx.font = '700 28px "Instrument Serif", serif';
+      ctx.fillStyle = '#1C1917';
+      ctx.fillText(state.year.substring(0, 4), metaX, ty + 66);
+    }
 
-    ctx.font = '700 15px "JetBrains Mono", monospace';
-    ctx.fillStyle = '#292524';
-    const genreParts = (state.genre || 'Cinema | Feature').split('|').map(s => s.trim().toUpperCase()).slice(0, 3);
-    genreParts.forEach((g, idx) => {
-      ctx.fillText(getWrappedLines(ctx, g, metaW - 10, 1)[0] || '', metaX, ty + 118 + idx * 28);
-    });
+    if (state.genre) {
+      ctx.fillStyle = 'rgba(28,25,23,0.25)';
+      ctx.fillRect(metaX, ty + 82, metaW - 16, 1.5);
 
-    ctx.fillStyle = 'rgba(28,25,23,0.25)';
-    ctx.fillRect(metaX, ty + ticketH - 96, metaW - 16, 1.5);
+      ctx.font = '700 15px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#292524';
+      const genreParts = state.genre.split('|').map(s => s.trim().toUpperCase()).slice(0, 3);
+      genreParts.forEach((g, idx) => {
+        ctx.fillText(getWrappedLines(ctx, g, metaW - 10, 1)[0] || '', metaX, ty + 118 + idx * 28);
+      });
+    }
 
-    ctx.font = '700 18px "JetBrains Mono", monospace';
-    ctx.fillStyle = '#1C1917';
-    ctx.fillText(state.medium || state.runtime || '2h 15m', metaX, ty + ticketH - 58);
+    const formatOrRuntime = state.medium || state.runtime;
+    if (formatOrRuntime) {
+      ctx.fillStyle = 'rgba(28,25,23,0.25)';
+      ctx.fillRect(metaX, ty + ticketH - 96, metaW - 16, 1.5);
+
+      ctx.font = '700 18px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#1C1917';
+      ctx.fillText(formatOrRuntime, metaX, ty + ticketH - 58);
+    }
 
     const barX = tx + ticketW - 74;
     const barTop = ty + 28;

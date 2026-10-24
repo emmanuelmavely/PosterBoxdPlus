@@ -5,6 +5,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [v1.3.0] - 2026-10-24
+
+### Added
+- **TMDb Missing Key Warning Modal**: Added an informative popup modal when proceeding with a Letterboxd import without a TMDb API key configured, explaining limited high-resolution artwork and metadata availability with direct options to add a key or proceed without one.
+- **Subtle Persistent Top Warning Banner**: Non-intrusive warning banner pinned below the header across studio views when running without a TMDb key, complete with an inline `Add API Key` action button.
+- **Complete State Isolation & Clean Reset (`resetMediaState`)**: Dedicated media cleanup system ensuring every new search or review import starts from a pristine state, completely eliminating metadata, image, and logo bleed between searches.
+- **Dynamic Letterboxd Search Dropdown**: Typing or pasting a Letterboxd review URL (standard or `boxd.it` shortlinks) dynamically renders a rich preview dropdown card showing movie title, year, poster thumbnail, reviewer handle, and star rating.
+- **Letterboxd Rating Freeze**: When importing a Letterboxd review, the user's authentic review rating is locked and prioritized strictly.
+- **Context-Aware Review QR Codes**: QR codes are strictly scoped to authentic Letterboxd / PosterBoxd review imports, hiding the toggle and canvas code when creating posters from scratch or standard cinema searches.
+- **Marquee Title Bulb Illumination Toggle**: Toggle option for the Marquee archetype to switch between authentic illuminated marquee bulb typography and clean high-contrast vector titles, with main marquee title scale increased to 1.3×.
+- **Startup Splash Screen**: Smooth animated filmstrip logo and initialization status loader fading out once typography, icons, and studio rendering engines are ready.
+
+### Changed
+- **Total Elimination of Dummy Fallbacks**: Removed all dummy presets, demo buttons, and fallback strings (e.g. `'Cinema | Feature'`, `'2h 15m'`, `'2026'`, `'Unknown'`, `'Denis Villeneuve'`, `'VIP ACCESS'`) across all 11 poster renderers. All unprovided fields remain cleanly empty.
+- **Adaptive Header Text Theming**: Canvas title headers and bylines across ticket and scoreboard archetypes now dynamically sample and adapt to the dominant extracted poster artwork palette (`ensureVisibleAccentOnDark`) rather than using hardcoded green or canvas stroke leaks.
+- **TMDb Logo Language Priority**: Official title logos fetched from TMDb prioritize English (`en` / `en-US`) and highest vote score before populating the asset picker.
+
+### Fixed
+- **Stale Demo Asset Bleed ("The Nun" / "Dune" bug)**: Resolved issue where importing a Letterboxd review without a TMDb key retained the startup demo's title logo, backdrops, and director credits.
+- **Green Title Byline Bug**: Fixed canvas stroke/fill color leak in the Floating Vintage Ticket archetype that caused director headers to render in green.
+- **Criterion Title Alignment**: Fixed title and logo vertical positioning and container bounds in the Criterion Arthouse Split design.
+
+---
+
 ## [v1.2.1] - 2026-10-23
 
 ### Fixed

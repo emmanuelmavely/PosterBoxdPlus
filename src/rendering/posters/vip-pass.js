@@ -69,7 +69,8 @@ export function renderVipPassPoster(ctx, w, h) {
   ctx.font = '800 22px "JetBrains Mono", monospace';
   ctx.fillStyle = bandTextColor;
   ctx.textAlign = 'center';
-  ctx.fillText(`OFFICIAL SCREENING CREDENTIAL · ${state.medium || 'VIP ACCESS'}`, cx, py + 108);
+  const credHead = state.medium ? `OFFICIAL SCREENING CREDENTIAL · ${state.medium}` : 'OFFICIAL SCREENING CREDENTIAL';
+  ctx.fillText(credHead, cx, py + 108);
   ctx.restore();
 
   const fs = Math.min(1.18, state.fontScale) * (h < 1500 ? 0.86 : 1.0);
@@ -177,13 +178,16 @@ export function renderVipPassPoster(ctx, w, h) {
   const metaY = py + passH - 64;
   ctx.fillStyle = 'rgba(255,255,255,0.14)';
   ctx.fillRect(innerPad, metaY - 28, innerW, 1.5);
-  ctx.font = '600 20px "JetBrains Mono", monospace';
-  ctx.fillStyle = '#9CA3AF';
-  ctx.textAlign = 'left';
-  ctx.fillText(`VENUE: ${(state.watchedAt || state.medium || 'PRIVATE SCREENING').toUpperCase()}`, innerPad, metaY + 8);
+  const venueVal = state.watchedAt || state.medium;
+  if (venueVal) {
+    ctx.fillText(`VENUE: ${venueVal.toUpperCase()}`, innerPad, metaY + 8);
+  }
   ctx.textAlign = 'right';
   ctx.fillStyle = borderAccent;
-  ctx.fillText(`DATE: ${formatSafeDate(state.watchedDate) || state.year}`, px + passW - 48, metaY + 8);
+  const dateVal = formatSafeDate(state.watchedDate) || state.year;
+  if (dateVal) {
+    ctx.fillText(`DATE: ${dateVal}`, px + passW - 48, metaY + 8);
+  }
 
   drawFooterBrand(ctx, w / 2, h - 22, false);
 }

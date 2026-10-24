@@ -1,4 +1,4 @@
-import { state } from '../state.js';
+import { state, resetMediaState } from '../state.js';
 import { DEMO_CATALOG } from '../data/demo-catalog.js';
 import { buildRelevantMovieReview } from '../utils.js';
 import { tmdbFetch, detectBrowserRegion } from '../services/tmdb.js';
@@ -10,11 +10,15 @@ import { captureTvBaseState, syncMediaTypeControls, syncReviewFormState } from '
 import { syncArchetypeUI } from '../ui/design-controls.js';
 import { syncQrToggleVisibility } from '../ui/qr-controls.js';
 import { showToast } from '../ui/toast.js';
-import { switchView } from '../ui/navigation.js';
+import { switchView, updateNavigationButtonsDisabledState } from '../ui/navigation.js';
 
-export async function loadDemoPreset(key) {
+export async function loadDemoPreset(key, isExplicit = false) {
   const item = DEMO_CATALOG[key];
   if (!item) return;
+
+  resetMediaState();
+  state.hasSelectedMedia = Boolean(isExplicit);
+  updateNavigationButtonsDisabledState();
 
   state.isFromLetterboxd = false;
   state.letterboxdUrl = '';
@@ -91,9 +95,11 @@ export async function loadRegionalNowPlayingMovies() {
   if (!chipsContainer) return;
 
   if (!state.tmdbApiKey) {
-    if (regionLabel) regionLabel.textContent = `Featured Cinema Presets (${regionInfo.name}):`;
+    chipsContainer.innerHTML = '';
+    if (regionLabel?.parentElement) regionLabel.parentElement.classList.add('hidden');
     return;
   }
+  if (regionLabel?.parentElement) regionLabel.parentElement.classList.remove('hidden');
 
   try {
     if (regionLabel) regionLabel.textContent = `In Theaters Now (${regionInfo.name}):`;
@@ -130,20 +136,34 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     }
     const [details, credits, images, providersData, releaseDatesData] = await Promise.all(requests);
 
+    const preservedReview = preserveCustomReview ? {
+      review: state.review,
+      detailedReview: state.detailedReview,
+      showDetailedReview: state.showDetailedReview,
+      rating: state.rating,
+      isLiked: state.isLiked,
+      watchedDate: state.watchedDate,
+      username: state.username,
+      isFromLetterboxd: state.isFromLetterboxd,
+      letterboxdUrl: state.letterboxdUrl,
+      showQrCode: state.showQrCode
+    } : null;
+
+    resetMediaState();
+
+    if (preservedReview) {
+      Object.assign(state, preservedReview);
+    }
+
     state.tmdbId = id;
     state.mediaType = mediaType;
-    state._baseTvDetails = null;
-    state._currentSeasonData = null;
-    state._currentSeasonAssets = null;
-    state.seasonNumber = '';
-    state.episodeNumber = '';
     state.title = details.title || details.name || '';
     state.spine = `#${String(id).slice(-4)}`;
     state.episodeTitle = '';
     syncArchetypeUI();
 
     // Default rating to actual rating of the movie (TMDB vote_average / 2, rounded to nearest 0.5), fallback to 4.5
-    if (!preserveCustomReview) {
+    if (!preserveCustomReview && !state.isFromLetterboxd) {
       if (typeof details.vote_average === 'number' && details.vote_average > 0) {
         state.rating = Math.max(0.5, Math.min(5, Math.round((details.vote_average / 2) * 2) / 2));
       } else {
@@ -229,7 +249,13 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     state.backdrops = allCombinedImages;
     state._showAllImages = allCombinedImages;
 
-    const rawLogos = (images.logos || []).slice(0, 16).map(l => `https://image.tmdb.org/t/p/w500${l.file_path}`);
+    const sortedLogos = [...(images.logos || [])].sort((a, b) => {
+      const isEnA = (a.iso_639_1 === 'en' || a.iso_639_1 === 'en-US' || a.iso_639_1 === null) ? 1 : 0;
+      const isEnB = (b.iso_639_1 === 'en' || b.iso_639_1 === 'en-US' || b.iso_639_1 === null) ? 1 : 0;
+      if (isEnA !== isEnB) return isEnB - isEnA; // English / US priority 1
+      return (b.vote_average || 0) - (a.vote_average || 0);
+    });
+    const rawLogos = sortedLogos.slice(0, 24).map(l => `https://image.tmdb.org/t/p/w500${l.file_path}`);
     state.logos = Array.from(new Set(rawLogos));
 
     state.selectedPosterIndex = 0;
@@ -247,6 +273,9 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     state.posterImg = pImg;
     state.backdropImg = bImg;
     state.logoImg = lImg;
+
+    state.hasSelectedMedia = true;
+    updateNavigationButtonsDisabledState();
 
     syncArchetypeUI();
     syncMediaTypeControls();

@@ -317,6 +317,34 @@ function updateHeartButtonUI(isLiked) {
   }
 }
 
+export function syncRatingPaneFreeze() {
+  const isFrozen = Boolean(state.isFromLetterboxd);
+  const ratingRange = document.getElementById('rating-range');
+  const clearBtn = document.getElementById('clear-rating-btn');
+  const starsElement = document.getElementById('interactive-stars');
+  const lockedBadge = document.getElementById('rating-locked-badge');
+
+  if (lockedBadge) {
+    lockedBadge.classList.toggle('hidden', !isFrozen);
+    lockedBadge.classList.toggle('inline-flex', isFrozen);
+  }
+  if (ratingRange) {
+    ratingRange.disabled = isFrozen;
+    ratingRange.classList.toggle('opacity-40', isFrozen);
+    ratingRange.classList.toggle('cursor-not-allowed', isFrozen);
+  }
+  if (clearBtn) {
+    clearBtn.disabled = isFrozen;
+    clearBtn.classList.toggle('opacity-20', isFrozen);
+    clearBtn.classList.toggle('pointer-events-none', isFrozen);
+  }
+  if (starsElement) {
+    starsElement.classList.toggle('pointer-events-none', isFrozen);
+    starsElement.classList.toggle('cursor-not-allowed', isFrozen);
+    starsElement.classList.toggle('opacity-80', isFrozen);
+  }
+}
+
 export function syncReviewFormState() {
   const title = document.getElementById('review-media-title');
   const year = document.getElementById('review-media-year');
@@ -355,6 +383,7 @@ export function syncReviewFormState() {
   syncQrUrlPreview();
   updateMediumPillsUI(state.medium);
   updateStarRatingUI(state.rating);
+  syncRatingPaneFreeze();
   updateHeartButtonUI(state.isLiked);
 }
 
@@ -451,6 +480,7 @@ export function initReviewForm() {
   const starsElement = document.getElementById('interactive-stars');
   if (starsElement) {
     const handleStarPointer = (clientX, commit = false) => {
+      if (state.isFromLetterboxd) return;
       const rect = starsElement.getBoundingClientRect();
       const relativeX = Math.max(0, Math.min(rect.width, clientX - rect.left));
       const snapped = Math.max(0.5, Math.min(5, Math.ceil((relativeX / rect.width) * 10) / 2));
@@ -469,6 +499,7 @@ export function initReviewForm() {
   }
 
   document.getElementById('rating-range')?.addEventListener('input', (event) => {
+    if (state.isFromLetterboxd) return;
     state.rating = parseFloat(event.target.value);
     updateStarRatingUI(state.rating);
     scheduleCanvasRender();
@@ -477,6 +508,7 @@ export function initReviewForm() {
   });
 
   document.getElementById('clear-rating-btn')?.addEventListener('click', () => {
+    if (state.isFromLetterboxd) return;
     state.rating = 0;
     updateStarRatingUI(0);
     scheduleCanvasRender();

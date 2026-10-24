@@ -27,6 +27,13 @@ export function syncArchetypeUI() {
 
   const currentName = document.getElementById('current-archetype-name');
   if (currentName) currentName.textContent = ARCHETYPE_NAMES[state.archetype];
+
+  const marqueeBulbRow = document.getElementById('marquee-bulb-toggle-row');
+  if (marqueeBulbRow) {
+    const isMarquee = state.archetype === 'marquee';
+    marqueeBulbRow.classList.toggle('hidden', !isMarquee);
+    marqueeBulbRow.classList.toggle('flex', isMarquee);
+  }
 }
 
 export function syncDesignControlsUI() {

@@ -1,6 +1,7 @@
 import { state } from '../state.js';
 import { getSavedHistory } from '../services/storage.js';
 import { scheduleCanvasRender } from '../rendering/canvas-renderer.js';
+import { showToast } from './toast.js';
 
 let renderHistoryList = () => {};
 
@@ -24,7 +25,38 @@ export function updateHeaderHistoryVisibility() {
   }
 }
 
+export function updateNavigationButtonsDisabledState() {
+  const hasMedia = Boolean(state.hasSelectedMedia);
+
+  ['breadcrumb-review-btn', 'breadcrumb-design-btn'].forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.disabled = !hasMedia;
+      btn.classList.toggle('opacity-30', !hasMedia);
+      btn.classList.toggle('cursor-not-allowed', !hasMedia);
+      btn.classList.toggle('pointer-events-none', !hasMedia);
+      btn.setAttribute('aria-disabled', String(!hasMedia));
+    }
+  });
+
+  document.querySelectorAll('.bottom-nav-btn').forEach((btn) => {
+    const target = btn.dataset.navTarget;
+    if (['review', 'design', 'settings'].includes(target)) {
+      btn.disabled = !hasMedia;
+      btn.classList.toggle('opacity-30', !hasMedia);
+      btn.classList.toggle('cursor-not-allowed', !hasMedia);
+      btn.classList.toggle('pointer-events-none', !hasMedia);
+      btn.setAttribute('aria-disabled', String(!hasMedia));
+    }
+  });
+}
+
 export function switchView(viewName, openSettingsDrawer = false) {
+  if (['review', 'preview'].includes(viewName) && !state.hasSelectedMedia) {
+    showToast('Please search or select a film from History first');
+    return;
+  }
+
   state.currentView = viewName;
   const homeView = document.getElementById('view-home');
   const reviewView = document.getElementById('view-review');
@@ -38,6 +70,7 @@ export function switchView(viewName, openSettingsDrawer = false) {
   previewView?.classList.toggle('hidden', viewName !== 'preview');
   historyView?.classList.toggle('hidden', viewName !== 'history');
   updateHeaderHistoryVisibility();
+  updateNavigationButtonsDisabledState();
 
   document.querySelectorAll('[data-breadcrumb-target]').forEach((button) => {
     const isActive = button.dataset.breadcrumbTarget === viewName;
@@ -94,16 +127,29 @@ export function initNavigation() {
   document.getElementById('proceed-to-preview-btn')?.addEventListener('click', () => switchView('preview', false));
 
   document.querySelectorAll('[data-breadcrumb-target]').forEach((button) => {
-    button.addEventListener('click', () => switchView(button.dataset.breadcrumbTarget, false));
+    button.addEventListener('click', () => {
+      const target = button.dataset.breadcrumbTarget;
+      if (['review', 'preview'].includes(target) && !state.hasSelectedMedia) {
+        showToast('Please search or select a film from History first');
+        return;
+      }
+      switchView(target, false);
+    });
   });
 
   document.querySelectorAll('.bottom-nav-btn').forEach((button) => {
     button.addEventListener('click', () => {
       const target = button.dataset.navTarget;
+      if (['review', 'design', 'settings'].includes(target) && !state.hasSelectedMedia) {
+        showToast('Please search or select a film from History first');
+        return;
+      }
       if (target === 'review') switchView('review', false);
       else if (target === 'design') switchView('preview', false);
       else if (target === 'settings') switchView('preview', true);
       else if (target === 'history') switchView('history', false);
     });
   });
+
+  updateNavigationButtonsDisabledState();
 }

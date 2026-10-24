@@ -17,33 +17,37 @@ function getStoredJson(key, fallback) {
 export const state = {
   tmdbApiKey: getStoredValue('posterboxd_tmdb_key'),
   currentView: 'home',
+  hasSelectedMedia: false,
   archetype: 'floatingticket',
   aspectRatio: '9:16',
   mediaType: 'movie',
   tmdbId: null,
-  title: 'Dune: Part Two',
-  year: '2024',
-  director: 'Denis Villeneuve',
-  writer: 'Denis Villeneuve, Jon Spaihts',
-  dop: 'Greig Fraser',
-  music: 'Hans Zimmer',
-  cast: 'Timothée Chalamet, Zendaya, Rebecca Ferguson, Javier Bardem',
-  genre: 'Science Fiction | Adventure',
-  runtime: '2h 46m',
-  spine: '#2024',
+  title: '',
+  year: '',
+  director: '',
+  writer: '',
+  dop: '',
+  music: '',
+  cast: '',
+  genre: '',
+  runtime: '',
+  spine: '',
   episodeTitle: '',
   seasonNumber: '',
   episodeNumber: '',
+  _baseTvDetails: null,
+  _currentSeasonData: null,
+  _currentSeasonAssets: null,
   rating: 4.5,
-  isLiked: true,
+  isLiked: false,
   medium: 'THEATER',
   watchedAt: '',
-  review: 'Denis Villeneuve crafts a mythic science fiction spectacle, anchored by magnetic performances from Timothée Chalamet and Zendaya.',
+  review: '',
   detailedReview: '',
   showDetailedReview: true,
   username: getStoredValue('posterboxd_username'),
   watchedDate: new Date().toISOString().split('T')[0],
-  tags: 'imax, 70mm, sci-fi',
+  tags: '',
   posters: [],
   backdrops: [],
   logos: [],
@@ -54,7 +58,7 @@ export const state = {
   posterImg: null,
   backdropImg: null,
   logoImg: null,
-  palette: ['#D96B27', '#6E260E', '#F4B860', '#2E1509', '#FCE5B8'],
+  palette: ['#1C1B1A', '#2D2B28', '#8C857B', '#C9C2B5', '#F4EFE6'],
   tintBackdropWithPalette: true,
   gradientOverlay: true,
   filmGrain: true,
@@ -76,5 +80,39 @@ export const state = {
   elementTransformsByArchetype: getStoredJson('posterboxd_transforms_v3', {}),
   hitBoxes: []
 };
+
+export function resetMediaState() {
+  state.tmdbId = null;
+  state.title = '';
+  state.year = '';
+  state.director = '';
+  state.writer = '';
+  state.dop = '';
+  state.music = '';
+  state.cast = '';
+  state.genre = '';
+  state.runtime = '';
+  state.spine = '';
+  state.episodeTitle = '';
+  state.seasonNumber = '';
+  state.episodeNumber = '';
+  state._baseTvDetails = null;
+  state._currentSeasonData = null;
+  state._currentSeasonAssets = null;
+  state.review = '';
+  state.detailedReview = '';
+  state.posters = [];
+  state.backdrops = [];
+  state.logos = [];
+  state.selectedPosterIndex = 0;
+  state.selectedBackdropIndex = 0;
+  state.selectedLogoIndex = 0;
+  state.posterImg = null;
+  state.backdropImg = null;
+  state.logoImg = null;
+  state.palette = ['#1C1B1A', '#2D2B28', '#8C857B', '#C9C2B5', '#F4EFE6'];
+  state.posterOffsetX = 0;
+  state.posterOffsetY = 0;
+}
 
 export { getStoredValue };

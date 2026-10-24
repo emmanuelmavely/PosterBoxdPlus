@@ -5,7 +5,7 @@ import { renderPaletteSwatchesUI, renderAssetPickerStrips } from './assets.js';
 import { captureTvBaseState, restoreTvSelectionFromHistory, syncReviewFormState } from './review-form.js';
 import { syncDesignControlsUI } from './design-controls.js';
 import { showToast } from './toast.js';
-import { switchView, updateHeaderHistoryVisibility } from './navigation.js';
+import { switchView, updateHeaderHistoryVisibility, updateNavigationButtonsDisabledState } from './navigation.js';
 
 export function renderHistoryListUI() {
   updateHeaderHistoryVisibility();
@@ -56,6 +56,8 @@ export function renderHistoryListUI() {
       const idx = parseInt(btn.dataset.historyLoad, 10);
       const item = getSavedHistory()[idx];
       if (!item) return;
+      state.hasSelectedMedia = true;
+      updateNavigationButtonsDisabledState();
       Object.assign(state, {
         mediaType: item.mediaType || 'movie',
         tmdbId: item.tmdbId || null,

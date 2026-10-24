@@ -108,15 +108,15 @@ export function renderMarqueePoster(ctx, w, h) {
     ctx.font = `700 ${Math.round(18 * fs)}px "JetBrains Mono", monospace`;
     ctx.fillStyle = '#FBBF24';
     ctx.textAlign = 'center';
-    const topBanner = state.watchedAt ? `NOW SHOWING AT ${state.watchedAt.toUpperCase()}` : `NOW SHOWING · ${state.medium || 'FEATURE PRESENTATION'}`;
+    const topBanner = state.watchedAt ? `NOW SHOWING AT ${state.watchedAt.toUpperCase()}` : (state.medium ? `NOW SHOWING · ${state.medium}` : 'NOW SHOWING');
     ctx.fillText(getWrappedLines(ctx, topBanner, innerW - 60, 1)[0] || '', w / 2, mqY + 46);
 
-    const cleanTitleUpper = String(state.title || 'UNTITLED').toUpperCase();
-    const tLayout = computeAdaptiveTitleLayout(ctx, cleanTitleUpper, innerW - 70, Math.round(50 * fs), '"Syne", sans-serif', '800', 2);
+    const cleanTitleUpper = String(state.title || '').toUpperCase();
+    const tLayout = computeAdaptiveTitleLayout(ctx, cleanTitleUpper, innerW - 70, Math.round(50 * fs * 1.3), '"Syne", sans-serif', '800', 2);
     const canFitBulbEffect = state.marqueeBulbMode && cleanTitleUpper.length <= 28;
 
     if (canFitBulbEffect) {
-      const startBulbY = tLayout.lines.length === 1 ? (mqY + 148) : (mqY + 118);
+      const startBulbY = tLayout.lines.length === 1 ? (mqY + 152) : (mqY + 116);
       drawBulbLitMarqueeTitle(ctx, tLayout.lines, w / 2, startBulbY, tLayout.fontPx, 8);
     } else if (state.useLogoImage && state.logoImg && !state.marqueeBulbMode) {
       const maxLW = innerW - 140;
@@ -134,10 +134,10 @@ export function renderMarqueePoster(ctx, w, h) {
       ctx.fillStyle = '#FFFBEB';
       ctx.textAlign = 'center';
       if (tLayout.lines.length === 1) {
-        ctx.fillText(tLayout.lines[0], w / 2, mqY + 154);
+        ctx.fillText(tLayout.lines[0], w / 2, mqY + 156);
       } else {
         tLayout.lines.forEach((l, idx) => {
-          ctx.fillText(l, w / 2, mqY + 114 + idx * (tLayout.fontPx + 4));
+          ctx.fillText(l, w / 2, mqY + 116 + idx * (tLayout.fontPx + 4));
         });
       }
     }
@@ -145,7 +145,7 @@ export function renderMarqueePoster(ctx, w, h) {
     ctx.font = `700 ${Math.round(18 * fs)}px "JetBrains Mono", monospace`;
     ctx.fillStyle = '#E5E7EB';
     ctx.textAlign = 'center';
-    const bottomLine = [`DIR. ${(state.director || '').toUpperCase()}`, state.year, state.runtime, `${(state.rating || 0).toFixed(1)} ★`].filter(Boolean).join('   •   ');
+    const bottomLine = [state.director ? `DIR. ${state.director.toUpperCase()}` : '', state.year, state.runtime, state.rating > 0 ? `${(state.rating).toFixed(1)} ★` : ''].filter(Boolean).join('   •   ');
     ctx.fillText(getWrappedLines(ctx, bottomLine, innerW - 60, 1)[0] || '', w / 2, mqY + mqH - 26);
   });
 

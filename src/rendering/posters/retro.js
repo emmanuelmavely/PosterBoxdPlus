@@ -79,10 +79,12 @@ export function renderRetroPoster(ctx, w, h) {
     ctx.font = `700 ${Math.round(22 * fs)}px "JetBrains Mono", monospace`;
     ctx.fillStyle = '#B45309';
     const credit = state.mediaType === 'tv'
-      ? `${state.episodeTitle ? 'EPISODE DIR.' : 'CREATED BY'} ${(state.director || '').toUpperCase()}`
-      : `DIRECTED BY ${(state.director || '').toUpperCase()}`;
+      ? (state.director ? `${state.episodeTitle ? 'EPISODE DIR.' : 'CREATED BY'} ${state.director.toUpperCase()}` : '')
+      : (state.director ? `DIRECTED BY ${state.director.toUpperCase()}` : '');
     const sub = [state.episodeTitle || credit, state.medium, state.runtime].filter(Boolean).join(' · ');
-    ctx.fillText(getWrappedLines(ctx, sub, artW, 1)[0] || '', w / 2, curY + tLayout.lines.length * tLayout.lineHeight + 30);
+    if (sub) {
+      ctx.fillText(getWrappedLines(ctx, sub, artW, 1)[0] || '', w / 2, curY + tLayout.lines.length * tLayout.lineHeight + 30);
+    }
   });
 
   curY += titleGroupH + 22;

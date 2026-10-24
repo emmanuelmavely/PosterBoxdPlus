@@ -42,10 +42,12 @@ export function renderScoreboardPoster(ctx, w, h) {
   drawMovableGroup(ctx, 'title', 'Header Metadata', { x: metaX, y: topY, w: metaW, h: thumbH }, () => {
     let my = topY + 28;
     ctx.font = `700 ${Math.round(21 * fs)}px "JetBrains Mono", monospace`;
-    ctx.fillStyle = '#00E054';
+    ctx.fillStyle = ensureVisibleAccentOnDark(state.palette[0] || state.palette[2], '#00E054');
     ctx.textAlign = 'left';
     const topSpecs = [state.episodeTitle || state.year, state.medium, state.runtime].filter(Boolean).join('  ·  ').toUpperCase();
-    ctx.fillText(getWrappedLines(ctx, topSpecs, metaW, 1)[0] || '', metaX, my);
+    if (topSpecs) {
+      ctx.fillText(getWrappedLines(ctx, topSpecs, metaW, 1)[0] || '', metaX, my);
+    }
 
     const tLayout = computeAdaptiveTitleLayout(ctx, state.title, metaW, Math.round(54 * fs), '"Syne", sans-serif', '800', 2);
     ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
@@ -55,13 +57,15 @@ export function renderScoreboardPoster(ctx, w, h) {
       ctx.fillText(l, metaX, my);
     });
 
-    my += Math.round(34 * fs);
-    ctx.font = `600 ${Math.round(25 * fs)}px "Plus Jakarta Sans", sans-serif`;
-    ctx.fillStyle = '#E5E7EB';
-    const creditLabel = state.mediaType === 'tv'
-      ? (state.episodeTitle ? 'Episode Director' : 'Created by')
-      : 'Directed by';
-    ctx.fillText(`${creditLabel} ${state.director || 'Unknown'}`, metaX, my);
+    if (state.director) {
+      my += Math.round(34 * fs);
+      ctx.font = `600 ${Math.round(25 * fs)}px "Plus Jakarta Sans", sans-serif`;
+      ctx.fillStyle = '#E5E7EB';
+      const creditLabel = state.mediaType === 'tv'
+        ? (state.episodeTitle ? 'Episode Director' : 'Created by')
+        : 'Directed by';
+      ctx.fillText(`${creditLabel} ${state.director}`, metaX, my);
+    }
 
     if (state.genre) {
       my += Math.round(32 * fs);
