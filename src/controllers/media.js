@@ -2,6 +2,7 @@ import { state, resetMediaState } from '../state.js';
 import { DEMO_CATALOG } from '../data/demo-catalog.js';
 import { buildRelevantMovieReview } from '../utils.js';
 import { tmdbFetch, detectBrowserRegion } from '../services/tmdb.js';
+import { fetchPublicTmdbDetail } from '../services/tmdb-public-search.js';
 import { loadCorsImage, extractDominantPalette } from '../services/media-assets.js';
 import { recordCurrentFetchToHistory } from '../services/storage.js';
 import { renderHistoryListUI } from '../ui/history.js';
@@ -162,12 +163,12 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     state.episodeTitle = '';
     syncArchetypeUI();
 
-    // Default rating to actual rating of the movie (TMDB vote_average / 2, rounded to nearest 0.5), fallback to 4.5
+    // Set rating to actual TMDB score (vote_average / 2, rounded to nearest 0.5), or 0 (Unrated) if none
     if (!preserveCustomReview && !state.isFromLetterboxd) {
       if (typeof details.vote_average === 'number' && details.vote_average > 0) {
         state.rating = Math.max(0.5, Math.min(5, Math.round((details.vote_average / 2) * 2) / 2));
       } else {
-        state.rating = 4.5;
+        state.rating = 0;
       }
     }
 
@@ -295,3 +296,94 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     showToast(`Could not load TMDB details: ${err.message}`, true);
   }
 }
+
+export async function loadPublicMediaDetails(item) {
+  showToast('Loading TMDB details (No-API mode)...');
+  try {
+    const detail = await fetchPublicTmdbDetail(item);
+
+    resetMediaState();
+    state.hasSelectedMedia = true;
+    updateNavigationButtonsDisabledState();
+
+    state.isFromLetterboxd = false;
+    state.letterboxdUrl = '';
+    state.showQrCode = false;
+    syncQrToggleVisibility();
+
+    state.tmdbId = detail.id || item.id;
+    state.mediaType = detail.media_type || item.media_type || 'movie';
+    state.title = detail.title || detail.name || item.title || item.name || 'Untitled';
+    state.year = detail.release_year || item.release_year || '';
+    state.spine = state.year ? `#${state.year}` : `#${String(state.tmdbId).slice(-4)}`;
+    state.director = detail.director || '';
+    state.writer = detail.writer || '';
+    state.dop = '';
+    state.music = '';
+    state.cast = (detail.credits?.cast || []).slice(0, 4).map(c => c.name).join(', ') || '';
+    state.genre = (detail.genres || []).slice(0, 3).map(g => g.name).join(' | ') || '';
+    if (detail.runtime) {
+      const h = Math.floor(detail.runtime / 60);
+      const m = detail.runtime % 60;
+      state.runtime = h > 0 ? `${h}h ${m}m` : `${m}m`;
+    } else {
+      state.runtime = '';
+    }
+    state.medium = 'THEATER';
+    if (!state.isFromLetterboxd) {
+      if (typeof detail.vote_average === 'number' && detail.vote_average > 0) {
+        state.rating = Math.max(0.5, Math.min(5, Math.round((detail.vote_average / 2) * 2) / 2));
+      } else {
+        state.rating = 0;
+      }
+      state.review = buildRelevantMovieReview(state.title, state.director, state.cast, state.genre, state.mediaType, state.rating);
+      state.detailedReview = '';
+    }
+
+    const pUrls = Array.from(new Set([
+      ...(detail.all_posters || []),
+      detail.poster_url,
+      item.poster_url
+    ].filter(Boolean)));
+
+    const bUrls = Array.from(new Set([
+      ...(detail.all_backdrops || []),
+      detail.backdrop_url,
+      ...pUrls
+    ].filter(Boolean)));
+
+    state.posters = pUrls.length > 0 ? pUrls : [];
+    state.backdrops = bUrls.length > 0 ? bUrls : [];
+    state._showAllImages = Array.from(new Set([...state.posters, ...state.backdrops]));
+    state.selectedPosterIndex = 0;
+    state.selectedBackdropIndex = 0;
+    state.logos = [];
+    state.selectedLogoIndex = 0;
+    state.logoImg = null;
+
+    const [pImg, bImg] = await Promise.all([
+      loadCorsImage(state.posters[0]),
+      loadCorsImage(state.backdrops[0] || state.posters[0])
+    ]);
+    state.posterImg = pImg;
+    state.backdropImg = bImg;
+
+    if (pImg) {
+      state.palette = extractDominantPalette(pImg, state.palette);
+      renderPaletteSwatchesUI();
+    }
+
+    syncArchetypeUI();
+    syncMediaTypeControls();
+    captureTvBaseState();
+    renderAssetPickerStrips();
+    syncReviewFormState();
+    recordCurrentFetchToHistory();
+    renderHistoryListUI();
+    switchView('review');
+    showToast(`Loaded "${state.title}" (No-API mode)`);
+  } catch (err) {
+    showToast(`Could not load title details: ${err.message}`, true);
+  }
+}
+

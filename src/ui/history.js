@@ -74,7 +74,7 @@ export function renderHistoryListUI() {
         episodeTitle: item.episodeTitle || '',
         seasonNumber: item.seasonNumber || '',
         episodeNumber: item.episodeNumber || '',
-        rating: item.rating ?? 4.5,
+        rating: Number.isFinite(item.rating) ? item.rating : 0,
         isLiked: Boolean(item.isLiked),
         medium: item.medium || 'THEATER',
         watchedAt: item.watchedAt || '',

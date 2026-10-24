@@ -8,7 +8,7 @@ export function formatSafeDate(dateStr) {
   return dateStr;
 }
 
-export function buildRelevantMovieReview(title, director, cast, genre, mediaType = 'movie', rating = 4.5) {
+export function buildRelevantMovieReview(title, director, cast, genre, mediaType = 'movie', rating = 0) {
   const castList = (cast || '').split(',').map(s => s.trim()).filter(Boolean);
   const lead = castList[0] || '';
   const duo = castList.slice(0, 2).join(' and ');
@@ -16,11 +16,12 @@ export function buildRelevantMovieReview(title, director, cast, genre, mediaType
   const primaryGenre = (genre || '').split('|')[0]?.trim()?.toLowerCase() || (mediaType === 'tv' ? 'series' : 'cinema');
   const cleanTitle = title || (mediaType === 'tv' ? 'this series' : 'this film');
   const parsedRating = Number(rating);
-  const numRating = Number.isFinite(parsedRating) ? parsedRating : 4.5;
+  const numRating = Number.isFinite(parsedRating) ? parsedRating : 0;
 
   const isMasterpiece = numRating >= 4.5;
   const isPositive = numRating >= 3.5 && numRating < 4.5;
-  const isMixed = numRating < 3.5;
+  const isUnrated = numRating <= 0;
+  const isMixed = numRating > 0 && numRating < 3.5;
 
   const templates = [];
 
@@ -58,6 +59,14 @@ export function buildRelevantMovieReview(title, director, cast, genre, mediaType
     }
     templates.push(`A richly atmospheric ${primaryGenre} that delivers big thrills and genuine heart throughout.`);
     templates.push(`Smartly paced, visually inventive, and thoroughly absorbing from open to close.`);
+  } else if (isUnrated) {
+    if (director && lead) {
+      templates.push(`An atmospheric ${primaryGenre} vision by ${director}, anchored by a compelling turn from ${lead}.`);
+    }
+    if (director) {
+      templates.push(`${director} crafts a distinctive, visually immersive ${primaryGenre} experience.`);
+    }
+    templates.push(`A singular ${primaryGenre} experience with striking craft and memorable atmosphere.`);
   } else { // Mixed / Modest rating (< 3.5)
     if (director && lead) {
       templates.push(`${lead} gives everything to the role, even when ${director}'s ${primaryGenre} narrative strains under its ambitions.`);

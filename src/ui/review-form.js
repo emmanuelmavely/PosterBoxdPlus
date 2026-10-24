@@ -75,7 +75,7 @@ function restoreTvBaseMetadata() {
   state.writer = base.writer || '';
   state.cast = base.cast || '';
   state.runtime = base.runtime || '';
-  state.rating = base.rating ?? 4.5;
+  state.rating = Number.isFinite(base.rating) ? base.rating : 0;
   state.spine = base.spine || state.spine;
 }
 

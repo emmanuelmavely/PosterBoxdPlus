@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [v1.3.1] - 2026-10-24
 
 ### Added
+- **Experimental No-API TMDB Search**: Users can now search movies and TV series directly in the browser without requiring a TMDb API key. Powered by a multi-proxy fallback rotation engine (`https://cors.tyxc.org/`, `https://proxy.cors.dev/`, `https://r.jina.ai/`, `https://test.cors.workers.dev/`) with client-side response validation, 15-minute caching, and public-page HTML/Markdown parsing.
+- **Fuzzy Title Matching & Query Fallbacks (`search-logic.js`)**: Pure, UI-independent algorithmic module providing Levenshtein edit distance, token-level scoring, and fallback search query ranking to find close matches for misspellings.
 - **Poster Footer Multi-Select Choice Chips**: Choice chips in Poster Studio settings allowing users to independently toggle footer elements drawn on canvas (`@Username`, `PosterBoxd`, `Letterboxd`, `Venue / Logged`).
 - **Marquee Segmented Title Mode Switcher**: Replaced the single checkbox with a 3-way segmented switch (`| Normal text | Bulb | Logo artwork |`) for Design 10 (Marquee).
 - **Artwork-Aware Crop Sliders**: Photo Crop Offset Correction (X & Y) sliders and Center button are automatically disabled and dimmed when no image artwork is present to crop.
@@ -19,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 - **BigScore Render Freeze & Navigation Hang**: Fixed missing `ensureVisibleAccentOnDark` import in `scoreboard.js` that crashed the canvas render loop and hung Next/Prev style navigation, and added protective canvas render error handling.
+- **Removed 4.5★ Fallback Defaults**: Eliminated hardcoded 4.5★ fallback ratings across initial app state, review helpers, and media loaders. Unrated media now starts clean as `Unrated` (`0★`), while fetched items dynamically use their real TMDB score (`vote_average / 2`) or authentic Letterboxd review stars.
 
 ---
 

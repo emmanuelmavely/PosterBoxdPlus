@@ -38,7 +38,7 @@ export const state = {
   _baseTvDetails: null,
   _currentSeasonData: null,
   _currentSeasonAssets: null,
-  rating: 4.5,
+  rating: 0,
   isLiked: false,
   medium: 'THEATER',
   watchedAt: '',

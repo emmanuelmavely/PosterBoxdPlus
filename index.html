@@ -140,13 +140,13 @@
     </div>
   </header>
 
-  <!-- Persistent TMDB Missing Key Warning Banner (Subtle & Persistent) -->
-  <aside id="tmdb-persistent-banner" class="w-full bg-amber-500/10 border-b border-amber-500/20 px-3 sm:px-6 py-2 text-xs text-amber-200/90 flex items-center justify-between gap-2.5 backdrop-blur-sm z-30 transition-all" aria-label="TMDB API Configuration Notice">
+  <!-- Persistent TMDB Key Notice Banner (Subtle & Persistent) -->
+  <aside id="tmdb-persistent-banner" class="w-full bg-purple-500/10 border-b border-purple-500/20 px-3 sm:px-6 py-2 text-xs text-purple-200/90 flex items-center justify-between gap-2.5 backdrop-blur-sm z-30 transition-all" aria-label="TMDB Configuration Notice">
     <div class="flex items-center gap-2 min-w-0">
-      <i class="fa-solid fa-triangle-exclamation text-amber-400 shrink-0 text-xs"></i>
-      <span class="truncate"><strong class="text-amber-300 font-semibold">Limited Functionality:</strong> TMDb API key is not configured. Live cinema search, high-res backdrops, official title logos, and crew metadata are disabled.</span>
+      <i class="fa-solid fa-flask text-purple-400 shrink-0 text-xs"></i>
+      <span class="truncate"><strong class="text-purple-300 font-semibold">Experimental No-API Mode Active:</strong> Direct browser search enabled via public scraper. Add a TMDb API key anytime for official API access.</span>
     </div>
-    <button type="button" id="banner-open-api-btn" class="shrink-0 px-2.5 py-1 rounded-lg bg-amber-400/20 hover:bg-amber-400/30 text-amber-300 font-semibold text-[11px] font-mono border border-amber-400/30 transition hover:scale-105">
+    <button type="button" id="banner-open-api-btn" class="shrink-0 px-2.5 py-1 rounded-lg bg-purple-400/20 hover:bg-purple-400/30 text-purple-300 font-semibold text-[11px] font-mono border border-purple-400/30 transition hover:scale-105">
       <i class="fa-solid fa-key text-[10px] mr-1"></i>Add API Key
     </button>
   </aside>
@@ -259,19 +259,19 @@
           <label class="text-xs font-mono uppercase tracking-wider text-gray-300 font-semibold">Your Rating</label>
           <div class="flex items-center gap-2">
             <span id="rating-locked-badge" class="hidden text-[10px] font-mono px-2 py-0.5 rounded bg-amber-400/15 text-amber-400 border border-amber-400/30 font-semibold items-center gap-1"><i class="fa-solid fa-lock text-[9px]"></i>Locked from Review</span>
-            <span id="rating-numeric-badge" class="text-xs font-mono font-bold text-lbgreen bg-lbgreen/10 px-2.5 py-0.5 rounded-md">4.5 ★</span>
+            <span id="rating-numeric-badge" class="text-xs font-mono font-bold text-gray-400 bg-white/5 px-2.5 py-0.5 rounded-md">Unrated</span>
             <button type="button" id="clear-rating-btn" class="text-[11px] font-mono text-gray-400 hover:text-white px-2 py-0.5 rounded bg-white/5">0★</button>
           </div>
         </div>
         <div class="flex items-center justify-between gap-3">
           <div id="interactive-stars" class="flex items-center gap-2 select-none cursor-pointer py-1" role="slider" aria-label="Star Rating"></div>
-          <button type="button" id="heart-toggle-btn" aria-pressed="true"
-            class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-lborange/50 bg-lborange/15 text-lborange font-semibold text-xs transition hover:scale-105">
+          <button type="button" id="heart-toggle-btn" aria-pressed="false"
+            class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-white/10 bg-obsidian text-gray-400 font-semibold text-xs transition hover:text-white">
             <i class="fa-solid fa-heart text-sm"></i>
-            <span id="heart-toggle-label">Liked</span>
+            <span id="heart-toggle-label">Like</span>
           </button>
         </div>
-        <input id="rating-range" type="range" min="0" max="5" step="0.5" value="4.5" />
+        <input id="rating-range" type="range" min="0" max="5" step="0.5" value="0" />
       </div>
 
       <!-- Optional One-Liner Review -->
@@ -374,12 +374,11 @@
   <!-- VIEW 3: FINAL PREVIEW STAGE + EXPANDABLE SETTINGS DRAWER -->
   <main id="view-preview" class="hidden flex-1 flex flex-col items-center w-full max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-16 lg:pb-8 space-y-4">
 
-    <!-- Top Stage Bar: Style Indicator & Aspect Ratio Pills -->
-    <div class="w-full flex flex-wrap items-center justify-between gap-2 bg-slatepanel/90 backdrop-blur px-3.5 py-2.5 rounded-2xl border border-white/10">
-      <div class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-lbgreen"></span>
-        <span id="current-archetype-name" class="text-xs sm:text-sm font-display font-bold text-white">1 / 11 · Floating Ticket Stub</span>
-      </div>
+    <!-- Top Stage Bar: Aspect Ratio Pills -->
+    <div class="w-full flex items-center justify-between gap-2 bg-slatepanel/90 backdrop-blur px-3.5 py-2 rounded-2xl border border-white/10">
+      <span class="text-xs font-mono uppercase tracking-wider text-gray-400 font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-crop text-lbgreen"></i> Canvas Ratio
+      </span>
 
       <div class="flex items-center gap-1 bg-obsidian p-1 rounded-xl border border-white/10">
         <button type="button" data-ratio="9:16" class="ratio-pill active px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold bg-lbgreen text-obsidian transition">9:16</button>

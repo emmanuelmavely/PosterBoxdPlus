@@ -151,7 +151,8 @@ Here are sample high-resolution posters generated across different archetypes:
 ## Prerequisites
 
 - Any modern web browser with HTML5 Canvas and ES Modules support (Chrome, Firefox, Safari, Edge).
-- A free [TMDB API Key](https://www.themoviedb.org/settings/api) (v3 key or v4 read access token) for live movie and TV searching. *(Optional if using demo presets).*
+- **No API Key Required**: An **Experimental No-API Mode** allows searching any movie or TV show directly via client-side public TMDB scraping and CORS proxy rotation (`https://cors.tyxc.org/`, `https://proxy.cors.dev/`, `https://r.jina.ai/`).
+- *(Optional)*: An official [TMDB API Key](https://www.themoviedb.org/settings/api) (v3 key or v4 token) can be configured anytime for official API access.
 - A local static HTTP server when developing or running locally (browsers block ES modules on direct `file://` execution due to CORS).
 
 ---
@@ -239,7 +240,9 @@ PosterBoxdPlus/
 │   │   ├── media.js               # Media search, TMDB details, and season fetching
 │   │   └── letterboxd-import.js   # Letterboxd review parsing & artwork enrichment
 │   ├── services/
-│   │   ├── tmdb.js                # TMDB API client & regional now-playing queries
+│   │   ├── search-logic.js        # Pure fuzzy title matching & query ranking
+│   │   ├── tmdb-public-search.js  # TMDB public scraper with CORS proxy rotation & cache
+│   │   ├── tmdb.js                # Official TMDB API client & regional now-playing queries
 │   │   ├── letterboxd.js          # Letterboxd web scraper & short URL resolver
 │   │   ├── media-assets.js        # CORS image loader & color palette extractor
 │   │   └── storage.js             # LocalStorage manager for history & transforms

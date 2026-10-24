@@ -1,8 +1,9 @@
 import { state } from '../state.js';
 import { tmdbFetch } from '../services/tmdb.js';
 import { fetchLetterboxdReview } from '../services/letterboxd.js';
-import { loadDemoPreset, loadTmdbMediaDetails } from '../controllers/media.js';
+import { loadDemoPreset, loadTmdbMediaDetails, loadPublicMediaDetails } from '../controllers/media.js';
 import { applyLetterboxdReviewData } from '../controllers/letterboxd-import.js';
+import { searchPublicTmdb } from '../services/tmdb-public-search.js';
 import { openApiModal } from './api-modal.js';
 
 function promptLetterboxdProceedWithoutTmdb(onProceed) {
@@ -67,11 +68,7 @@ export function initSearch() {
   const runLiveSearch = async (inputEl, resultsEl) => {
     const q = inputEl.value.trim();
     if (!q) {
-      if (!state.tmdbApiKey) {
-        openApiModal();
-      } else {
-        inputEl.focus();
-      }
+      inputEl.focus();
       return;
     }
 
@@ -154,7 +151,7 @@ export function initSearch() {
               movieTitle: cleanSlugTitle,
               releaseYear: yearInSlug ? yearInSlug[1] : '',
               reviewer: user,
-              rating: state.rating || 4.5,
+              rating: Number.isFinite(state.rating) ? state.rating : 0,
               reviewLines: []
             };
           }
@@ -211,8 +208,76 @@ export function initSearch() {
       }
     }
 
+    // 3. TMDB Search (Official API if key is set, otherwise Experimental No-API scraper)
     if (!state.tmdbApiKey) {
-      openApiModal();
+      resultsEl.classList.remove('hidden');
+      resultsEl.innerHTML = `
+        <div class="text-xs font-mono text-purple-300 py-3 text-center flex items-center justify-center gap-2">
+          <i class="fa-solid fa-flask fa-spin text-purple-400"></i>
+          <span>Searching TMDB (No-API mode)...</span>
+        </div>
+      `;
+
+      try {
+        const response = await searchPublicTmdb(q);
+        const results = (response.results || []).slice(0, 8);
+
+        if (results.length === 0) {
+          resultsEl.innerHTML = `
+            <div class="p-3 text-center space-y-1 text-gray-400 text-xs font-mono">
+              <div>No titles found for "${q}".</div>
+              <div class="text-[10px] text-gray-500">Try a different spelling or check proxy connection.</div>
+            </div>
+          `;
+          return;
+        }
+
+        resultsEl.innerHTML = `
+          <div class="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-purple-300/90 flex items-center justify-between border-b border-white/10 mb-1">
+            <span class="flex items-center gap-1.5"><i class="fa-solid fa-flask text-purple-400 text-[10px]"></i> No-API Search Matches</span>
+            <span class="text-[9px] text-gray-400 font-mono">${results.length} found</span>
+          </div>
+          ${results.map((item, index) => {
+            const title = item.title || item.name || 'Untitled';
+            const year = item.release_year || (item.release_date || item.first_air_date || '').substring(0, 4) || '—';
+            const poster = item.poster_url || (item.poster_path ? `https://image.tmdb.org/t/p/w185${item.poster_path}` : '');
+            return `
+              <button type="button" data-public-index="${index}"
+                class="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-elevated text-left transition group">
+                ${poster ? `<img src="${poster}" class="w-9 h-13 object-cover rounded shrink-0 shadow" />` : `<div class="w-9 h-13 bg-obsidian border border-white/10 rounded flex items-center justify-center shrink-0 text-gray-500 text-[10px]">No Art</div>`}
+                <div class="flex-1 min-w-0">
+                  <div class="text-xs font-bold text-white truncate flex items-center gap-1.5">
+                    <span class="truncate">${title}</span>
+                    <span class="text-gray-400 font-mono text-[11px] font-normal">(${year})</span>
+                    <span class="text-[9px] font-mono px-1 py-0.2 rounded bg-purple-500/15 text-purple-300 font-semibold uppercase shrink-0">${item.media_type === 'tv' ? 'TV' : 'Movie'}</span>
+                  </div>
+                  <div class="text-[11px] text-gray-400 truncate mt-0.5">${item.overview || 'Tap to load into Poster Studio'}</div>
+                </div>
+              </button>
+            `;
+          }).join('')}
+        `;
+
+        resultsEl.querySelectorAll('[data-public-index]').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            resultsEl.classList.add('hidden');
+            const item = results[Number(btn.dataset.publicIndex)];
+            if (item) {
+              await loadPublicMediaDetails(item);
+            }
+          });
+        });
+      } catch (err) {
+        resultsEl.innerHTML = `
+          <div class="p-3 text-center space-y-2">
+            <div class="text-xs text-red-400">Search error: ${err.message}</div>
+            <button type="button" id="public-search-open-api-btn" class="px-3 py-1.5 rounded-lg bg-lbgreen text-obsidian font-bold text-xs">
+              Add TMDb API Key
+            </button>
+          </div>
+        `;
+        document.getElementById('public-search-open-api-btn')?.addEventListener('click', openApiModal);
+      }
       return;
     }
 
@@ -265,10 +330,6 @@ export function initSearch() {
     if (e.key === 'Enter') { e.preventDefault(); runLiveSearch(homeInput, homeResults); }
   });
   document.getElementById('home-search-submit-btn')?.addEventListener('click', () => {
-    if (!state.tmdbApiKey && !homeInput.value.trim().match(/https?:\/\//i)) {
-      openApiModal();
-      return;
-    }
     runLiveSearch(homeInput, homeResults);
   });
 
@@ -276,10 +337,6 @@ export function initSearch() {
     if (e.key === 'Enter') { e.preventDefault(); runLiveSearch(headerInput, headerResults); }
   });
   document.getElementById('header-search-btn')?.addEventListener('click', () => {
-    if (!state.tmdbApiKey && !headerInput.value.trim().match(/https?:\/\//i)) {
-      openApiModal();
-      return;
-    }
     runLiveSearch(headerInput, headerResults);
   });
 
