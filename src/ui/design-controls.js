@@ -28,16 +28,70 @@ export function syncArchetypeUI() {
   const currentName = document.getElementById('current-archetype-name');
   if (currentName) currentName.textContent = ARCHETYPE_NAMES[state.archetype];
 
-  const marqueeBulbRow = document.getElementById('marquee-bulb-toggle-row');
-  if (marqueeBulbRow) {
+  const marqueeModeRow = document.getElementById('marquee-mode-selector-row');
+  if (marqueeModeRow) {
     const isMarquee = state.archetype === 'marquee';
-    marqueeBulbRow.classList.toggle('hidden', !isMarquee);
-    marqueeBulbRow.classList.toggle('flex', isMarquee);
+    marqueeModeRow.classList.toggle('hidden', !isMarquee);
+    marqueeModeRow.classList.toggle('flex', isMarquee);
+
+    const activeMode = state.marqueeTitleMode || 'bulb';
+    document.querySelectorAll('.marquee-mode-btn').forEach((btn) => {
+      const active = btn.dataset.marqueeMode === activeMode;
+      btn.classList.toggle('bg-amber-400/20', active);
+      btn.classList.toggle('text-amber-300', active);
+      btn.classList.toggle('font-bold', active);
+      btn.classList.toggle('border', active);
+      btn.classList.toggle('border-amber-400/30', active);
+      btn.classList.toggle('text-gray-400', !active);
+      btn.classList.toggle('font-normal', !active);
+    });
   }
+}
+
+export function syncFooterChipsUI() {
+  const cfg = state.footerItems || { username: true, posterboxd: true, letterboxd: true, venue: true };
+  const labels = {
+    username: '@Username',
+    posterboxd: 'PosterBoxd',
+    letterboxd: 'Letterboxd',
+    venue: 'Venue / Logged'
+  };
+  document.querySelectorAll('.footer-chip').forEach((chip) => {
+    const key = chip.dataset.footerElement;
+    const active = Boolean(cfg[key]);
+    chip.classList.toggle('bg-lbgreen/15', active);
+    chip.classList.toggle('text-lbgreen', active);
+    chip.classList.toggle('border-lbgreen/40', active);
+    chip.classList.toggle('font-semibold', active);
+    chip.classList.toggle('bg-cardbg', !active);
+    chip.classList.toggle('text-gray-400', !active);
+    chip.classList.toggle('border-white/10', !active);
+    chip.classList.toggle('font-normal', !active);
+    chip.classList.toggle('opacity-60', !active);
+
+    chip.innerHTML = active
+      ? `<i class="fa-solid fa-check text-[9px]"></i> ${labels[key] || key}`
+      : `${labels[key] || key}`;
+  });
 }
 
 export function syncDesignControlsUI() {
   syncArchetypeUI();
+  syncFooterChipsUI();
+
+  // Disable X-Y axis correction if no image artwork is available
+  const hasArtwork = Boolean(state.posterImg || state.backdropImg);
+  const xSlider = document.getElementById('slider-poster-offset-x');
+  const ySlider = document.getElementById('slider-poster-offset-y');
+  const resetOffsetsBtn = document.getElementById('reset-photo-offsets-btn');
+  const cropContainer = document.getElementById('photo-crop-container');
+  if (xSlider) xSlider.disabled = !hasArtwork;
+  if (ySlider) ySlider.disabled = !hasArtwork;
+  if (resetOffsetsBtn) resetOffsetsBtn.disabled = !hasArtwork;
+  if (cropContainer) {
+    cropContainer.classList.toggle('opacity-40', !hasArtwork);
+    cropContainer.classList.toggle('pointer-events-none', !hasArtwork);
+  }
 
   document.querySelectorAll('.ratio-pill').forEach((button) => {
     const active = button.dataset.ratio === state.aspectRatio;
@@ -66,7 +120,6 @@ export function syncDesignControlsUI() {
     ['chk-gradient', state.gradientOverlay],
     ['chk-grain', state.filmGrain],
     ['chk-qrcode', state.showQrCode],
-    ['chk-marquee-bulb', state.marqueeBulbMode],
     ['toggle-use-logo', state.useLogoImage]
   ];
   checkboxState.forEach(([id, checked]) => {
@@ -169,10 +222,35 @@ export function initDesignControls() {
     recordCurrentFetchToHistory();
   });
 
-  document.getElementById('chk-marquee-bulb')?.addEventListener('change', (event) => {
-    state.marqueeBulbMode = event.target.checked;
-    scheduleCanvasRender();
-    recordCurrentFetchToHistory();
+  document.querySelectorAll('.marquee-mode-btn').forEach((button) => {
+    button.addEventListener('click', () => {
+      state.marqueeTitleMode = button.dataset.marqueeMode;
+      document.querySelectorAll('.marquee-mode-btn').forEach((btn) => {
+        const active = btn === button;
+        btn.classList.toggle('bg-amber-400/20', active);
+        btn.classList.toggle('text-amber-300', active);
+        btn.classList.toggle('font-bold', active);
+        btn.classList.toggle('border', active);
+        btn.classList.toggle('border-amber-400/30', active);
+        btn.classList.toggle('text-gray-400', !active);
+        btn.classList.toggle('font-normal', !active);
+      });
+      scheduleCanvasRender();
+      recordCurrentFetchToHistory();
+    });
+  });
+
+  document.querySelectorAll('.footer-chip').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const key = chip.dataset.footerElement;
+      if (!state.footerItems) {
+        state.footerItems = { username: true, posterboxd: true, letterboxd: true, venue: true };
+      }
+      state.footerItems[key] = !state.footerItems[key];
+      syncFooterChipsUI();
+      scheduleCanvasRender();
+      recordCurrentFetchToHistory();
+    });
   });
 
   document.getElementById('toggle-use-logo')?.addEventListener('change', (event) => {

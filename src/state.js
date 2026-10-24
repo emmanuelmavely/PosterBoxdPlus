@@ -64,6 +64,13 @@ export const state = {
   filmGrain: true,
   showQrCode: false,
   marqueeBulbMode: true,
+  marqueeTitleMode: 'bulb',
+  footerItems: {
+    username: true,
+    posterboxd: true,
+    letterboxd: true,
+    venue: true
+  },
   isFromLetterboxd: false,
   letterboxdUrl: '',
   backdropBrightness: 55,

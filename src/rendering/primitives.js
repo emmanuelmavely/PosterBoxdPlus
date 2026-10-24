@@ -289,9 +289,23 @@ export function drawFooterBrand(context, centerX, bottomY, isLightMode = false) 
   const scale = state.footerScale || 1.0;
   const primaryText = isLightMode ? '#18181B' : '#F4EFE6';
   const mutedText = isLightMode ? '#57534E' : '#A1A1AA';
+
+  const cfg = state.footerItems || {
+    username: true,
+    posterboxd: true,
+    letterboxd: true,
+    venue: true
+  };
+
   const rawUser = (state.username || '').trim().replace(/^@/, '');
-  const handle = rawUser ? `@${rawUser.toUpperCase()}` : '';
-  const venue = (state.watchedAt || '').trim() ? state.watchedAt.trim().toUpperCase() : '';
+  const handle = (cfg.username && rawUser) ? `@${rawUser.toUpperCase()}` : '';
+  const venue = (cfg.venue && (state.watchedAt || '').trim()) ? state.watchedAt.trim().toUpperCase() : '';
+  const showPosterboxd = Boolean(cfg.posterboxd);
+  const showLetterboxd = Boolean(cfg.letterboxd && state.isFromLetterboxd);
+
+  if (!handle && !showPosterboxd && !showLetterboxd && !venue) {
+    return;
+  }
 
   context.save();
   context.textBaseline = 'middle';
@@ -300,21 +314,26 @@ export function drawFooterBrand(context, centerX, bottomY, isLightMode = false) 
   const rowY = bottomY - Math.round(22 * scale);
   context.font = `700 ${fontSize}px "Syne", sans-serif`;
 
-  const brandText = 'POSTERBOXD';
-  const separatorText = handle ? '   ·   ' : '';
-  const handleWidth = handle ? context.measureText(handle).width : 0;
-  const separatorWidth = separatorText ? context.measureText(separatorText).width : 0;
-  const brandWidth = context.measureText(brandText).width;
+  const brandText = showPosterboxd ? 'POSTERBOXD' : '';
   const iconGap = Math.round(8 * scale);
-  const isLetterboxd = Boolean(state.isFromLetterboxd);
-  const collaborationSeparator = isLetterboxd ? '  ×  ' : '';
-  const collaborationSeparatorWidth = isLetterboxd ? context.measureText(collaborationSeparator).width : 0;
-  const letterboxdText = isLetterboxd ? 'LETTERBOXD' : '';
-  const letterboxdTextWidth = isLetterboxd ? context.measureText(letterboxdText).width : 0;
+
+  const handleWidth = handle ? context.measureText(handle).width : 0;
+  const separatorText = (handle && (showPosterboxd || showLetterboxd)) ? '   ·   ' : '';
+  const separatorWidth = separatorText ? context.measureText(separatorText).width : 0;
+
+  const brandTextWidth = showPosterboxd ? context.measureText(brandText).width : 0;
+  const brandWidth = showPosterboxd ? (iconSize + iconGap + brandTextWidth) : 0;
+
+  const collaborationSeparator = (showPosterboxd && showLetterboxd) ? '  ×  ' : '';
+  const collaborationSeparatorWidth = collaborationSeparator ? context.measureText(collaborationSeparator).width : 0;
+
   const dotRadius = Math.round(5.5 * scale);
-  const dotsWidth = isLetterboxd ? (dotRadius * 6 + Math.round(6 * scale)) : 0;
-  const letterboxdTotalWidth = isLetterboxd ? (collaborationSeparatorWidth + dotsWidth + iconGap + letterboxdTextWidth) : 0;
-  const totalWidth = handleWidth + separatorWidth + iconSize + iconGap + brandWidth + letterboxdTotalWidth;
+  const dotsWidth = showLetterboxd ? (dotRadius * 6 + Math.round(6 * scale)) : 0;
+  const letterboxdText = showLetterboxd ? 'LETTERBOXD' : '';
+  const letterboxdTextWidth = showLetterboxd ? (context.measureText(letterboxdText).width + iconGap) : 0;
+  const letterboxdTotalWidth = showLetterboxd ? (collaborationSeparatorWidth + dotsWidth + letterboxdTextWidth) : 0;
+
+  const totalWidth = handleWidth + separatorWidth + brandWidth + letterboxdTotalWidth;
   let currentX = centerX - totalWidth / 2;
 
   if (venue) {
@@ -331,22 +350,29 @@ export function drawFooterBrand(context, centerX, bottomY, isLightMode = false) 
     context.fillStyle = primaryText;
     context.fillText(handle, currentX, rowY);
     currentX += handleWidth;
-    context.fillStyle = mutedText;
-    context.fillText(separatorText, currentX, rowY);
-    currentX += separatorWidth;
+    if (separatorText) {
+      context.fillStyle = mutedText;
+      context.fillText(separatorText, currentX, rowY);
+      currentX += separatorWidth;
+    }
   }
-  if (renderRuntime.customBrandSvgImg) {
-    context.drawImage(renderRuntime.customBrandSvgImg, currentX, rowY - iconSize / 2 - 1, iconSize, iconSize);
-  }
-  currentX += iconSize + iconGap;
-  context.fillStyle = primaryText;
-  context.fillText(brandText, currentX, rowY);
-  currentX += brandWidth;
 
-  if (isLetterboxd) {
-    context.fillStyle = mutedText;
-    context.fillText(collaborationSeparator, currentX, rowY);
-    currentX += collaborationSeparatorWidth;
+  if (showPosterboxd) {
+    if (renderRuntime.customBrandSvgImg) {
+      context.drawImage(renderRuntime.customBrandSvgImg, currentX, rowY - iconSize / 2 - 1, iconSize, iconSize);
+    }
+    currentX += iconSize + iconGap;
+    context.fillStyle = primaryText;
+    context.fillText(brandText, currentX, rowY);
+    currentX += brandTextWidth;
+  }
+
+  if (showLetterboxd) {
+    if (collaborationSeparator) {
+      context.fillStyle = mutedText;
+      context.fillText(collaborationSeparator, currentX, rowY);
+      currentX += collaborationSeparatorWidth;
+    }
     ['#FF8000', '#00E054', '#40BCF4'].forEach((color, index) => {
       context.beginPath();
       context.arc(currentX + dotRadius + index * (dotRadius * 2 + 2), rowY, dotRadius, 0, Math.PI * 2);

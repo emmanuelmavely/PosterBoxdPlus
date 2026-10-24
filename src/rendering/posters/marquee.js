@@ -113,12 +113,12 @@ export function renderMarqueePoster(ctx, w, h) {
 
     const cleanTitleUpper = String(state.title || '').toUpperCase();
     const tLayout = computeAdaptiveTitleLayout(ctx, cleanTitleUpper, innerW - 70, Math.round(50 * fs * 1.3), '"Syne", sans-serif', '800', 2);
-    const canFitBulbEffect = state.marqueeBulbMode && cleanTitleUpper.length <= 28;
+    const mode = state.marqueeTitleMode || (state.marqueeBulbMode ? 'bulb' : 'normal');
 
-    if (canFitBulbEffect) {
+    if (mode === 'bulb' && cleanTitleUpper.length <= 28) {
       const startBulbY = tLayout.lines.length === 1 ? (mqY + 152) : (mqY + 116);
       drawBulbLitMarqueeTitle(ctx, tLayout.lines, w / 2, startBulbY, tLayout.fontPx, 8);
-    } else if (state.useLogoImage && state.logoImg && !state.marqueeBulbMode) {
+    } else if (mode === 'logo' && state.logoImg) {
       const maxLW = innerW - 140;
       const maxLH = 140;
       const ratio = Math.min(maxLW / state.logoImg.width, maxLH / state.logoImg.height);

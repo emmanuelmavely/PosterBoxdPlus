@@ -56,20 +56,11 @@ export function renderCriterionPoster(ctx, w, h) {
       ctx.fillText(byline, pad, topY + 20);
     }
 
-    if (state.useLogoImage && state.logoImg) {
-      const maxLW = Math.round(innerW * 0.7);
-      const maxLH = Math.round(headerH - 24);
-      const ratio = Math.min(maxLW / state.logoImg.width, maxLH / state.logoImg.height);
-      const lw = Math.round(state.logoImg.width * ratio);
-      const lh = Math.round(state.logoImg.height * ratio);
-      ctx.drawImage(state.logoImg, pad, topY + 28, lw, lh);
-    } else {
-      ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
-      ctx.fillStyle = '#FFFFFF';
-      tLayout.lines.forEach((line, idx) => {
-        ctx.fillText(line, pad, topY + 30 + (idx + 1) * tLayout.fontPx + idx * 4);
-      });
-    }
+    ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
+    ctx.fillStyle = '#FFFFFF';
+    tLayout.lines.forEach((line, idx) => {
+      ctx.fillText(line, pad, topY + 30 + (idx + 1) * tLayout.fontPx + idx * 4);
+    });
     ctx.restore();
   });
 

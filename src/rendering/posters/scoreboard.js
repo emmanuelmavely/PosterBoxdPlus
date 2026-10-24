@@ -7,6 +7,7 @@ import {
   drawProcessedBackdrop,
   drawRatingAndHeartRow,
   drawRoundedRectPath,
+  ensureVisibleAccentOnDark,
   getDetailedReviewLines,
   getWrappedLines
 } from '../primitives.js';

@@ -5,6 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [v1.3.1] - 2026-10-24
+
+### Added
+- **Poster Footer Multi-Select Choice Chips**: Choice chips in Poster Studio settings allowing users to independently toggle footer elements drawn on canvas (`@Username`, `PosterBoxd`, `Letterboxd`, `Venue / Logged`).
+- **Marquee Segmented Title Mode Switcher**: Replaced the single checkbox with a 3-way segmented switch (`| Normal text | Bulb | Logo artwork |`) for Design 10 (Marquee).
+- **Artwork-Aware Crop Sliders**: Photo Crop Offset Correction (X & Y) sliders and Center button are automatically disabled and dimmed when no image artwork is present to crop.
+
+### Changed
+- **Minimal Pinned Page Footer**: Cleaned up the site footer layout so it stays pinned at the bottom across all views without excess height or unwanted gaps.
+- **De-cluttered Search Copy**: Simplified verbose search headings, placeholders, and tips across Home and Studio views for a cleaner, focused experience.
+- **Criterion (Design 5) Text-Only Typography**: Configured Criterion Arthouse Split to render clean text typography alone without artwork logo overlay.
+
+### Fixed
+- **BigScore Render Freeze & Navigation Hang**: Fixed missing `ensureVisibleAccentOnDark` import in `scoreboard.js` that crashed the canvas render loop and hung Next/Prev style navigation, and added protective canvas render error handling.
+
+---
+
 ## [v1.3.0] - 2026-10-24
 
 ### Added

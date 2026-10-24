@@ -32,7 +32,13 @@ export function renderPosterToCanvas() {
   state.hitBoxes = [];
 
   const renderPoster = POSTER_RENDERERS[state.archetype];
-  if (renderPoster) renderPoster(ctx, targetW, targetH);
+  if (renderPoster) {
+    try {
+      renderPoster(ctx, targetW, targetH);
+    } catch (err) {
+      console.error(`Poster render error for archetype "${state.archetype}":`, err);
+    }
+  }
 
   if (state.filmGrain && renderRuntime.grainPatternCanvas) {
     ctx.save();

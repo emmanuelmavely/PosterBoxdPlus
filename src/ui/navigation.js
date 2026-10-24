@@ -2,6 +2,7 @@ import { state } from '../state.js';
 import { getSavedHistory } from '../services/storage.js';
 import { scheduleCanvasRender } from '../rendering/canvas-renderer.js';
 import { showToast } from './toast.js';
+import { syncDesignControlsUI } from './design-controls.js';
 
 let renderHistoryList = () => {};
 
@@ -71,6 +72,7 @@ export function switchView(viewName, openSettingsDrawer = false) {
   historyView?.classList.toggle('hidden', viewName !== 'history');
   updateHeaderHistoryVisibility();
   updateNavigationButtonsDisabledState();
+  syncDesignControlsUI();
 
   document.querySelectorAll('[data-breadcrumb-target]').forEach((button) => {
     const isActive = button.dataset.breadcrumbTarget === viewName;
