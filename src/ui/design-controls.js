@@ -1,5 +1,12 @@
 import { state } from '../state.js';
-import { ARCHETYPE_NAMES, ARCHETYPE_KEYS, getReviewCharacterLimit } from '../constants.js';
+import {
+  ARCHETYPE_NAMES,
+  ARCHETYPE_KEYS,
+  DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT,
+  getReviewCharacterLimit,
+  MAX_DETAILED_REVIEW_CHARACTER_LIMIT,
+  MIN_DETAILED_REVIEW_CHARACTER_LIMIT
+} from '../constants.js';
 import { scheduleCanvasRender } from '../rendering/canvas-renderer.js';
 import { recordCurrentFetchToHistory } from '../services/storage.js';
 import { showToast } from './toast.js';
@@ -32,6 +39,9 @@ export function syncArchetypeUI() {
   if (reviewInput) reviewInput.maxLength = reviewLimit;
   const reviewCount = document.getElementById('review-char-count');
   if (reviewCount) reviewCount.textContent = `${state.review.length} / ${reviewLimit}`;
+
+  const detailedReviewCount = document.getElementById('detailed-review-char-count');
+  if (detailedReviewCount) detailedReviewCount.textContent = `${(state.detailedReview || '').length} chars`;
 
   const marqueeModeRow = document.getElementById('marquee-mode-selector-row');
   if (marqueeModeRow) {
@@ -111,6 +121,7 @@ export function syncDesignControlsUI() {
     ['slider-blur', 'val-blur', state.backdropBlur, (value) => `${value}px`],
     ['slider-poster-scale', 'val-poster-scale', state.posterScale, (value) => `${value.toFixed(2)}x`],
     ['slider-font-scale', 'val-font-scale', state.fontScale, (value) => `${value.toFixed(2)}x`],
+    ['slider-detailed-review-limit', 'val-detailed-review-limit', state.detailedReviewCharacterLimit, (value) => `${value} chars`],
     ['slider-poster-offset-x', 'val-poster-offset-x', state.posterOffsetX, (value) => `${value > 0 ? `+${value}` : value}%`],
     ['slider-poster-offset-y', 'val-poster-offset-y', state.posterOffsetY, (value) => `${value > 0 ? `+${value}` : value}%`]
   ];
@@ -190,6 +201,18 @@ export function initDesignControls() {
   bindSlider('slider-blur', 'val-blur', 'backdropBlur', (value) => `${value}px`);
   bindSlider('slider-poster-scale', 'val-poster-scale', 'posterScale', (value) => `${value.toFixed(2)}x`);
   bindSlider('slider-font-scale', 'val-font-scale', 'fontScale', (value) => `${value.toFixed(2)}x`);
+  const detailedReviewLimitSlider = document.getElementById('slider-detailed-review-limit');
+  const detailedReviewLimitValue = document.getElementById('val-detailed-review-limit');
+  detailedReviewLimitSlider?.addEventListener('input', () => {
+    const number = Math.min(MAX_DETAILED_REVIEW_CHARACTER_LIMIT, Math.max(MIN_DETAILED_REVIEW_CHARACTER_LIMIT, parseInt(detailedReviewLimitSlider.value, 10)));
+    state.detailedReviewCharacterLimit = number;
+    localStorage.setItem('posterboxd_detailed_review_limit', String(number));
+    if (detailedReviewLimitValue) detailedReviewLimitValue.textContent = `${number} chars`;
+    const detailedReviewCount = document.getElementById('detailed-review-char-count');
+    if (detailedReviewCount) detailedReviewCount.textContent = `${(state.detailedReview || '').length} chars`;
+    scheduleCanvasRender();
+    recordCurrentFetchToHistory();
+  });
   bindSlider('slider-poster-offset-x', 'val-poster-offset-x', 'posterOffsetX', (value) => `${value > 0 ? `+${value}` : value}%`);
   bindSlider('slider-poster-offset-y', 'val-poster-offset-y', 'posterOffsetY', (value) => `${value > 0 ? `+${value}` : value}%`);
 
@@ -269,6 +292,7 @@ export function initDesignControls() {
     state.backdropBlur = 14;
     state.posterScale = 1.0;
     state.fontScale = 1.0;
+    state.detailedReviewCharacterLimit = DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT;
     state.posterOffsetX = 0;
     state.posterOffsetY = 0;
 
@@ -291,6 +315,14 @@ export function initDesignControls() {
     const fontScaleValue = document.getElementById('val-font-scale');
     if (fontScaleSlider) fontScaleSlider.value = 1.0;
     if (fontScaleValue) fontScaleValue.textContent = '1.00x';
+
+    const detailedReviewLimitSlider = document.getElementById('slider-detailed-review-limit');
+    const detailedReviewLimitValue = document.getElementById('val-detailed-review-limit');
+    if (detailedReviewLimitSlider) detailedReviewLimitSlider.value = DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT;
+    if (detailedReviewLimitValue) detailedReviewLimitValue.textContent = `${DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT} chars`;
+    localStorage.setItem('posterboxd_detailed_review_limit', String(DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT));
+    const detailedReviewCount = document.getElementById('detailed-review-char-count');
+    if (detailedReviewCount) detailedReviewCount.textContent = `${(state.detailedReview || '').length} chars`;
 
     const xSlider = document.getElementById('slider-poster-offset-x');
     const xVal = document.getElementById('val-poster-offset-x');

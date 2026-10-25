@@ -3,6 +3,7 @@ import { formatSafeDate } from '../../utils.js';
 import {
   computeAdaptiveTitleLayout,
   drawFooterBrand,
+  drawDetailedReviewLine,
   drawImageCover,
   drawProcessedBackdrop,
   drawRatingAndHeartRow,
@@ -148,7 +149,7 @@ export function renderTicketPoster(ctx, w, h) {
       dLines.forEach((dl) => {
         if (curY + detPx < stubSplitY - 12) {
           curY += detPx + 6;
-          ctx.fillText(dl, innerPad, curY);
+          drawDetailedReviewLine(ctx, dl, innerPad, curY);
         }
       });
     }

@@ -5,6 +5,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [v1.3.4] - 2026-10-25
+
+### Changed
+- **Live Poster Review Limit**: The extended-review slider now controls how much Detailed Review / Notes text is rendered on the live poster. It no longer truncates the editing field or limits what can be typed.
+- **Poster Truncation**: The selected output limit is applied by the shared poster text renderer, while the `Full review on Letterboxd profile` callout remains visible when the output is shortened.
+
+---
+
+## [v1.3.3] - 2026-10-25
+
+### Added
+- **Live Poster Review Limit Slider**: Added a Settings control for choosing how many Detailed Review / Notes characters appear on the live poster, from 220 to 2,000 characters, persisted locally between sessions. The input itself is not truncated.
+- **What's New Menu**: The clickable version badge now opens a current-release panel with the active version highlighted and a direct link to the full changelog.
+- **Startup Recovery**: The splash screen now has a font-loading timeout and startup recovery path so a slow font or network failure cannot leave the app stuck indefinitely.
+
+### Changed
+- **Letterboxd Profile Callout**: `Full review on Letterboxd profile` now renders as bold, green, and visually distinct from the surrounding extended review text in every poster design.
+- **Design 1 Background Fade**: Extended the background image under the full poster and strengthened the lower black fade to eliminate the visible photo cutoff.
+- **Design 4 Extended Review**: Increased the available extended-review lines for the Polaroid design.
+
+---
+
 ## [v1.3.2] - 2026-10-25
 
 ### Added

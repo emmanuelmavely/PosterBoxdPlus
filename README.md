@@ -7,7 +7,7 @@
 <img src="./assets/PosterBoxd-Banner.jpg" alt="PosterBoxd Banner" width="100%" style="border-radius: 14px; margin: 12px 0 16px 0;" />
 
 [![Live on GitHub Pages](https://img.shields.io/badge/Live_Site-posterboxd.com-00E054?style=flat-square&logo=githubpages&logoColor=white)](https://posterboxd.com/)
-[![Version](https://img.shields.io/badge/version-v1.3.2-00E054?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v1.3.4-00E054?style=flat-square)](CHANGELOG.md)
 [![Deploy to GitHub Pages](https://github.com/emmanuelmavely/PosterBoxdPlus/actions/workflows/static.yml/badge.svg)](https://github.com/emmanuelmavely/PosterBoxdPlus/actions/workflows/static.yml)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES_Modules-F7DF1E?logo=javascript&logoColor=black)
 ![No build step](https://img.shields.io/badge/build-none-00E054)
@@ -217,7 +217,7 @@ The frontend defaults to `https://posterboxd-tmdb-proxy.jaygatsby.workers.dev/ap
 
    Paste the raw v4 token only; the Worker adds the `Bearer` prefix automatically.
 
-The Worker only accepts `GET` and CORS preflight requests from PosterBoxd and local development origins. Successful JSON responses are cached at Cloudflare's edge for 24 hours. Poster images continue to load directly from `image.tmdb.org`.
+The Worker only accepts `GET` and CORS preflight requests from PosterBoxd and local development origins (`localhost` and `127.0.0.1` on ports 3000, 5173, and 8080). Successful JSON responses are cached at Cloudflare's edge for 24 hours. Poster images continue to load directly from `image.tmdb.org`.
 
 ---
 

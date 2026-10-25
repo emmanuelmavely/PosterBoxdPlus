@@ -1,6 +1,7 @@
 import { state } from '../../state.js';
 import {
   computeAdaptiveTitleLayout,
+  drawDetailedReviewLine,
   drawFooterBrand,
   drawImageCover,
   drawRatingAndHeartRow,
@@ -109,7 +110,7 @@ export function renderRetroPoster(ctx, w, h) {
       ctx.fillStyle = '#44403C';
       dLines.forEach((dl) => {
         curY += detPx + 6;
-        ctx.fillText(dl, w / 2, curY);
+        drawDetailedReviewLine(ctx, dl, w / 2, curY, { align: 'center' });
       });
     }
   }

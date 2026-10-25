@@ -1,3 +1,9 @@
+import {
+  DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT,
+  MAX_DETAILED_REVIEW_CHARACTER_LIMIT,
+  MIN_DETAILED_REVIEW_CHARACTER_LIMIT
+} from './constants.js';
+
 function getStoredValue(key, fallback = '') {
   try {
     return window.localStorage.getItem(key) || fallback;
@@ -44,6 +50,13 @@ export const state = {
   watchedAt: '',
   review: '',
   detailedReview: '',
+  detailedReviewCharacterLimit: Math.min(
+    MAX_DETAILED_REVIEW_CHARACTER_LIMIT,
+    Math.max(
+      MIN_DETAILED_REVIEW_CHARACTER_LIMIT,
+      Number(getStoredValue('posterboxd_detailed_review_limit', DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT)) || DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT
+    )
+  ),
   showDetailedReview: true,
   username: getStoredValue('posterboxd_username'),
   watchedDate: new Date().toISOString().split('T')[0],

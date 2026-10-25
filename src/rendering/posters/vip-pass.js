@@ -3,6 +3,7 @@ import { formatSafeDate } from '../../utils.js';
 import {
   computeAdaptiveTitleLayout,
   drawFooterBrand,
+  drawDetailedReviewLine,
   drawImageCover,
   drawProcessedBackdrop,
   drawRatingAndHeartRow,
@@ -154,7 +155,7 @@ export function renderVipPassPoster(ctx, w, h) {
         dLines.forEach((dl) => {
           if (ry + detPx < py + passH - 96) {
             ry += detPx + 6;
-            ctx.fillText(dl, innerPad, ry);
+            drawDetailedReviewLine(ctx, dl, innerPad, ry);
           }
         });
       }

@@ -3,6 +3,7 @@ import {
   computeAdaptiveTitleLayout,
   drawFooterBrand,
   drawImageCover,
+  drawDetailedReviewLine,
   drawMediumBadge,
   drawPaletteBar,
   drawProcessedBackdrop,
@@ -126,7 +127,7 @@ export function renderClassicPoster(ctx, w, h) {
         ctx.textAlign = 'center';
         dLines.forEach((dl) => {
           ry += detPx + 6;
-          ctx.fillText(dl, cx, ry);
+          drawDetailedReviewLine(ctx, dl, cx, ry, { align: 'center' });
         });
       }
     });

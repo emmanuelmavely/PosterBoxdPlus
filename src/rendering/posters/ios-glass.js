@@ -1,6 +1,7 @@
 import { state } from '../../state.js';
 import {
   computeAdaptiveTitleLayout,
+  drawDetailedReviewLine,
   drawFooterBrand,
   drawImageCover,
   drawPaletteBar,
@@ -117,7 +118,7 @@ export function renderIosGlassPoster(ctx, w, h) {
         ctx.fillStyle = 'rgba(255,255,255,0.80)';
         dLines.forEach((dl) => {
           ry += detPx + 5;
-          ctx.fillText(dl, cx, ry);
+          drawDetailedReviewLine(ctx, dl, cx, ry, { align: 'center' });
         });
       }
     });

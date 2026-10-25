@@ -134,10 +134,22 @@ export function getDetailedReviewLines(context, text, maxWidth, maxLines = 3) {
   if (!state.showDetailedReview || !text || text === state.review) return [];
   const cleanText = String(text).trim();
   if (!cleanText) return [];
-  const words = cleanText.split(/\s+/);
+  const outputLimit = Math.max(1, Math.min(2000, Number(state.detailedReviewCharacterLimit) || 500));
+  const limitedText = cleanText.slice(0, outputLimit).trim();
+  const outputWasLimited = limitedText.length < cleanText.length;
+  const words = limitedText.split(/\s+/);
   const lines = [];
   let current = '';
-  const suffix = ' ..... full review in Letterboxd profile';
+  const suffix = ' ..... Full review on Letterboxd profile';
+
+  const withSuffix = (line) => {
+    let result = line.trim();
+    while (result && context.measureText(result + suffix).width > maxWidth) {
+      const shortened = result.replace(/\s+\S*$/, '');
+      result = shortened === result ? result.slice(0, -1) : shortened;
+    }
+    return (result.trim() || '') + suffix;
+  };
 
   for (let i = 0; i < words.length; i++) {
     const word = words[i];
@@ -146,12 +158,7 @@ export function getDetailedReviewLines(context, text, maxWidth, maxLines = 3) {
       current = test;
     } else {
       if (lines.length === maxLines - 1) {
-        let truncated = current || word;
-        while (truncated.length > 0 && context.measureText(truncated + suffix).width > maxWidth) {
-          truncated = truncated.replace(/\s+\S*$/, '');
-          if (!truncated.includes(' ')) truncated = truncated.slice(0, -1);
-        }
-        lines.push((truncated.trim() || '') + suffix);
+        lines.push(withSuffix(current || word));
         return lines;
       }
       if (current) {
@@ -164,13 +171,52 @@ export function getDetailedReviewLines(context, text, maxWidth, maxLines = 3) {
     }
   }
   if (current && lines.length < maxLines) {
-    if (cleanText.length > 210 && context.measureText(current + suffix).width <= maxWidth) {
-      lines.push(current + suffix);
+    if (outputWasLimited) {
+      lines.push(withSuffix(current));
     } else {
       lines.push(current);
     }
   }
   return lines;
+}
+
+export function drawDetailedReviewLine(context, line, x, y, {
+  align = 'left',
+  boldFillStyle,
+  fillStyle = context.fillStyle
+} = {}) {
+  const text = String(line || '');
+  const marker = 'Full review on Letterboxd profile';
+  const markerIndex = text.toLowerCase().indexOf(marker.toLowerCase());
+  if (markerIndex < 0) {
+    context.fillText(text, x, y);
+    return;
+  }
+
+  const prefix = text.slice(0, markerIndex);
+  const suffix = text.slice(markerIndex);
+  const regularFont = context.font;
+  const boldFont = regularFont.replace(/^\s*(100|200|300|400|500|600|700|800|900)\b/, '700');
+  const prefixWidth = context.measureText(prefix).width;
+  context.font = boldFont;
+  const suffixWidth = context.measureText(suffix).width;
+  context.font = regularFont;
+
+  let startX = x;
+  if (align === 'center') startX -= (prefixWidth + suffixWidth) / 2;
+  else if (align === 'right') startX -= prefixWidth + suffixWidth;
+
+  context.save();
+  context.textAlign = 'left';
+  context.fillStyle = fillStyle;
+  context.font = regularFont;
+  context.fillText(prefix, startX, y);
+  context.font = boldFont;
+  context.fillStyle = boldFillStyle || '#00E054';
+  context.shadowColor = 'rgba(0, 224, 84, 0.38)';
+  context.shadowBlur = 5;
+  context.fillText(suffix, startX + prefixWidth, y);
+  context.restore();
 }
 
 export function getWrappedLines(context, text, maxWidth, maxLines = 3) {

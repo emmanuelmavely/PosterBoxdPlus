@@ -360,6 +360,7 @@ export function syncReviewFormState() {
   const usernameInput = document.getElementById('input-username');
   const watchedDateInput = document.getElementById('input-watched-date');
   const characterCount = document.getElementById('review-char-count');
+  const detailedCharacterCount = document.getElementById('detailed-review-char-count');
 
   if (title) title.textContent = state.title;
   if (year) year.textContent = state.year;
@@ -372,12 +373,16 @@ export function syncReviewFormState() {
 
   const review = state.review || '';
   if (reviewInput) reviewInput.value = review;
-  if (detailedReviewInput) detailedReviewInput.value = state.detailedReview || '';
+  if (detailedReviewInput) {
+    detailedReviewInput.removeAttribute('maxlength');
+    detailedReviewInput.value = state.detailedReview || '';
+  }
   if (detailedReviewToggle) detailedReviewToggle.checked = Boolean(state.showDetailedReview);
   if (watchedAtInput) watchedAtInput.value = state.watchedAt || '';
   if (usernameInput) usernameInput.value = state.username || '';
   if (watchedDateInput) watchedDateInput.value = state.watchedDate || '';
   if (characterCount) characterCount.textContent = `${review.length} / 220`;
+  if (detailedCharacterCount) detailedCharacterCount.textContent = `${(state.detailedReview || '').length} chars`;
 
   syncQrToggleVisibility();
   syncMediaTypeControls();
@@ -416,7 +421,9 @@ export function initReviewForm() {
   document.getElementById('clear-detailed-review-btn')?.addEventListener('click', () => {
     state.detailedReview = '';
     const detailedReviewInput = document.getElementById('input-detailed-review');
+    const detailedCharacterCount = document.getElementById('detailed-review-char-count');
     if (detailedReviewInput) detailedReviewInput.value = '';
+    if (detailedCharacterCount) detailedCharacterCount.textContent = '0 chars';
     scheduleCanvasRender();
     recordCurrentFetchToHistory();
     renderHistoryListUI();
@@ -537,6 +544,10 @@ export function initReviewForm() {
       if (id === 'input-review') {
         const characterCount = document.getElementById('review-char-count');
         if (characterCount) characterCount.textContent = `${input.value.length} / ${getReviewCharacterLimit(state.archetype)}`;
+      }
+      if (id === 'input-detailed-review') {
+        const detailedCharacterCount = document.getElementById('detailed-review-char-count');
+        if (detailedCharacterCount) detailedCharacterCount.textContent = `${input.value.length} chars`;
       }
       scheduleCanvasRender();
       recordCurrentFetchToHistory();

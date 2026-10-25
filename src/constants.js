@@ -5,7 +5,13 @@ export const CUSTOM_LOGO_SVG_DATA = `data:image/svg+xml;utf8,` + encodeURICompon
   </svg>
 `);
 
-export const APP_VERSION = 'v1.3.2';
+export const APP_VERSION = 'v1.3.4';
+export const RELEASE_DATE = '2026-10-25';
+export const CURRENT_RELEASE_NOTES = Object.freeze([
+  'The extended-review slider now controls the amount of text rendered on the live poster, not how much you can type.',
+  'The live poster truncates extended reviews at the selected limit and keeps the Letterboxd profile callout visible.',
+  'The “Full review on Letterboxd profile” ending is bold and accent-colored across every design.'
+]);
 
 export const ARCHETYPE_NAMES = Object.freeze({
   floatingticket: '1 / 11 · Floating Vintage Ticket',
@@ -26,6 +32,9 @@ export const ARCHETYPE_KEYS = Object.keys(ARCHETYPE_NAMES);
 export const EXTENDED_REVIEW_ARCHETYPES = new Set(['polaroid', 'iosglass', 'vippass']);
 export const DEFAULT_REVIEW_CHARACTER_LIMIT = 220;
 export const EXTENDED_REVIEW_CHARACTER_LIMIT = 500;
+export const DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT = 500;
+export const MIN_DETAILED_REVIEW_CHARACTER_LIMIT = 220;
+export const MAX_DETAILED_REVIEW_CHARACTER_LIMIT = 2000;
 
 export function getReviewCharacterLimit(archetype) {
   return EXTENDED_REVIEW_ARCHETYPES.has(archetype)

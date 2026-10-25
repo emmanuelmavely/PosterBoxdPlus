@@ -11,6 +11,7 @@ import { initDesignControls } from './ui/design-controls.js';
 import { initCanvasInteractions } from './ui/canvas-interactions.js';
 import { initExportControls } from './ui/export-controls.js';
 import { initPwaInstall } from './ui/pwa-install.js';
+import { initWhatsNewMenu } from './ui/whats-new.js';
 
 function setSplashProgress(pct, msg) {
   const bar = document.getElementById('splash-progress-bar');
@@ -31,36 +32,40 @@ async function dismissSplashScreen() {
 }
 
 async function bootstrap() {
-  setSplashProgress(20, 'Initializing rendering engine...');
-  initRenderRuntime();
-  configureNavigation({ historyRenderer: renderHistoryListUI });
-  initNavigation();
-  initSearch();
-  initHistory();
-  initApiModal();
-  initReviewForm();
-  initAssetControls();
-  initDesignControls();
-  initCanvasInteractions();
-  initExportControls();
-  initPwaInstall();
-
-  setSplashProgress(45, 'Loading archival typography & fonts...');
-  if (document.fonts && document.fonts.ready) {
-    await document.fonts.ready;
-  }
-
-  setSplashProgress(70, 'Connecting regional cinema database...');
   try {
+    setSplashProgress(20, 'Initializing rendering engine...');
+    initRenderRuntime();
+    configureNavigation({ historyRenderer: renderHistoryListUI });
+    initNavigation();
+    initSearch();
+    initHistory();
+    initApiModal();
+    initReviewForm();
+    initAssetControls();
+    initDesignControls();
+    initCanvasInteractions();
+    initExportControls();
+    initPwaInstall();
+    initWhatsNewMenu();
+
+    setSplashProgress(45, 'Loading archival typography & fonts...');
+    if (document.fonts && document.fonts.ready) {
+      await Promise.race([
+        document.fonts.ready,
+        new Promise((resolve) => setTimeout(resolve, 2500))
+      ]);
+    }
+
+    setSplashProgress(70, 'Connecting regional cinema database...');
     await loadRegionalNowPlayingMovies();
   } catch (error) {
-    // Graceful fallback when network is offline
+    console.error('PosterBoxd startup recovered from an initialization error:', error);
+    setSplashProgress(90, 'Starting with limited network features...');
+  } finally {
+    setSplashProgress(95, 'Finalizing PosterBoxd interface...');
+    switchView('home');
+    await dismissSplashScreen();
   }
-
-  setSplashProgress(90, 'Finalizing PosterBoxd interface...');
-  switchView('home');
-
-  await dismissSplashScreen();
 }
 
 if (document.readyState === 'loading') {

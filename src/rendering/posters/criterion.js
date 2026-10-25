@@ -3,6 +3,7 @@ import {
   computeAdaptiveTitleLayout,
   drawFooterBrand,
   drawImageCover,
+  drawDetailedReviewLine,
   drawPaletteBar,
   drawRatingAndHeartRow,
   drawRoundedRectPath,
@@ -132,7 +133,7 @@ export function renderCriterionPoster(ctx, w, h) {
       ctx.textAlign = 'left';
       dLines.forEach(dl => {
         rightCursor += detPx + 5;
-        ctx.fillText(dl, colRightX, rightCursor);
+        drawDetailedReviewLine(ctx, dl, colRightX, rightCursor);
       });
     }
 

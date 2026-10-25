@@ -1,6 +1,7 @@
 import { state } from '../../state.js';
 import {
   computeAdaptiveTitleLayout,
+  drawDetailedReviewLine,
   drawFooterBrand,
   drawMediumBadge,
   drawProcessedBackdrop,
@@ -54,7 +55,7 @@ export function renderEditorialPoster(ctx, w, h) {
       ctx.fillStyle = '#D1D5DB';
       ctx.textAlign = 'left';
       dLines.forEach((l, i) => {
-        ctx.fillText(l, leftX, topDetY + (i + 1) * (detPx + 6));
+        drawDetailedReviewLine(ctx, l, leftX, topDetY + (i + 1) * (detPx + 6));
       });
     });
     cursorBottom -= Math.round(24 * state.sectionSpacing);

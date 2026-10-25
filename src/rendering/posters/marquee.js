@@ -2,6 +2,7 @@ import { state } from '../../state.js';
 import {
   computeAdaptiveTitleLayout,
   drawFooterBrand,
+  drawDetailedReviewLine,
   drawImageCover,
   drawProcessedBackdrop,
   drawRatingAndHeartRow,
@@ -195,7 +196,7 @@ export function renderMarqueePoster(ctx, w, h) {
       dLines.forEach((dl) => {
         if (curY + detPx < h - 105) {
           curY += detPx + 6;
-          ctx.fillText(dl, w / 2, curY);
+          drawDetailedReviewLine(ctx, dl, w / 2, curY, { align: 'center' });
         }
       });
     }

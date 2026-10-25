@@ -5,6 +5,7 @@ import {
   drawImageCover,
   drawRatingAndHeartRow,
   drawRoundedRectPath,
+  drawDetailedReviewLine,
   ensureVisibleAccentOnDark,
   getDetailedReviewLines,
   getReadableTextColor,
@@ -22,7 +23,9 @@ export function renderFloatingTicketPoster(ctx, w, h) {
   ctx.fillRect(0, 0, w, h);
   if (bgImg) {
     ctx.filter = `brightness(${Math.min(95, state.backdropBrightness + 20)}%) contrast(106%)`;
-    drawImageCover(ctx, bgImg, 0, 0, w, h * 0.78, 0, 0);
+    // Extend the photo behind the entire lower section so its bottom edge is
+    // never visible; the black fade below blends it into the poster footer.
+    drawImageCover(ctx, bgImg, 0, 0, w, h, 0, 0);
     ctx.filter = 'none';
   }
   const topVig = ctx.createLinearGradient(0, 0, 0, h * 0.28);
@@ -31,10 +34,10 @@ export function renderFloatingTicketPoster(ctx, w, h) {
   ctx.fillStyle = topVig;
   ctx.fillRect(0, 0, w, h * 0.28);
 
-  const botVig = ctx.createLinearGradient(0, h * 0.36, 0, h);
+  const botVig = ctx.createLinearGradient(0, h * 0.38, 0, h);
   botVig.addColorStop(0, 'rgba(5, 6, 9, 0)');
-  botVig.addColorStop(0.45, 'rgba(5, 6, 9, 0.82)');
-  botVig.addColorStop(0.75, 'rgba(5, 6, 9, 0.96)');
+  botVig.addColorStop(0.38, 'rgba(5, 6, 9, 0.62)');
+  botVig.addColorStop(0.68, 'rgba(5, 6, 9, 0.94)');
   botVig.addColorStop(1, '#050609');
   ctx.fillStyle = botVig;
   ctx.fillRect(0, 0, w, h);
@@ -278,7 +281,7 @@ export function renderFloatingTicketPoster(ctx, w, h) {
         ctx.fillStyle = '#D1D5DB';
         dLines.forEach((dl) => {
           ry += detPx + 5;
-          ctx.fillText(dl, cx, ry);
+          drawDetailedReviewLine(ctx, dl, cx, ry, { align: 'center' });
         });
       }
     });

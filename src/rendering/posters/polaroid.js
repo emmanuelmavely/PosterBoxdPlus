@@ -7,6 +7,7 @@ import {
   drawPaletteBar,
   drawRatingAndHeartRow,
   drawRoundedRectPath,
+  drawDetailedReviewLine,
   getDetailedReviewLines,
   getWrappedLines
 } from '../primitives.js';
@@ -84,7 +85,7 @@ export function renderPolaroidPoster(ctx, w, h) {
     const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, artW, state.showQrCode ? 3 : 4) : [];
     const detPx = Math.round(22 * fs);
     ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW, state.showQrCode ? 3 : 4);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW, state.showQrCode ? 5 : 7);
     const rH = lines.length * (revPx + 8) + dLines.length * (detPx + 6) + 18;
 
     drawMovableGroup(ctx, 'review', 'Polaroid Quote & Review', { x: pad, y: curY, w: artW, h: rH }, () => {
@@ -102,7 +103,7 @@ export function renderPolaroidPoster(ctx, w, h) {
         ctx.fillStyle = '#44403C';
         dLines.forEach((dl) => {
           ry += detPx + 6;
-          ctx.fillText(dl, pad, ry);
+          drawDetailedReviewLine(ctx, dl, pad, ry);
         });
       }
     });
