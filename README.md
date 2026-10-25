@@ -7,7 +7,7 @@
 <img src="./assets/PosterBoxd-Banner.jpg" alt="PosterBoxd Banner" width="100%" style="border-radius: 14px; margin: 12px 0 16px 0;" />
 
 [![Live on GitHub Pages](https://img.shields.io/badge/Live_Site-posterboxd.com-00E054?style=flat-square&logo=githubpages&logoColor=white)](https://posterboxd.com/)
-[![Version](https://img.shields.io/badge/version-v1.3.3-00E054?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v1.3.2-00E054?style=flat-square)](CHANGELOG.md)
 [![Deploy to GitHub Pages](https://github.com/emmanuelmavely/PosterBoxdPlus/actions/workflows/static.yml/badge.svg)](https://github.com/emmanuelmavely/PosterBoxdPlus/actions/workflows/static.yml)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES_Modules-F7DF1E?logo=javascript&logoColor=black)
 ![No build step](https://img.shields.io/badge/build-none-00E054)

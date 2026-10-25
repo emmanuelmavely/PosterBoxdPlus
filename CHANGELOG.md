@@ -5,18 +5,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [v1.3.3] - 2026-10-25
-
-### Changed
-- **Floating Vintage Ticket Background Fade**: Added a gradual black fade at the backdrop’s lower edge so the image blends smoothly into the poster instead of ending in a visible cut.
-- **iOS Glass Typography Hierarchy**: Reduced the visual weight of metadata and supporting text, clarifying the movie title and review as the primary content.
-
-### Fixed
-- **Detailed Review Layout Boundaries**: Kept review continuation text within each design’s available width and reduced overflow risk in compact review layouts.
-- **Bold Letterboxd Continuation Label**: Explicitly construct the label font weight so “Full review in Letterboxd” renders bold across poster designs.
-
----
-
 ## [v1.3.2] - 2026-10-25
 
 ### Added

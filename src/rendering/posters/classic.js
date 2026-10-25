@@ -1,7 +1,6 @@
 import { state } from '../../state.js';
 import {
   computeAdaptiveTitleLayout,
-  drawDetailedReviewLine,
   drawFooterBrand,
   drawImageCover,
   drawMediumBadge,
@@ -127,7 +126,7 @@ export function renderClassicPoster(ctx, w, h) {
         ctx.textAlign = 'center';
         dLines.forEach((dl) => {
           ry += detPx + 6;
-          drawDetailedReviewLine(ctx, dl, cx, ry, { maxWidth: maxW - 30 });
+          ctx.fillText(dl, cx, ry);
         });
       }
     });

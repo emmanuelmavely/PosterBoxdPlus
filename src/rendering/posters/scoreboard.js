@@ -1,7 +1,6 @@
 import { state } from '../../state.js';
 import {
   computeAdaptiveTitleLayout,
-  drawDetailedReviewLine,
   drawFooterBrand,
   drawImageCover,
   drawPaletteBar,
@@ -142,7 +141,7 @@ export function renderScoreboardPoster(ctx, w, h) {
         ctx.fillStyle = '#D1D5DB';
         dLines.forEach((dl) => {
           ry += detPx + 6;
-          drawDetailedReviewLine(ctx, dl, w / 2, ry, { maxWidth: innerW - 30 });
+          ctx.fillText(dl, w / 2, ry);
         });
       }
     });

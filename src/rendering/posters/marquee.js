@@ -1,7 +1,6 @@
 import { state } from '../../state.js';
 import {
   computeAdaptiveTitleLayout,
-  drawDetailedReviewLine,
   drawFooterBrand,
   drawImageCover,
   drawProcessedBackdrop,
@@ -113,11 +112,11 @@ export function renderMarqueePoster(ctx, w, h) {
     ctx.fillText(getWrappedLines(ctx, topBanner, innerW - 60, 1)[0] || '', w / 2, mqY + 46);
 
     const cleanTitleUpper = String(state.title || '').toUpperCase();
-    const tLayout = computeAdaptiveTitleLayout(ctx, cleanTitleUpper, innerW - 100, Math.round(46 * fs), '"Syne", sans-serif', '800', 3);
+    const tLayout = computeAdaptiveTitleLayout(ctx, cleanTitleUpper, innerW - 70, Math.round(50 * fs * 1.3), '"Syne", sans-serif', '800', 2);
     const mode = state.marqueeTitleMode || (state.marqueeBulbMode ? 'bulb' : 'normal');
 
     if (mode === 'bulb' && cleanTitleUpper.length <= 28) {
-      const startBulbY = tLayout.lines.length === 1 ? (mqY + 152) : (mqY + (tLayout.lines.length === 2 ? 116 : 96));
+      const startBulbY = tLayout.lines.length === 1 ? (mqY + 152) : (mqY + 116);
       drawBulbLitMarqueeTitle(ctx, tLayout.lines, w / 2, startBulbY, tLayout.fontPx, 8);
     } else if (mode === 'logo' && state.logoImg) {
       const maxLW = innerW - 140;
@@ -137,9 +136,8 @@ export function renderMarqueePoster(ctx, w, h) {
       if (tLayout.lines.length === 1) {
         ctx.fillText(tLayout.lines[0], w / 2, mqY + 156);
       } else {
-        const titleStartY = mqY + (tLayout.lines.length === 2 ? 116 : 96);
         tLayout.lines.forEach((l, idx) => {
-          ctx.fillText(l, w / 2, titleStartY + idx * (tLayout.fontPx + 4));
+          ctx.fillText(l, w / 2, mqY + 116 + idx * (tLayout.fontPx + 4));
         });
       }
     }
@@ -197,7 +195,7 @@ export function renderMarqueePoster(ctx, w, h) {
       dLines.forEach((dl) => {
         if (curY + detPx < h - 105) {
           curY += detPx + 6;
-          drawDetailedReviewLine(ctx, dl, w / 2, curY, { maxWidth: innerW - 50 });
+          ctx.fillText(dl, w / 2, curY);
         }
       });
     }

@@ -2,7 +2,6 @@ import { state } from '../../state.js';
 import { formatSafeDate } from '../../utils.js';
 import {
   computeAdaptiveTitleLayout,
-  drawDetailedReviewLine,
   drawFooterBrand,
   drawImageCover,
   drawProcessedBackdrop,
@@ -85,7 +84,7 @@ export function renderTicketPoster(ctx, w, h) {
   });
 
   curY += artH + 24;
-  const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), innerW, Math.round(48 * fs), '"Syne", sans-serif', '800', 3);
+  const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), innerW, Math.round(48 * fs), '"Syne", sans-serif', '800', 2);
   ctx.font = `800 ${tLayout.fontPx}px "Syne", sans-serif`;
   ctx.fillStyle = '#18181B';
   ctx.textAlign = 'left';
@@ -149,7 +148,7 @@ export function renderTicketPoster(ctx, w, h) {
       dLines.forEach((dl) => {
         if (curY + detPx < stubSplitY - 12) {
           curY += detPx + 6;
-          drawDetailedReviewLine(ctx, dl, innerPad, curY, { maxWidth: innerW });
+          ctx.fillText(dl, innerPad, curY);
         }
       });
     }

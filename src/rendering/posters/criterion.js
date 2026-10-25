@@ -1,7 +1,6 @@
 import { state } from '../../state.js';
 import {
   computeAdaptiveTitleLayout,
-  drawDetailedReviewLine,
   drawFooterBrand,
   drawImageCover,
   drawPaletteBar,
@@ -133,7 +132,7 @@ export function renderCriterionPoster(ctx, w, h) {
       ctx.textAlign = 'left';
       dLines.forEach(dl => {
         rightCursor += detPx + 5;
-        drawDetailedReviewLine(ctx, dl, colRightX, rightCursor, { maxWidth: colRightW });
+        ctx.fillText(dl, colRightX, rightCursor);
       });
     }
 
