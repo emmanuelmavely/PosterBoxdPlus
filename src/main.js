@@ -4,7 +4,7 @@ import { loadDemoPreset, loadRegionalNowPlayingMovies } from './controllers/medi
 import { renderHistoryListUI, initHistory } from './ui/history.js';
 import { configureNavigation, initNavigation, switchView } from './ui/navigation.js';
 import { initSearch } from './ui/search.js';
-import { initApiModal, openApiModal } from './ui/api-modal.js';
+import { initApiModal } from './ui/api-modal.js';
 import { initReviewForm } from './ui/review-form.js';
 import { initAssetControls } from './ui/assets.js';
 import { initDesignControls } from './ui/design-controls.js';
@@ -27,9 +27,6 @@ async function dismissSplashScreen() {
   splash.classList.add('opacity-0', 'pointer-events-none');
   setTimeout(() => {
     splash.classList.add('hidden');
-    if (!state.tmdbApiKey) {
-      openApiModal();
-    }
   }, 700);
 }
 
