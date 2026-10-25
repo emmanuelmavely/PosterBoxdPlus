@@ -1,6 +1,7 @@
 import { state } from '../../state.js';
 import {
   computeAdaptiveTitleLayout,
+  drawDetailedReviewLine,
   drawFooterBrand,
   drawImageCover,
   drawRatingAndHeartRow,
@@ -24,6 +25,12 @@ export function renderFloatingTicketPoster(ctx, w, h) {
     ctx.filter = `brightness(${Math.min(95, state.backdropBrightness + 20)}%) contrast(106%)`;
     drawImageCover(ctx, bgImg, 0, 0, w, h * 0.78, 0, 0);
     ctx.filter = 'none';
+    const imageBottomFade = ctx.createLinearGradient(0, h * 0.36, 0, h * 0.82);
+    imageBottomFade.addColorStop(0, 'rgba(5, 6, 9, 0)');
+    imageBottomFade.addColorStop(0.68, 'rgba(5, 6, 9, 0.82)');
+    imageBottomFade.addColorStop(1, '#050609');
+    ctx.fillStyle = imageBottomFade;
+    ctx.fillRect(0, h * 0.36, w, h * 0.46);
   }
   const topVig = ctx.createLinearGradient(0, 0, 0, h * 0.28);
   topVig.addColorStop(0, 'rgba(5, 6, 9, 0.78)');
@@ -278,7 +285,7 @@ export function renderFloatingTicketPoster(ctx, w, h) {
         ctx.fillStyle = '#D1D5DB';
         dLines.forEach((dl) => {
           ry += detPx + 5;
-          ctx.fillText(dl, cx, ry);
+          drawDetailedReviewLine(ctx, dl, cx, ry, { maxWidth: quoteMaxW });
         });
       }
     });

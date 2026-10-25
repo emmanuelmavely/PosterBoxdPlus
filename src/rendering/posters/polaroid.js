@@ -2,6 +2,7 @@ import { state } from '../../state.js';
 import { formatSafeDate } from '../../utils.js';
 import {
   computeAdaptiveTitleLayout,
+  drawDetailedReviewLine,
   drawFooterBrand,
   drawImageCover,
   drawPaletteBar,
@@ -38,7 +39,9 @@ export function renderPolaroidPoster(ctx, w, h) {
   curY += 32;
 
   const fs = Math.min(1.18, state.fontScale) * (isCompact ? 0.9 : 1.0);
-  const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), artW * 0.62, Math.round(48 * fs), '"Syne", sans-serif', '800', 2);
+  const ratingReserve = state.rating > 0 || state.isLiked ? Math.round(190 * fs) : 0;
+  const titleTextW = artW - ratingReserve;
+  const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), titleTextW, Math.round(48 * fs), '"Syne", sans-serif', '800', 2);
   const titleBlockH = tLayout.lines.length * tLayout.lineHeight + 42;
 
   drawMovableGroup(ctx, 'title', 'Polaroid Title', { x: pad, y: curY, w: artW, h: titleBlockH }, () => {
@@ -79,12 +82,20 @@ export function renderPolaroidPoster(ctx, w, h) {
   curY += 22;
 
   if (state.review || (state.showDetailedReview && state.detailedReview)) {
-    const revPx = Math.round(35 * fs);
+    const reviewBottom = state.showQrCode ? h - 135 - 36 - 118 - 30 : h - 160;
+    const availableReviewH = Math.max(0, reviewBottom - curY);
+    if (availableReviewH < 70) return;
+    const reviewFontScale = Math.min(1.15, Math.max(0.55, availableReviewH / 360));
+    const revPx = Math.round(35 * fs * reviewFontScale);
     ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-    const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, artW, state.showQrCode ? 3 : 4) : [];
-    const detPx = Math.round(22 * fs);
+    const reviewLineHeight = revPx + 8;
+    const maxReviewLines = Math.max(1, Math.floor((availableReviewH * 0.55) / reviewLineHeight));
+    const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, artW, maxReviewLines) : [];
+    const detPx = Math.round(22 * fs * reviewFontScale);
     ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW, state.showQrCode ? 3 : 4);
+    const remainingDetailedH = Math.max(0, availableReviewH - lines.length * reviewLineHeight - 24);
+    const maxDetailedLines = Math.floor(remainingDetailedH / (detPx + 6));
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW, maxDetailedLines);
     const rH = lines.length * (revPx + 8) + dLines.length * (detPx + 6) + 18;
 
     drawMovableGroup(ctx, 'review', 'Polaroid Quote & Review', { x: pad, y: curY, w: artW, h: rH }, () => {
@@ -102,7 +113,7 @@ export function renderPolaroidPoster(ctx, w, h) {
         ctx.fillStyle = '#44403C';
         dLines.forEach((dl) => {
           ry += detPx + 6;
-          ctx.fillText(dl, pad, ry);
+          drawDetailedReviewLine(ctx, dl, pad, ry, { maxWidth: artW });
         });
       }
     });

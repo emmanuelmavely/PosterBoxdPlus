@@ -5,7 +5,7 @@ export const CUSTOM_LOGO_SVG_DATA = `data:image/svg+xml;utf8,` + encodeURICompon
   </svg>
 `);
 
-export const APP_VERSION = 'v1.3.2';
+export const APP_VERSION = 'v1.3.3';
 
 export const ARCHETYPE_NAMES = Object.freeze({
   floatingticket: '1 / 11 · Floating Vintage Ticket',

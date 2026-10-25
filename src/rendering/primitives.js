@@ -130,14 +130,70 @@ export function ensureVisibleAccentOnDark(hexColor, fallback = '#00E054') {
   return getHexLuminance(hexColor) < 0.14 ? fallback : hexColor;
 }
 
+export const LETTERBOXD_CONTINUATION_SUFFIX = ' ..... Full review in Letterboxd';
+
+export function drawDetailedReviewLine(context, line, x, y, options = {}) {
+  if (!line.endsWith(LETTERBOXD_CONTINUATION_SUFFIX)) {
+    context.fillText(line, x, y);
+    return;
+  }
+
+  const label = 'Full review in Letterboxd';
+  const separator = ' ..... ';
+  const body = line.slice(0, -LETTERBOXD_CONTINUATION_SUFFIX.length).trimEnd();
+  const bodyFont = context.font;
+  const fontSize = bodyFont.match(/\b\d+(?:\.\d+)?px\b/)?.[0] || '16px';
+  const fontFamily = bodyFont.match(/\bpx\s+(.+)$/)?.[1] || 'sans-serif';
+  const boldFont = `700 ${fontSize} ${fontFamily}`;
+  const align = context.textAlign;
+
+  context.save();
+  context.textAlign = 'left';
+  const bodyWidth = context.measureText(body).width;
+  const separatorWidth = context.measureText(separator).width;
+  context.font = boldFont;
+  const labelWidth = context.measureText(label).width;
+  context.font = bodyFont;
+
+  const totalWidth = bodyWidth + separatorWidth + labelWidth;
+  const maxWidth = Number.isFinite(options.maxWidth) ? options.maxWidth : Infinity;
+  let drawBody = body;
+  let bodyWidthToDraw = bodyWidth;
+  if (totalWidth > maxWidth) {
+    const ellipsis = '…';
+    drawBody = body;
+    while (drawBody && context.measureText(drawBody + ellipsis).width + separatorWidth + labelWidth > maxWidth) {
+      drawBody = drawBody.replace(/\s+\S*$/, '') || drawBody.slice(0, -1);
+    }
+    drawBody = drawBody.trimEnd() + ellipsis;
+    bodyWidthToDraw = context.measureText(drawBody).width;
+  }
+  const drawWidth = bodyWidthToDraw + separatorWidth + labelWidth;
+  const startX = align === 'center' ? x - drawWidth / 2 : align === 'right' ? x - drawWidth : x;
+  context.fillText(drawBody, startX, y);
+  context.fillText(separator, startX + bodyWidthToDraw, y);
+  context.font = boldFont;
+  context.fillText(label, startX + bodyWidthToDraw + separatorWidth, y);
+  context.restore();
+}
+
 export function getDetailedReviewLines(context, text, maxWidth, maxLines = 3) {
-  if (!state.showDetailedReview || !text || text === state.review) return [];
+  if (!state.showDetailedReview || !text || text === state.review || maxLines < 1) return [];
   const cleanText = String(text).trim();
   if (!cleanText) return [];
   const words = cleanText.split(/\s+/);
   const lines = [];
   let current = '';
-  const suffix = ' ..... full review in Letterboxd profile';
+  const suffix = LETTERBOXD_CONTINUATION_SUFFIX;
+  const bodyFont = context.font;
+  const fontSize = bodyFont.match(/\b\d+(?:\.\d+)?px\b/)?.[0] || '16px';
+  const fontFamily = bodyFont.match(/\bpx\s+(.+)$/)?.[1] || 'sans-serif';
+  const boldFont = `700 ${fontSize} ${fontFamily}`;
+  const separatorWidth = context.measureText(' ..... ').width;
+  context.font = boldFont;
+  const suffixLabelWidth = context.measureText('Full review in Letterboxd').width;
+  context.font = bodyFont;
+  const fitsWithSuffix = body => context.measureText(body).width + separatorWidth + suffixLabelWidth <= maxWidth;
 
   for (let i = 0; i < words.length; i++) {
     const word = words[i];
@@ -147,9 +203,9 @@ export function getDetailedReviewLines(context, text, maxWidth, maxLines = 3) {
     } else {
       if (lines.length === maxLines - 1) {
         let truncated = current || word;
-        while (truncated.length > 0 && context.measureText(truncated + suffix).width > maxWidth) {
-          truncated = truncated.replace(/\s+\S*$/, '');
-          if (!truncated.includes(' ')) truncated = truncated.slice(0, -1);
+        while (truncated.length > 0 && !fitsWithSuffix(truncated)) {
+          const shortened = truncated.replace(/\s+\S*$/, '');
+          truncated = shortened !== truncated ? shortened : truncated.slice(0, -1);
         }
         lines.push((truncated.trim() || '') + suffix);
         return lines;
@@ -164,7 +220,7 @@ export function getDetailedReviewLines(context, text, maxWidth, maxLines = 3) {
     }
   }
   if (current && lines.length < maxLines) {
-    if (cleanText.length > 210 && context.measureText(current + suffix).width <= maxWidth) {
+    if (cleanText.length > 210 && fitsWithSuffix(current)) {
       lines.push(current + suffix);
     } else {
       lines.push(current);

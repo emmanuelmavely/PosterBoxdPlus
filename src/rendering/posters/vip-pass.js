@@ -2,6 +2,7 @@ import { state } from '../../state.js';
 import { formatSafeDate } from '../../utils.js';
 import {
   computeAdaptiveTitleLayout,
+  drawDetailedReviewLine,
   drawFooterBrand,
   drawImageCover,
   drawProcessedBackdrop,
@@ -130,12 +131,19 @@ export function renderVipPassPoster(ctx, w, h) {
   const hasQr = Boolean(state.showQrCode);
   const textMaxW = hasQr ? innerW - 125 : innerW;
   if (state.review || (state.showDetailedReview && state.detailedReview)) {
-    const revPx = Math.round(35 * fs);
+    const reviewBottom = py + passH - (hasQr ? 215 : 100);
+    const availableReviewH = reviewBottom - curY;
+    if (availableReviewH < 72) return;
+    const reviewFontScale = Math.min(1.5, Math.max(0.6, availableReviewH / 280));
+    const revPx = Math.round(35 * fs * reviewFontScale);
     ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-    const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, textMaxW, 5) : [];
-    const detPx = Math.round(22 * fs);
+    const maxReviewLines = Math.max(1, Math.floor((availableReviewH - 24) / (revPx + 8)));
+    const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, textMaxW, maxReviewLines) : [];
+    const detPx = Math.round(22 * fs * reviewFontScale);
     ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, textMaxW, 5);
+    const remainingDetailedH = Math.max(0, availableReviewH - lines.length * (revPx + 8) - 24);
+    const maxDetailedLines = Math.floor(remainingDetailedH / (detPx + 6));
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, textMaxW, maxDetailedLines);
     const rH = lines.length * (revPx + 8) + dLines.length * (detPx + 6) + 20;
 
     drawMovableGroup(ctx, 'review', 'VIP Review Quote', { x: innerPad, y: curY, w: textMaxW, h: rH }, () => {
@@ -154,7 +162,7 @@ export function renderVipPassPoster(ctx, w, h) {
         dLines.forEach((dl) => {
           if (ry + detPx < py + passH - 96) {
             ry += detPx + 6;
-            ctx.fillText(dl, innerPad, ry);
+            drawDetailedReviewLine(ctx, dl, innerPad, ry, { maxWidth: textMaxW });
           }
         });
       }

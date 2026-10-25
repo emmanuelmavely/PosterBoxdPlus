@@ -132,7 +132,7 @@ export function initSearch() {
             </div>
             <button type="button" id="select-lb-review-hit"
               class="w-full flex items-center gap-3 p-2.5 rounded-xl bg-cardbg hover:bg-elevated border border-lbgreen/30 text-left transition group">
-              ${posterSrc ? `<img src="${posterSrc}" class="w-10 h-14 object-cover rounded shrink-0 shadow" />` : `<div class="w-10 h-14 bg-obsidian border border-white/10 rounded flex items-center justify-center shrink-0 text-lbgreen"><i class="fa-solid fa-film text-base"></i></div>`}
+              ${posterSrc ? `<img src="${posterSrc}" alt="${reviewData.movieTitle} poster" class="w-10 h-14 object-cover rounded shrink-0 shadow" />` : `<div id="lb-review-poster-placeholder" role="img" aria-label="Movie poster preview" class="w-10 h-14 bg-obsidian border border-white/10 rounded flex flex-col items-center justify-center shrink-0 text-lbgreen"><i class="fa-solid fa-image text-base"></i><span class="text-[6px] font-mono uppercase mt-1">Poster</span></div>`}
               <div class="flex-1 min-w-0">
                 <div class="text-xs font-bold text-white flex items-center gap-2 truncate">
                   <span class="truncate">${reviewData.movieTitle} ${reviewData.releaseYear ? `(${reviewData.releaseYear})` : ''}</span>
@@ -155,6 +155,33 @@ export function initSearch() {
             await applyLetterboxdReviewData(reviewData);
           });
         });
+
+        // If Letterboxd did not expose its poster image, look up a poster thumbnail
+        // in the background while keeping the selectable preview available immediately.
+        if (!posterSrc) {
+          searchPublicTmdb(reviewData.movieTitle).then((searchRes) => {
+            const normalize = value => String(value || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+            const candidates = (searchRes?.results || []).filter(item => item.media_type === 'movie');
+            const exactMatches = candidates.filter(item => normalize(item.title || item.name) === normalize(reviewData.movieTitle));
+            const targetYear = String(reviewData.releaseYear || '').match(/\d{4}/)?.[0] || '';
+            const yearMatches = items => targetYear
+              ? items.filter(item => String(item.release_year || item.release_date || '').slice(0, 4) === targetYear)
+              : items;
+            const match = yearMatches(exactMatches)[0] || exactMatches[0] || yearMatches(candidates)[0] || candidates[0];
+            if (!match?.poster_url) return;
+
+            const posterUrl = new URL(match.poster_url, 'https://image.tmdb.org');
+            if (posterUrl.protocol !== 'https:') return;
+            const placeholder = document.getElementById('lb-review-poster-placeholder');
+            if (!placeholder?.isConnected) return;
+
+            const posterImage = document.createElement('img');
+            posterImage.src = posterUrl.href;
+            posterImage.alt = `${reviewData.movieTitle} poster`;
+            posterImage.className = 'w-10 h-14 object-cover rounded shrink-0 shadow';
+            placeholder.replaceWith(posterImage);
+          }).catch(() => {});
+        }
         return;
       } else {
         resultsEl.innerHTML = `<div class="text-xs text-red-400 p-3">Could not load Letterboxd review from that URL. Please try again.</div>`;
