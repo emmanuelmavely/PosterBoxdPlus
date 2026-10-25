@@ -1,12 +1,12 @@
 import { state } from '../state.js';
-import { tmdbFetch } from '../services/tmdb.js';
+import { tmdbFetch, hasTmdbAccess } from '../services/tmdb.js';
 import { loadRegionalNowPlayingMovies } from '../controllers/media.js';
 import { showToast } from './toast.js';
 
 export function updateTmdbBannerVisibility() {
   const banner = document.getElementById('tmdb-persistent-banner');
   if (!banner) return;
-  const hasKey = Boolean(state.tmdbApiKey && state.tmdbApiKey.trim().length > 0);
+  const hasKey = hasTmdbAccess();
   if (hasKey) {
     banner.classList.add('hidden');
     banner.style.display = 'none';
@@ -19,7 +19,7 @@ export function updateTmdbBannerVisibility() {
 function updateApiStatusPill() {
   const dot = document.getElementById('api-status-dot');
   if (dot) {
-    if (state.tmdbApiKey && state.tmdbApiKey.trim().length > 0) {
+    if (hasTmdbAccess()) {
       dot.className = 'w-2.5 h-2.5 rounded-full bg-lbgreen ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none';
     } else {
       dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none animate-pulse';
@@ -90,14 +90,14 @@ export function initApiModal() {
     }
     const prev = state.tmdbApiKey;
     state.tmdbApiKey = candidate;
-    feedback.textContent = 'Verifying key with TMDB...';
+    feedback.textContent = 'Verifying direct TMDB access...';
     feedback.className = 'text-xs font-mono text-lbblue';
     try {
       await tmdbFetch('/configuration');
       localStorage.setItem('posterboxd_tmdb_key', candidate);
       updateApiStatusPill();
       loadRegionalNowPlayingMovies();
-      showToast('TMDB API Key connected!');
+      showToast('Direct TMDB access connected!');
       closeApiModal();
     } catch (err) {
       state.tmdbApiKey = prev;
@@ -112,6 +112,6 @@ export function initApiModal() {
     localStorage.removeItem('posterboxd_tmdb_key');
     updateApiStatusPill();
     closeApiModal();
-    showToast('TMDB key cleared');
+    showToast('Direct TMDB key cleared; edge proxy remains active');
   });
 }

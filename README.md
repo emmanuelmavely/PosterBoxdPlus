@@ -154,7 +154,8 @@ Here are sample high-resolution posters generated across different archetypes:
 
 - Any modern web browser with HTML5 Canvas and ES Modules support (Chrome, Firefox, Safari, Edge).
 - **No API Key Required**: An **Experimental No-API Mode** allows searching any movie or TV show directly via client-side public TMDB scraping and CORS proxy rotation (`https://cors.tyxc.org/`, `https://proxy.cors.dev/`, `https://r.jina.ai/`).
-- *(Optional)*: An official [TMDB API Key](https://www.themoviedb.org/settings/api) (v3 key or v4 token) can be configured anytime for official API access.
+- **Hosted TMDB Proxy:** Production builds use the deployed Cloudflare Worker in `worker/` at `https://posterboxd-tmdb-proxy.jaygatsby.workers.dev/api/tmdb`, keeping the TMDB Read Access Token off the client and caching successful responses for 24 hours at the edge.
+- *(Optional)*: An official [TMDB API Key](https://www.themoviedb.org/settings/api) (v3 key or v4 token) can still be configured locally as a direct-access fallback.
 - A local static HTTP server when developing or running locally (browsers block ES modules on direct `file://` execution due to CORS).
 
 ---
@@ -196,9 +197,33 @@ https://posterboxd.com/
 
 ---
 
+## Deploying the Cloudflare TMDB Proxy
+
+The frontend defaults to `https://posterboxd-tmdb-proxy.jaygatsby.workers.dev/api/tmdb`. Deploy the included Worker before publishing a production build:
+
+1. *(Optional)* Attach a custom domain such as `api.posterboxd.com` to the Worker in Cloudflare Workers & Pages. The deployed `workers.dev` URL works without this step.
+2. From the repository root, authenticate Wrangler and deploy the Worker:
+
+   ```bash
+   npx wrangler login
+   npx wrangler deploy --config worker/wrangler.toml
+   ```
+
+3. Store the TMDB v4 Read Access Token as a Worker secret:
+
+   ```bash
+   npx wrangler secret put TMDB_READ_TOKEN --config worker/wrangler.toml
+   ```
+
+   Paste the raw v4 token only; the Worker adds the `Bearer` prefix automatically.
+
+The Worker only accepts `GET` and CORS preflight requests from PosterBoxd and local development origins. Successful JSON responses are cached at Cloudflare's edge for 24 hours. Poster images continue to load directly from `image.tmdb.org`.
+
+---
+
 ## Usage Guide
 
-1. **Connect TMDB API Key:** Click the Key icon in the top header to enter your TMDB v3 API key or v4 token. It is stored securely in your browser's `localStorage`.
+1. **Use TMDB:** The hosted edge proxy is used automatically, so no browser key is required. Click the Key icon only if you want to add a personal TMDB v3 key or v4 token as a direct-access fallback.
 2. **Select Media or Import Review:**
    - Search any title in the search pill (e.g. *Challengers*, *Severance*).
    - Or paste a Letterboxd review URL (e.g. `https://letterboxd.com/user/film/title/` or `https://boxd.it/gUpRkb`).
@@ -212,11 +237,11 @@ https://posterboxd.com/
 
 ## Configuration & Storage
 
-PosterBoxd requires no server backend; all user settings and cache are persisted in browser `localStorage`:
+PosterBoxd keeps user settings and history in browser `localStorage`. TMDB JSON is cached by the Cloudflare Worker at the edge:
 
 | Key | Storage Target | Description |
 |-----|----------------|-------------|
-| `posterboxd_tmdb_key` | `localStorage` | TMDB API v3 key or v4 access token |
+| `posterboxd_tmdb_key` | `localStorage` | Optional personal TMDB API v3 key or v4 access token |
 | `posterboxd_username` | `localStorage` | Default Letterboxd username for reviews and QR code generation |
 | `posterboxd_transforms_v3` | `localStorage` | Custom element positions, scales, and offsets per poster style |
 | `posterboxd_fetch_history_v1` | `localStorage` | History list of your recent 35 lookups and posters |
@@ -244,7 +269,7 @@ PosterBoxdPlus/
 │   ├── services/
 │   │   ├── search-logic.js        # Pure fuzzy title matching & query ranking
 │   │   ├── tmdb-public-search.js  # TMDB public scraper with CORS proxy rotation & cache
-│   │   ├── tmdb.js                # Official TMDB API client & regional now-playing queries
+│   │   ├── tmdb.js                # Edge-proxy TMDB client & regional now-playing queries
 │   │   ├── letterboxd.js          # Letterboxd web scraper & short URL resolver
 │   │   ├── media-assets.js        # CORS image loader & color palette extractor
 │   │   └── storage.js             # LocalStorage manager for history & transforms
@@ -279,6 +304,9 @@ PosterBoxdPlus/
 │       ├── qr-controls.js         # QR code toggle & custom URL input
 │       ├── api-modal.js           # TMDB API key configuration modal
 │       └── toast.js               # Non-blocking animated notification toasts
+└── worker/
+    ├── index.js                    # Cloudflare Worker proxy and edge cache
+    └── wrangler.toml               # Wrangler deployment configuration
 ```
 
 ---

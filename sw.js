@@ -46,6 +46,8 @@ self.addEventListener('fetch', (event) => {
   if (
     url.hostname.includes('tmdb.org') ||
     url.hostname.includes('themoviedb.org') ||
+    url.hostname === 'api.posterboxd.com' ||
+    url.hostname === 'posterboxd-tmdb-proxy.jaygatsby.workers.dev' ||
     url.hostname.includes('cors.tyxc.org') ||
     url.hostname.includes('allorigins.win') ||
     url.hostname.includes('codetabs.com') ||

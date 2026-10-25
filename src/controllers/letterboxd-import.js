@@ -1,6 +1,6 @@
 import { state, resetMediaState } from '../state.js';
 import { getReviewCharacterLimit } from '../constants.js';
-import { tmdbFetch } from '../services/tmdb.js';
+import { tmdbFetch, hasTmdbAccess } from '../services/tmdb.js';
 import {
   cleanLetterboxdRawTitle,
   cleanLetterboxdParagraphs
@@ -136,7 +136,7 @@ export async function applyLetterboxdReviewData(reviewData) {
     }
 
     // Automatically match on TMDB to pull high-res posters, backdrops, logos, director & cast
-    if (movieTitle && state.tmdbApiKey) {
+    if (movieTitle && hasTmdbAccess()) {
       if (statusText) statusText.textContent = `Matched "${movieTitle}" (${releaseYear}) — Fetching TMDB artwork...`;
       try {
         let searchData = await tmdbFetch('/search/movie', { query: movieTitle, year: releaseYear });

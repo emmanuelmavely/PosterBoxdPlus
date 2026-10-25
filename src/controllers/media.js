@@ -1,7 +1,7 @@
 import { state, resetMediaState } from '../state.js';
 import { DEMO_CATALOG } from '../data/demo-catalog.js';
 import { buildRelevantMovieReview } from '../utils.js';
-import { tmdbFetch, detectBrowserRegion } from '../services/tmdb.js';
+import { tmdbFetch, detectBrowserRegion, hasTmdbAccess } from '../services/tmdb.js';
 import { fetchPublicTmdbDetail } from '../services/tmdb-public-search.js';
 import { loadCorsImage, extractDominantPalette } from '../services/media-assets.js';
 import { recordCurrentFetchToHistory } from '../services/storage.js';
@@ -95,7 +95,7 @@ export async function loadRegionalNowPlayingMovies() {
   const chipsContainer = document.getElementById('home-trending-chips');
   if (!chipsContainer) return;
 
-  if (!state.tmdbApiKey) {
+  if (!hasTmdbAccess()) {
     chipsContainer.innerHTML = '';
     if (regionLabel?.parentElement) regionLabel.parentElement.classList.add('hidden');
     return;

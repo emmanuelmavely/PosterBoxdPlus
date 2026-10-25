@@ -196,11 +196,11 @@
     </div>
   </header>
 
-  <!-- Persistent TMDB Key Notice Banner (Subtle & Persistent) -->
+  <!-- TMDB fallback notice; hidden while the hosted edge proxy is available -->
   <aside id="tmdb-persistent-banner" class="w-full bg-purple-500/10 border-b border-purple-500/20 px-3 sm:px-6 py-2 text-xs text-purple-200/90 flex items-center justify-between gap-2.5 backdrop-blur-sm z-30 transition-all" aria-label="TMDB Configuration Notice">
     <div class="flex items-center gap-2 min-w-0">
       <i class="fa-solid fa-flask text-purple-400 shrink-0 text-xs"></i>
-      <span class="truncate"><strong class="text-purple-300 font-semibold">Experimental No-API Mode Active:</strong> Direct browser search enabled via public scraper. Add a TMDb API key anytime for official API access.</span>
+      <span class="truncate"><strong class="text-purple-300 font-semibold">TMDB edge proxy unavailable:</strong> Direct browser search is using the experimental public scraper. Add a personal TMDb key for official API access.</span>
     </div>
     <button type="button" id="banner-open-api-btn" class="shrink-0 px-2.5 py-1 rounded-lg bg-purple-400/20 hover:bg-purple-400/30 text-purple-300 font-semibold text-[11px] font-mono border border-purple-400/30 transition hover:scale-105">
       <i class="fa-solid fa-key text-[10px] mr-1"></i>Add API Key
@@ -768,8 +768,8 @@
             </svg>
           </div>
           <div>
-            <h3 class="font-display font-bold text-base text-white">TMDB API Key</h3>
-            <p class="text-xs text-gray-400">Unlock live Movie, TV Series & Logo search</p>
+            <h3 class="font-display font-bold text-base text-white">TMDB Connection</h3>
+            <p class="text-xs text-gray-400">The hosted edge proxy is used automatically; a personal key is optional.</p>
           </div>
         </div>
         <button type="button" id="close-api-modal-btn" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
@@ -780,17 +780,17 @@
       </div>
 
       <div class="space-y-2">
-        <label for="tmdb-key-input" class="text-xs font-mono uppercase text-gray-300 block">TMDB v3 API Key (or v4 Read Token)</label>
+        <label for="tmdb-key-input" class="text-xs font-mono uppercase text-gray-300 block">Optional TMDB v3 API Key or v4 Read Token</label>
         <input id="tmdb-key-input" type="text" autocomplete="off" spellcheck="false" placeholder="Paste or type your TMDB API key..."
           class="w-full bg-obsidian border border-white/20 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-lbgreen focus:ring-2 focus:ring-lbgreen/20" />
         <p id="api-modal-feedback" class="text-xs text-gray-400">
-          Saved locally in your browser (<code class="text-white">localStorage</code>) so you only need to enter it once.
+          The app uses the hosted Cloudflare Worker by default, so no key is required in the browser. A personal key is stored locally only if you choose to add one.
         </p>
       </div>
 
       <div class="bg-cardbg p-3 rounded-xl border border-white/10 text-xs text-gray-400 space-y-1">
-        <div class="font-semibold text-white">Need a free TMDB key?</div>
-        <p>Generate a free Developer key at <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" class="text-lbblue hover:underline">themoviedb.org/settings/api</a>, or click <strong>Close</strong> to test with the built-in presets.</p>
+        <div class="font-semibold text-white">Want a personal fallback key?</div>
+        <p>Generate a free Developer key at <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" class="text-lbblue hover:underline">themoviedb.org/settings/api</a>. It is not needed when the PosterBoxd edge proxy is online.</p>
       </div>
 
       <div class="flex items-center justify-between gap-2 pt-2">

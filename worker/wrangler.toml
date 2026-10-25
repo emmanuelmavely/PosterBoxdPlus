@@ -1,0 +1,6 @@
+name = "posterboxd-tmdb-proxy"
+main = "index.js"
+compatibility_date = "2026-10-25"
+
+# Optionally attach api.posterboxd.com as a Worker custom domain in Cloudflare.
+# The frontend uses the deployed workers.dev URL by default.

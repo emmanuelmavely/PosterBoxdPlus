@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { tmdbFetch } from '../services/tmdb.js';
+import { tmdbFetch, hasTmdbAccess } from '../services/tmdb.js';
 import { fetchLetterboxdReview } from '../services/letterboxd.js';
 import { loadDemoPreset, loadTmdbMediaDetails, loadPublicMediaDetails } from '../controllers/media.js';
 import { applyLetterboxdReviewData } from '../controllers/letterboxd-import.js';
@@ -162,8 +162,8 @@ export function initSearch() {
       }
     }
 
-    // 3. TMDB Search (Official API if key is set, otherwise Experimental No-API scraper)
-    if (!state.tmdbApiKey) {
+    // 3. TMDB Search (Hosted edge proxy or personal API key, otherwise public scraper)
+    if (!hasTmdbAccess()) {
       resultsEl.classList.remove('hidden');
       resultsEl.innerHTML = `
         <div class="text-xs font-mono text-purple-300 py-3 text-center flex items-center justify-center gap-2">
