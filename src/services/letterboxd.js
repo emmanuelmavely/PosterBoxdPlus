@@ -287,6 +287,17 @@ export async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https
       documentNode.querySelector('.film-poster img')?.getAttribute('src') ||
       documentNode.querySelector('meta[property="og:image"]')?.getAttribute('content') ||
       '';
+    const namesFromLinks = (selector, limit = Infinity) => [...new Set(
+      Array.from(documentNode.querySelectorAll(selector))
+        .map(link => link.textContent.trim())
+        .filter(Boolean)
+    )].slice(0, limit);
+    const director = namesFromLinks('a[href*="/director/"]', 3).join(', ');
+    const writer = namesFromLinks('a[href*="/writer/"], a[href*="/screenwriter/"]', 3).join(', ');
+    const cast = namesFromLinks('a[href*="/actor/"]', 8).join(', ');
+    const genre = namesFromLinks('a[href*="/films/genre/"]', 3).join(' | ');
+    const runtimeMatch = documentNode.body?.textContent.match(/\b(\d{2,3})\s+mins?\b/i);
+    const runtime = runtimeMatch ? Number(runtimeMatch[1]) : null;
 
     return {
       url: targetUrl,
@@ -298,7 +309,12 @@ export async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https
       watchedDate,
       reviewLines,
       reviewBody: reviewLines.join('\n\n'),
-      posterImg
+      posterImg,
+      director,
+      writer,
+      cast,
+      genre,
+      runtime
     };
   } catch (error) {
     console.error('Failed to parse Letterboxd HTML:', error);

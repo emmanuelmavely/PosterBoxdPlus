@@ -1,5 +1,6 @@
 import { state } from '../state.js';
 import { buildRelevantMovieReview } from '../utils.js';
+import { getReviewCharacterLimit } from '../constants.js';
 import { tmdbFetch } from '../services/tmdb.js';
 import { loadCorsImage, extractDominantPalette } from '../services/media-assets.js';
 import { recordCurrentFetchToHistory } from '../services/storage.js';
@@ -535,7 +536,7 @@ export function initReviewForm() {
       }
       if (id === 'input-review') {
         const characterCount = document.getElementById('review-char-count');
-        if (characterCount) characterCount.textContent = `${input.value.length} / 220`;
+        if (characterCount) characterCount.textContent = `${input.value.length} / ${getReviewCharacterLimit(state.archetype)}`;
       }
       scheduleCanvasRender();
       recordCurrentFetchToHistory();

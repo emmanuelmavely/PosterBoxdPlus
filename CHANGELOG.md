@@ -5,6 +5,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [v1.3.2] - 2026-10-25
+
+### Added
+- **Longer Reviews for Designs 4, 7, and 11**: Raised the review character limit to 500 for Polaroid Gallery Frame, Apple iOS Glass Card, and VIP Screening Pass, with expanded canvas line capacity to use the available space.
+
+### Changed
+- **Letterboxd Review Text Placement**: Imports now place only the first sentence in the One-Liner and move the remaining review text to Detailed Review.
+- **No-API Letterboxd Metadata**: URL imports now retain Letterboxd-sourced director, writer, cast, genre, and runtime details through the TMDb matching and fallback flow.
+
+### Fixed
+- **Letterboxd Import History Error**: Added the missing history recorder import that caused `recordCurrentFetchToHistory is not defined` after a Letterboxd import.
+
+---
+
 ## [v1.3.1] - 2026-10-24
 
 ### Added

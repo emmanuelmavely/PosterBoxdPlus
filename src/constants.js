@@ -5,7 +5,7 @@ export const CUSTOM_LOGO_SVG_DATA = `data:image/svg+xml;utf8,` + encodeURICompon
   </svg>
 `);
 
-export const APP_VERSION = 'v1.3.1';
+export const APP_VERSION = 'v1.3.2';
 
 export const ARCHETYPE_NAMES = Object.freeze({
   floatingticket: '1 / 11 · Floating Vintage Ticket',
@@ -22,3 +22,13 @@ export const ARCHETYPE_NAMES = Object.freeze({
 });
 
 export const ARCHETYPE_KEYS = Object.keys(ARCHETYPE_NAMES);
+
+export const EXTENDED_REVIEW_ARCHETYPES = new Set(['polaroid', 'iosglass', 'vippass']);
+export const DEFAULT_REVIEW_CHARACTER_LIMIT = 220;
+export const EXTENDED_REVIEW_CHARACTER_LIMIT = 500;
+
+export function getReviewCharacterLimit(archetype) {
+  return EXTENDED_REVIEW_ARCHETYPES.has(archetype)
+    ? EXTENDED_REVIEW_CHARACTER_LIMIT
+    : DEFAULT_REVIEW_CHARACTER_LIMIT;
+}

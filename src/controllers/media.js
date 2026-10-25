@@ -313,7 +313,12 @@ export async function loadPublicMediaDetails(item, preserveCustomReview = false)
       isFromLetterboxd: state.isFromLetterboxd,
       letterboxdUrl: state.letterboxdUrl,
       showQrCode: state.showQrCode,
-      preservedPoster: state.posters?.[0] || null
+      preservedPoster: state.posters?.[0] || null,
+      director: state.director,
+      writer: state.writer,
+      cast: state.cast,
+      genre: state.genre,
+      runtime: state.runtime
     } : null;
 
     resetMediaState();
@@ -346,18 +351,18 @@ export async function loadPublicMediaDetails(item, preserveCustomReview = false)
     state.title = detail.title || detail.name || item.title || item.name || 'Untitled';
     state.year = detail.release_year || item.release_year || '';
     state.spine = state.year ? `#${state.year}` : `#${String(state.tmdbId).slice(-4)}`;
-    state.director = detail.director || '';
-    state.writer = detail.writer || '';
+    state.director = detail.director || preservedReview?.director || '';
+    state.writer = detail.writer || preservedReview?.writer || state.director;
     state.dop = '';
     state.music = '';
-    state.cast = (detail.credits?.cast || []).slice(0, 4).map(c => c.name).join(', ') || '';
-    state.genre = (detail.genres || []).slice(0, 3).map(g => g.name).join(' | ') || '';
+    state.cast = (detail.credits?.cast || []).slice(0, 4).map(c => c.name).join(', ') || preservedReview?.cast || '';
+    state.genre = (detail.genres || []).slice(0, 3).map(g => g.name).join(' | ') || preservedReview?.genre || '';
     if (detail.runtime) {
       const h = Math.floor(detail.runtime / 60);
       const m = detail.runtime % 60;
       state.runtime = h > 0 ? `${h}h ${m}m` : `${m}m`;
     } else {
-      state.runtime = '';
+      state.runtime = preservedReview?.runtime || '';
     }
     state.medium = 'THEATER';
     if (!preserveCustomReview && !state.isFromLetterboxd) {
@@ -413,8 +418,10 @@ export async function loadPublicMediaDetails(item, preserveCustomReview = false)
     renderHistoryListUI();
     switchView('review');
     showToast(`Loaded "${state.title}" (No-API mode)`);
+    return { ok: true };
   } catch (err) {
     showToast(`Could not load title details: ${err.message}`, true);
+    return { ok: false, error: err.message };
   }
 }
 

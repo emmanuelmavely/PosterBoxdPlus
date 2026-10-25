@@ -81,10 +81,10 @@ export function renderPolaroidPoster(ctx, w, h) {
   if (state.review || (state.showDetailedReview && state.detailedReview)) {
     const revPx = Math.round(35 * fs);
     ctx.font = `italic ${revPx}px "Instrument Serif", serif`;
-    const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, artW, 2) : [];
+    const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, artW, state.showQrCode ? 3 : 4) : [];
     const detPx = Math.round(22 * fs);
     ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW, 2);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW, state.showQrCode ? 3 : 4);
     const rH = lines.length * (revPx + 8) + dLines.length * (detPx + 6) + 18;
 
     drawMovableGroup(ctx, 'review', 'Polaroid Quote & Review', { x: pad, y: curY, w: artW, h: rH }, () => {

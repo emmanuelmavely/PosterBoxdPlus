@@ -1,5 +1,5 @@
 import { state } from '../state.js';
-import { ARCHETYPE_NAMES, ARCHETYPE_KEYS } from '../constants.js';
+import { ARCHETYPE_NAMES, ARCHETYPE_KEYS, getReviewCharacterLimit } from '../constants.js';
 import { scheduleCanvasRender } from '../rendering/canvas-renderer.js';
 import { recordCurrentFetchToHistory } from '../services/storage.js';
 import { showToast } from './toast.js';
@@ -27,6 +27,11 @@ export function syncArchetypeUI() {
 
   const currentName = document.getElementById('current-archetype-name');
   if (currentName) currentName.textContent = ARCHETYPE_NAMES[state.archetype];
+  const reviewInput = document.getElementById('input-review');
+  const reviewLimit = getReviewCharacterLimit(state.archetype);
+  if (reviewInput) reviewInput.maxLength = reviewLimit;
+  const reviewCount = document.getElementById('review-char-count');
+  if (reviewCount) reviewCount.textContent = `${state.review.length} / ${reviewLimit}`;
 
   const marqueeModeRow = document.getElementById('marquee-mode-selector-row');
   if (marqueeModeRow) {
