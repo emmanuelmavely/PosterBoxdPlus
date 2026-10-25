@@ -85,6 +85,10 @@ export async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https
 
   const proxyAttempts = [
     {
+      url: `https://proxy.cors.dev/${targetUrl}`,
+      options: {}
+    },
+    {
       url: (corsAnywhereBase.endsWith('/') ? corsAnywhereBase : corsAnywhereBase + '/') + targetUrl,
       options: { headers: { 'X-Requested-With': 'XMLHttpRequest' } }
     },
@@ -105,7 +109,7 @@ export async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https
   let htmlText = '';
   for (const attempt of proxyAttempts) {
     try {
-      const response = await fetch(attempt.url, { ...attempt.options, signal: AbortSignal.timeout(3500) });
+      const response = await fetch(attempt.url, { ...attempt.options, signal: AbortSignal.timeout(6000) });
       if (response.ok) {
         const text = await response.text();
         if (text && text.includes('<html')) {
@@ -179,6 +183,47 @@ export async function fetchLetterboxdReview(reviewUrl, corsAnywhereBase = 'https
         }
       }
     } catch (e) {}
+
+    try {
+      const jinaRes = await fetch(`https://r.jina.ai/${targetUrl}`, { signal: AbortSignal.timeout(6000) });
+      if (jinaRes.ok) {
+        const jinaText = await jinaRes.text();
+        const rawTitleMatch = jinaText.match(/Title:\s*(?:A\s+)?([★☆½\s]*review of\s+.*)/i) || jinaText.match(/Title:\s*(.+)/i);
+        const rawTitle = rawTitleMatch ? rawTitleMatch[1] : '';
+        const { title: movieTitle, year: releaseYear } = cleanLetterboxdRawTitle(rawTitle);
+        const starMatches = (rawTitle.match(/★/g) || []).length;
+        const halfStar = /½/.test(rawTitle) ? 0.5 : 0;
+        const rating = starMatches > 0 || halfStar > 0 ? starMatches + halfStar : 0;
+
+        let reviewer = '';
+        try {
+          const pathParts = new URL(targetUrl).pathname.split('/').filter(Boolean);
+          if (pathParts.length >= 2 && pathParts[1] === 'film') reviewer = pathParts[0];
+        } catch (e) {}
+
+        const imgMatch = jinaText.match(/!\[Image \d+:[^\]]*\]\((https:\/\/a\.ltrbxd\.com\/resized\/film-poster\/[^)]+)\)/);
+        const posterImg = imgMatch ? imgMatch[1] : '';
+
+        const reviewBlock = jinaText.match(/### [^\n]+ review published on Letterboxd:\n\n([\s\S]*?)(?=\n\n\[\d+ likes|\n\n## |\n\nRemove Ads|\s*$)/i);
+        const reviewBody = reviewBlock ? reviewBlock[1].trim() : '';
+        const reviewLines = reviewBody ? reviewBody.split(/\n\s*\n/).map(l => l.trim()).filter(Boolean) : [];
+
+        if (movieTitle) {
+          return {
+            url: targetUrl,
+            movieTitle,
+            releaseYear,
+            reviewer,
+            rating,
+            isLiked: false,
+            watchedDate: '',
+            reviewLines,
+            reviewBody,
+            posterImg
+          };
+        }
+      }
+    } catch (jinaErr) {}
 
     console.error('Failed to fetch Letterboxd HTML through proxies');
     return null;

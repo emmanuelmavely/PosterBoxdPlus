@@ -297,19 +297,49 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
   }
 }
 
-export async function loadPublicMediaDetails(item) {
+export async function loadPublicMediaDetails(item, preserveCustomReview = false) {
   showToast('Loading TMDB details (No-API mode)...');
   try {
     const detail = await fetchPublicTmdbDetail(item);
+
+    const preservedReview = preserveCustomReview ? {
+      review: state.review,
+      detailedReview: state.detailedReview,
+      showDetailedReview: state.showDetailedReview,
+      rating: state.rating,
+      isLiked: state.isLiked,
+      watchedDate: state.watchedDate,
+      username: state.username,
+      isFromLetterboxd: state.isFromLetterboxd,
+      letterboxdUrl: state.letterboxdUrl,
+      showQrCode: state.showQrCode,
+      preservedPoster: state.posters?.[0] || null
+    } : null;
 
     resetMediaState();
     state.hasSelectedMedia = true;
     updateNavigationButtonsDisabledState();
 
-    state.isFromLetterboxd = false;
-    state.letterboxdUrl = '';
-    state.showQrCode = false;
-    syncQrToggleVisibility();
+    if (preservedReview) {
+      Object.assign(state, {
+        review: preservedReview.review,
+        detailedReview: preservedReview.detailedReview,
+        showDetailedReview: preservedReview.showDetailedReview,
+        rating: preservedReview.rating,
+        isLiked: preservedReview.isLiked,
+        watchedDate: preservedReview.watchedDate,
+        username: preservedReview.username,
+        isFromLetterboxd: preservedReview.isFromLetterboxd,
+        letterboxdUrl: preservedReview.letterboxdUrl,
+        showQrCode: preservedReview.showQrCode
+      });
+      syncQrToggleVisibility();
+    } else {
+      state.isFromLetterboxd = false;
+      state.letterboxdUrl = '';
+      state.showQrCode = false;
+      syncQrToggleVisibility();
+    }
 
     state.tmdbId = detail.id || item.id;
     state.mediaType = detail.media_type || item.media_type || 'movie';
@@ -330,7 +360,7 @@ export async function loadPublicMediaDetails(item) {
       state.runtime = '';
     }
     state.medium = 'THEATER';
-    if (!state.isFromLetterboxd) {
+    if (!preserveCustomReview && !state.isFromLetterboxd) {
       if (typeof detail.vote_average === 'number' && detail.vote_average > 0) {
         state.rating = Math.max(0.5, Math.min(5, Math.round((detail.vote_average / 2) * 2) / 2));
       } else {
@@ -343,7 +373,8 @@ export async function loadPublicMediaDetails(item) {
     const pUrls = Array.from(new Set([
       ...(detail.all_posters || []),
       detail.poster_url,
-      item.poster_url
+      item.poster_url,
+      ...(preservedReview?.preservedPoster ? [preservedReview.preservedPoster] : [])
     ].filter(Boolean)));
 
     const bUrls = Array.from(new Set([
@@ -352,8 +383,8 @@ export async function loadPublicMediaDetails(item) {
       ...pUrls
     ].filter(Boolean)));
 
-    state.posters = pUrls.length > 0 ? pUrls : [];
-    state.backdrops = bUrls.length > 0 ? bUrls : [];
+    state.posters = pUrls.length > 0 ? pUrls : (preservedReview?.preservedPoster ? [preservedReview.preservedPoster] : []);
+    state.backdrops = bUrls.length > 0 ? bUrls : state.posters;
     state._showAllImages = Array.from(new Set([...state.posters, ...state.backdrops]));
     state.selectedPosterIndex = 0;
     state.selectedBackdropIndex = 0;

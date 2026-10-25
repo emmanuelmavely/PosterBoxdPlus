@@ -5,8 +5,8 @@ import {
   cleanLetterboxdParagraphs
 } from '../services/letterboxd.js';
 import { loadCorsImage, extractDominantPalette } from '../services/media-assets.js';
-import { recordCurrentFetchToHistory } from '../services/storage.js';
-import { loadTmdbMediaDetails } from './media.js';
+import { loadTmdbMediaDetails, loadPublicMediaDetails } from './media.js';
+import { searchPublicTmdb } from '../services/tmdb-public-search.js';
 import { renderHistoryListUI } from '../ui/history.js';
 import { renderPaletteSwatchesUI, renderAssetPickerStrips } from '../ui/assets.js';
 import { syncReviewFormState } from '../ui/review-form.js';
@@ -130,6 +130,41 @@ export async function applyLetterboxdReviewData(reviewData) {
           return true;
         }
       } catch (tmdbErr) {}
+    }
+
+    // Non-API mode fallback: search TMDB publicly to pull posters, backdrops, director, writer & cast
+    if (movieTitle) {
+      if (statusText) statusText.textContent = `Matched "${movieTitle}" (${releaseYear}) — Fetching TMDB artwork (No-API mode)...`;
+      try {
+        const searchRes = await searchPublicTmdb(movieTitle);
+        const candidates = searchRes?.results || [];
+        let hit = null;
+        if (releaseYear && candidates.length > 0) {
+          hit = candidates.find(c => c.media_type === 'movie' && String(c.release_year) === String(releaseYear));
+          if (!hit) {
+            hit = candidates.find(c => String(c.release_year) === String(releaseYear));
+          }
+        }
+        if (!hit && candidates.length > 0) {
+          hit = candidates.find(c => c.media_type === 'movie') || candidates[0];
+        }
+
+        if (hit) {
+          await loadPublicMediaDetails(hit, true);
+          state.isFromLetterboxd = true;
+          state.rating = importedRating; // Freeze rating from PosterBoxd review strictly
+          state.showQrCode = Boolean(reviewUrl);
+          state.letterboxdUrl = reviewUrl;
+          state.hasSelectedMedia = true;
+          updateNavigationButtonsDisabledState();
+          syncQrToggleVisibility();
+          syncReviewFormState();
+          recordCurrentFetchToHistory();
+          renderHistoryListUI();
+          showToast(`Imported Letterboxd review for "${state.title}" (${state.rating}★)`);
+          return true;
+        }
+      } catch (publicErr) {}
     }
 
     if (movieTitle) state.title = movieTitle;

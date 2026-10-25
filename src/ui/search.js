@@ -7,55 +7,9 @@ import { searchPublicTmdb } from '../services/tmdb-public-search.js';
 import { openApiModal } from './api-modal.js';
 
 function promptLetterboxdProceedWithoutTmdb(onProceed) {
-  if (state.tmdbApiKey && state.tmdbApiKey.trim().length > 0) {
-    onProceed();
-    return;
-  }
-
-  const modal = document.getElementById('tmdb-lb-warning-modal');
-  if (!modal) {
-    onProceed();
-    return;
-  }
-
-  modal.classList.remove('hidden');
-  modal.classList.add('flex');
-
-  const closeBtn = document.getElementById('close-lb-warning-modal-btn');
-  const proceedBtn = document.getElementById('lb-warning-proceed-btn');
-  const addKeyBtn = document.getElementById('lb-warning-add-key-btn');
-
-  const cleanup = () => {
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    closeBtn?.removeEventListener('click', onClose);
-    proceedBtn?.removeEventListener('click', onAccept);
-    addKeyBtn?.removeEventListener('click', onAddKey);
-    modal.removeEventListener('click', onBackdrop);
-    window.removeEventListener('keydown', onKey);
-  };
-
-  const onClose = () => cleanup();
-  const onAccept = () => {
-    cleanup();
-    onProceed();
-  };
-  const onAddKey = () => {
-    cleanup();
-    openApiModal();
-  };
-  const onBackdrop = (e) => {
-    if (e.target === modal) cleanup();
-  };
-  const onKey = (e) => {
-    if (e.key === 'Escape') cleanup();
-  };
-
-  closeBtn?.addEventListener('click', onClose);
-  proceedBtn?.addEventListener('click', onAccept);
-  addKeyBtn?.addEventListener('click', onAddKey);
-  modal.addEventListener('click', onBackdrop);
-  window.addEventListener('keydown', onKey);
+  // Non-API mode automatically matches and enriches Letterboxd reviews without an API key,
+  // so we proceed directly without a blocking warning modal.
+  onProceed();
 }
 
 export function initSearch() {
