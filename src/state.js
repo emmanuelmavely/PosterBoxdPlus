@@ -1,5 +1,6 @@
 import {
   DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT,
+  getDefaultDetailedReviewCharacterLimit,
   MAX_DETAILED_REVIEW_CHARACTER_LIMIT,
   MIN_DETAILED_REVIEW_CHARACTER_LIMIT
 } from './constants.js';
@@ -21,7 +22,6 @@ function getStoredJson(key, fallback) {
 }
 
 export const state = {
-  tmdbApiKey: getStoredValue('posterboxd_tmdb_key'),
   currentView: 'home',
   hasSelectedMedia: false,
   archetype: 'floatingticket',
@@ -50,11 +50,12 @@ export const state = {
   watchedAt: '',
   review: '',
   detailedReview: '',
+  detailedReviewCharacterLimits: getStoredJson('posterboxd_detailed_review_limits_v2', {}),
   detailedReviewCharacterLimit: Math.min(
     MAX_DETAILED_REVIEW_CHARACTER_LIMIT,
     Math.max(
       MIN_DETAILED_REVIEW_CHARACTER_LIMIT,
-      Number(getStoredValue('posterboxd_detailed_review_limit', DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT)) || DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT
+      Number(getStoredJson('posterboxd_detailed_review_limits_v2', {})?.floatingticket) || getDefaultDetailedReviewCharacterLimit('floatingticket') || DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT
     )
   ),
   showDetailedReview: true,

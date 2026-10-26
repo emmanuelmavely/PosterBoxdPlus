@@ -102,7 +102,7 @@ export function renderRetroPoster(ctx, w, h) {
       curY += revPx + 6;
       ctx.fillText(l, w / 2, curY);
     });
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW - 20, 2);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW - 20);
     if (dLines.length > 0) {
       curY += 14;
       const detPx = Math.round(21 * fs);
@@ -110,7 +110,7 @@ export function renderRetroPoster(ctx, w, h) {
       ctx.fillStyle = '#44403C';
       dLines.forEach((dl) => {
         curY += detPx + 6;
-        drawDetailedReviewLine(ctx, dl, w / 2, curY, { align: 'center' });
+         drawDetailedReviewLine(ctx, dl, w / 2, curY, { align: 'center', boldFillStyle: '#A33A1D' });
       });
     }
   }

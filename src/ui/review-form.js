@@ -1,7 +1,7 @@
 import { state } from '../state.js';
 import { buildRelevantMovieReview } from '../utils.js';
 import { getReviewCharacterLimit } from '../constants.js';
-import { tmdbFetch, hasTmdbAccess } from '../services/tmdb.js';
+import { tmdbFetch } from '../services/tmdb.js';
 import { loadCorsImage, extractDominantPalette } from '../services/media-assets.js';
 import { recordCurrentFetchToHistory } from '../services/storage.js';
 import { renderAssetPickerStrips, renderPaletteSwatchesUI } from './assets.js';
@@ -148,7 +148,7 @@ async function selectTvSeason(seasonNumber, episodeSelect) {
   episodeSelect.innerHTML = '<option value="">All Episodes</option>';
   episodeSelect.disabled = true;
 
-  if (state.tmdbId && hasTmdbAccess()) {
+  if (state.tmdbId) {
     try {
       const [seasonData, seasonImages] = await Promise.all([
         tmdbFetch(`/tv/${state.tmdbId}/season/${seasonNumber}`),
@@ -257,7 +257,7 @@ async function selectTvEpisode(seasonNumber, episodeNumber, episodeSelect, prese
 export async function restoreTvSelectionFromHistory() {
   const seasonSelect = document.getElementById('tv-season-select');
   const episodeSelect = document.getElementById('tv-episode-select');
-  if (!seasonSelect || !episodeSelect || state.mediaType !== 'tv' || !state.tmdbId || !hasTmdbAccess() || !state.seasonNumber) return;
+  if (!seasonSelect || !episodeSelect || state.mediaType !== 'tv' || !state.tmdbId || !state.seasonNumber) return;
 
   try {
     const requestedSeason = String(state.seasonNumber);

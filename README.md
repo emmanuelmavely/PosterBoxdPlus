@@ -7,7 +7,7 @@
 <img src="./assets/PosterBoxd-Banner.jpg" alt="PosterBoxd Banner" width="100%" style="border-radius: 14px; margin: 12px 0 16px 0;" />
 
 [![Live on GitHub Pages](https://img.shields.io/badge/Live_Site-posterboxd.com-00E054?style=flat-square&logo=githubpages&logoColor=white)](https://posterboxd.com/)
-[![Version](https://img.shields.io/badge/version-v1.3.4-00E054?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v1.3.9-00E054?style=flat-square)](CHANGELOG.md)
 [![Deploy to GitHub Pages](https://github.com/emmanuelmavely/PosterBoxdPlus/actions/workflows/static.yml/badge.svg)](https://github.com/emmanuelmavely/PosterBoxdPlus/actions/workflows/static.yml)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES_Modules-F7DF1E?logo=javascript&logoColor=black)
 ![No build step](https://img.shields.io/badge/build-none-00E054)
@@ -153,9 +153,7 @@ Here are sample high-resolution posters generated across different archetypes:
 ## Prerequisites
 
 - Any modern web browser with HTML5 Canvas and ES Modules support (Chrome, Firefox, Safari, Edge).
-- **No API Key Required**: An **Experimental No-API Mode** allows searching any movie or TV show directly via client-side public TMDB scraping and CORS proxy rotation (`https://cors.tyxc.org/`, `https://proxy.cors.dev/`, `https://r.jina.ai/`).
-- **Hosted TMDB Proxy:** Production builds use the deployed Cloudflare Worker in `worker/` at `https://posterboxd-tmdb-proxy.jaygatsby.workers.dev/api/tmdb`, keeping the TMDB Read Access Token off the client and caching successful responses for 24 hours at the edge.
-- *(Optional)*: An official [TMDB API Key](https://www.themoviedb.org/settings/api) (v3 key or v4 token) can still be configured locally as a direct-access fallback.
+- **Hosted TMDB Proxy:** Production builds use the deployed Cloudflare Worker in `worker/` at `https://posterboxd-tmdb-proxy.jaygatsby.workers.dev/api/tmdb`, keeping the TMDB Read Access Token off the client and caching successful responses for 24 hours at the edge. Browser API keys and the experimental no-API scraper are archived outside the main runtime.
 - A local static HTTP server when developing or running locally (browsers block ES modules on direct `file://` execution due to CORS).
 
 ---
@@ -223,7 +221,7 @@ The Worker only accepts `GET` and CORS preflight requests from PosterBoxd and lo
 
 ## Usage Guide
 
-1. **Use TMDB:** The hosted edge proxy is used automatically, so no browser key is required. Click the Key icon only if you want to add a personal TMDB v3 key or v4 token as a direct-access fallback.
+1. **Use TMDB:** The hosted edge proxy is used automatically. No browser key or local credential is required.
 2. **Select Media or Import Review:**
    - Search any title in the search pill (e.g. *Challengers*, *Severance*).
    - Or paste a Letterboxd review URL (e.g. `https://letterboxd.com/user/film/title/` or `https://boxd.it/gUpRkb`).
@@ -241,7 +239,6 @@ PosterBoxd keeps user settings and history in browser `localStorage`. TMDB JSON 
 
 | Key | Storage Target | Description |
 |-----|----------------|-------------|
-| `posterboxd_tmdb_key` | `localStorage` | Optional personal TMDB API v3 key or v4 access token |
 | `posterboxd_username` | `localStorage` | Default Letterboxd username for reviews and QR code generation |
 | `posterboxd_transforms_v3` | `localStorage` | Custom element positions, scales, and offsets per poster style |
 | `posterboxd_fetch_history_v1` | `localStorage` | History list of your recent 35 lookups and posters |
@@ -267,12 +264,12 @@ PosterBoxdPlus/
 │   │   ├── media.js               # Media search, TMDB details, and season fetching
 │   │   └── letterboxd-import.js   # Letterboxd review parsing & artwork enrichment
 │   ├── services/
-│   │   ├── search-logic.js        # Pure fuzzy title matching & query ranking
-│   │   ├── tmdb-public-search.js  # TMDB public scraper with CORS proxy rotation & cache
 │   │   ├── tmdb.js                # Edge-proxy TMDB client & regional now-playing queries
 │   │   ├── letterboxd.js          # Letterboxd web scraper & short URL resolver
 │   │   ├── media-assets.js        # CORS image loader & color palette extractor
 │   │   └── storage.js             # LocalStorage manager for history & transforms
+│   ├── archive/
+│   │   └── no-api/                # Archived experimental public-page search logic
 │   ├── data/
 │   │   ├── demo-catalog.js        # Offline presets (Dune 2, BR2049, Succession)
 │   │   └── procedural-art.js      # Procedural fallback canvas artwork
@@ -302,7 +299,6 @@ PosterBoxdPlus/
 │       ├── history.js             # Fetch history modal and entry restorer
 │       ├── assets.js              # Poster/backdrop selectors and color swatches
 │       ├── qr-controls.js         # QR code toggle & custom URL input
-│       ├── api-modal.js           # TMDB API key configuration modal
 │       └── toast.js               # Non-blocking animated notification toasts
 └── worker/
     ├── index.js                    # Cloudflare Worker proxy and edge cache

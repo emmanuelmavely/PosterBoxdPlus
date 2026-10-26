@@ -39,7 +39,7 @@ export function renderPolaroidPoster(ctx, w, h) {
   curY += 32;
 
   const fs = Math.min(1.18, state.fontScale) * (isCompact ? 0.9 : 1.0);
-  const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), artW * 0.62, Math.round(48 * fs), '"Syne", sans-serif', '800', 2);
+  const tLayout = computeAdaptiveTitleLayout(ctx, state.title.toUpperCase(), artW * 0.66, Math.round(44 * fs), '"Syne", sans-serif', '800', 3);
   const titleBlockH = tLayout.lines.length * tLayout.lineHeight + 42;
 
   drawMovableGroup(ctx, 'title', 'Polaroid Title', { x: pad, y: curY, w: artW, h: titleBlockH }, () => {
@@ -85,7 +85,7 @@ export function renderPolaroidPoster(ctx, w, h) {
     const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, artW, state.showQrCode ? 3 : 4) : [];
     const detPx = Math.round(22 * fs);
     ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW, state.showQrCode ? 5 : 7);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, artW);
     const rH = lines.length * (revPx + 8) + dLines.length * (detPx + 6) + 18;
 
     drawMovableGroup(ctx, 'review', 'Polaroid Quote & Review', { x: pad, y: curY, w: artW, h: rH }, () => {
@@ -103,7 +103,7 @@ export function renderPolaroidPoster(ctx, w, h) {
         ctx.fillStyle = '#44403C';
         dLines.forEach((dl) => {
           ry += detPx + 6;
-          drawDetailedReviewLine(ctx, dl, pad, ry);
+           drawDetailedReviewLine(ctx, dl, pad, ry, { boldFillStyle: '#15803D' });
         });
       }
     });

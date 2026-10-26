@@ -140,7 +140,7 @@ export function renderTicketPoster(ctx, w, h) {
         ctx.fillText(l, innerPad, curY);
       }
     });
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW, 2);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW);
     if (dLines.length > 0 && curY + 42 < stubSplitY - 14) {
       curY += 20; // Generous breathing room between punchline and extended review
       const detPx = Math.round(21 * fs);
@@ -149,7 +149,7 @@ export function renderTicketPoster(ctx, w, h) {
       dLines.forEach((dl) => {
         if (curY + detPx < stubSplitY - 12) {
           curY += detPx + 6;
-          drawDetailedReviewLine(ctx, dl, innerPad, curY);
+           drawDetailedReviewLine(ctx, dl, innerPad, curY, { boldFillStyle: '#15803D' });
         }
       });
     }

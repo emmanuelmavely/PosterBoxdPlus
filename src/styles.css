@@ -2,6 +2,14 @@
    PosterBoxd — Global Styles
    ============================================ */
 
+:root {
+  --app-header-height: 4rem;
+  --app-subnav-height: 2.625rem;
+  --mobile-nav-height: 4.25rem;
+  --mobile-content-safe-space: calc(var(--mobile-nav-height) + 1.5rem + env(safe-area-inset-bottom));
+  --focus-ring: 0 0 0 3px rgba(11, 12, 14, 0.95), 0 0 0 5px rgba(0, 224, 84, 0.75);
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: #131519; }
@@ -11,6 +19,7 @@
 /* Base Reset & Body */
 *, *::before, *::after { box-sizing: border-box; }
 html, body { width: 100%; min-width: 0; margin: 0; padding: 0; }
+html { scroll-padding-top: calc(var(--app-header-height) + var(--app-subnav-height) + 1rem); }
 body {
   background-color: #0B0C0E;
   color: #F3F4F6;
@@ -19,6 +28,30 @@ body {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+}
+
+button, input, textarea, select { font: inherit; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible,
+a:focus-visible, summary:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Keep view content clear of the mobile navigation and device gesture area. */
+.app-view {
+  padding-bottom: var(--mobile-content-safe-space) !important;
+}
+
+/* The header stays compact at narrow widths without allowing controls to clip. */
+#app-header { min-height: var(--app-header-height); }
+#header-search-container { min-width: 0; }
+#header-search-container .google-search-pill { min-width: 0; }
+
+/* Bottom navigation uses the safe-area inset instead of floating over the final control. */
+#mobile-bottom-nav {
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  min-height: var(--mobile-nav-height);
+  padding-bottom: max(0.375rem, env(safe-area-inset-bottom));
 }
 
 /* Google-Style Search Pill */
@@ -62,7 +95,7 @@ input[type="range"]::-webkit-slider-thumb:hover {
 
 /* Poster Canvas */
 #poster-canvas {
-  max-height: calc(100dvh - 280px);
+  max-height: min(68dvh, calc(100dvh - 14rem));
   max-width: 100%;
   width: auto;
   height: auto;
@@ -72,25 +105,138 @@ input[type="range"]::-webkit-slider-thumb:hover {
   transition: transform 0.2s ease;
 }
 
+/* Persistent desktop navigation tabs */
+.desktop-tab-list { min-height: 42px; }
+.desktop-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 32px;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  color: #9CA3AF;
+  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+}
+.desktop-tab:hover:not(:disabled) {
+  color: #F9FAFB;
+  background: rgba(255, 255, 255, 0.05);
+}
+.desktop-tab.text-lbgreen,
+.desktop-tab[aria-current="page"] {
+  color: #00E054;
+  background: rgba(0, 224, 84, 0.1);
+  border-color: rgba(0, 224, 84, 0.28);
+}
+.desktop-tab:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 /* Mobile Responsive */
 @media (max-width: 768px) {
+  :root {
+    --mobile-nav-height: 4.5rem;
+  }
+
+  #app-header {
+    padding-inline: 0.5rem;
+    gap: 0.375rem;
+  }
+  #app-header > #brand-home-trigger {
+    gap: 0;
+  }
+  #app-header > #brand-home-trigger > svg {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  #header-search-container {
+    max-width: none;
+    margin-inline: 0;
+  }
+  #header-search-container .google-search-pill {
+    padding-inline: 0.625rem;
+    gap: 0.375rem;
+  }
+  #header-search-btn {
+    min-width: 2.5rem;
+    padding-inline: 0.625rem;
+  }
+  #app-header > div:last-child {
+    gap: 0.25rem;
+  }
+  #app-header > div:last-child > button {
+    min-width: 2.75rem;
+    padding-inline: 0.5rem;
+  }
+
   input[type="text"], input[type="date"], textarea, select {
     font-size: 16px !important;
   }
-  #poster-canvas {
-    max-height: calc(100dvh - 330px);
+  #view-home {
+    justify-content: flex-start;
+    padding-top: clamp(2rem, 9dvh, 4.5rem) !important;
   }
+  #view-home > div:first-child {
+    margin-bottom: clamp(1.25rem, 4dvh, 2rem);
+  }
+  #view-preview {
+    padding-inline: 0.75rem;
+  }
+  #desktop-studio-grid {
+    gap: 1rem;
+  }
+  #desktop-poster-col {
+    position: static;
+  }
+  #desktop-poster-col > .relative {
+    min-height: 0;
+  }
+  #desktop-controls-col {
+    width: 100%;
+  }
+  #settings-accordion summary {
+    padding: 0.875rem 1rem;
+  }
+  #settings-accordion > div,
+  #settings-accordion .bg-cardbg {
+    padding: 0.875rem;
+  }
+  #history-list-container {
+    overflow: visible;
+  }
+  #poster-canvas {
+    max-height: min(68dvh, calc(100dvh - 15rem));
+  }
+}
+
+@media (max-width: 380px) {
+  #header-search-btn { display: none; }
+  #header-search-container .google-search-pill { padding-inline: 0.5rem; }
+  #view-home { padding-inline: 0.75rem; }
+  #view-home h1 { font-size: 2.25rem; }
 }
 
 /* Desktop Split Screen Optimization */
 @media (min-width: 1024px) {
+  .app-view { padding-bottom: 2rem !important; }
   #poster-canvas {
-    max-height: calc(100dvh - 170px);
+    max-height: min(100%, calc(100dvh - 11rem));
     width: 100%;
   }
   #desktop-poster-col {
     position: sticky;
-    top: 5rem;
+    top: calc(var(--app-header-height) + var(--app-subnav-height) + 0.75rem);
+    height: calc(100dvh - var(--app-header-height) - var(--app-subnav-height) - 1.5rem);
+    min-height: 0;
+  }
+  #desktop-poster-col > .relative {
+    height: 100%;
+    min-height: 0;
+  }
+  #desktop-poster-col #poster-canvas {
+    max-height: 100%;
+    max-width: calc(100% - 5rem);
   }
   /* Keep mobile bottom menu strictly hidden on desktop */
   #mobile-bottom-nav {
@@ -98,6 +244,16 @@ input[type="range"]::-webkit-slider-thumb:hover {
   }
   body {
     padding-bottom: 2rem !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-height: 760px) {
+  #desktop-poster-col {
+    position: static;
+    height: auto;
+  }
+  #desktop-poster-col #poster-canvas {
+    max-height: calc(100dvh - 14rem);
   }
 }
 
@@ -110,6 +266,15 @@ input[type="range"]::-webkit-slider-thumb:hover {
   transform: translate(-50%, 150%);
   opacity: 0;
   pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Details / Summary Reset */

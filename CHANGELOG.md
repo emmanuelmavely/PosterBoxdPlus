@@ -5,6 +5,53 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [v1.3.9] - 2026-10-26
+
+### Changed
+- **Responsive Layout**: Improved narrow-header behavior, mobile content safe spacing, and poster preview sizing across short and tall viewports.
+- **Desktop Preview Positioning**: Corrected sticky preview offsets relative to the header and disabled sticky positioning on short desktop screens where it constrains the workspace.
+- **History Scrolling**: Removed the nested fixed-height history scroller in favor of natural page scrolling.
+- **Accessibility Polish**: Restored browser zoom support, added consistent visible focus rings, and respected reduced-motion preferences.
+
+## [v1.3.8] - 2026-10-25
+
+### Changed
+- **Hosted TMDB Only**: Removed the browser TMDB API-key button, modal, status indicator, and fallback credential path. The main runtime now uses the hosted Cloudflare Worker proxy exclusively.
+- **Archived No-API Mode**: Moved the experimental public-page scraper and its search-ranking helper to `src/archive/no-api/`; they are no longer imported by the application.
+- **Unified Enrichment**: Letterboxd imports and title searches now use the same proxy-backed TMDB JSON flow.
+
+---
+
+## [v1.3.7] - 2026-10-25
+
+### Changed
+- **Per-Design Live Poster Defaults**: Set the Detailed Review output defaults to 350, 350, 350, 770, 450, 500, 500, 500, 500, 280, and 750 characters for designs 1–11 respectively.
+- **Independent Customization**: Changing the live poster limit now stores the value for the active design instead of applying one global value to every design.
+- **Design 12 Reservation**: Added the requested 350-character default to the design-limit registry for the next poster renderer; the current app still contains 11 actual poster renderers.
+
+---
+
+## [v1.3.6] - 2026-10-25
+
+### Changed
+- **Letterboxd URL Flow**: Only direct Letterboxd URL fetches open Poster Studio immediately after loading; title searches and raw JSON retain their existing review flow.
+- **Desktop Navigation**: Replaced the desktop breadcrumb row with persistent icon tabs for Home, Review Form, Poster Studio, and History.
+- **Desktop Preview Fit**: Constrained the live poster stage to the available viewport height so the complete poster is visible without page scrolling.
+- **Review Callout**: Changed the long Letterboxd label to italic `more on` text followed by a tiny Letterboxd mark.
+
+---
+
+## [v1.3.5] - 2026-10-25
+
+### Changed
+- **Live Poster Output Control**: Removed the per-design detailed-review line caps. The exact poster output limit now comes from the shared renderer and can be entered directly up to 10,000 characters.
+- **Callout Rendering**: Removed the distracting green glow and switched the callout to a compact display treatment.
+- **Letterboxd Callout**: Replaced the long green label with an italic `more on` treatment followed by a tiny Letterboxd mark.
+- **Title Fitting**: Long titles now continue shrinking below the previous 24px floor; Polaroid titles can use three lines and Marquee bulb mode no longer silently falls back for long titles.
+- **Search-to-Studio Flow**: Letterboxd result cards resolve a poster thumbnail when possible, then open Poster Studio through a loading transition after selection.
+
+---
+
 ## [v1.3.4] - 2026-10-25
 
 ### Changed

@@ -1,8 +1,7 @@
 import { state, resetMediaState } from '../state.js';
 import { DEMO_CATALOG } from '../data/demo-catalog.js';
 import { buildRelevantMovieReview } from '../utils.js';
-import { tmdbFetch, detectBrowserRegion, hasTmdbAccess } from '../services/tmdb.js';
-import { fetchPublicTmdbDetail } from '../services/tmdb-public-search.js';
+import { tmdbFetch, detectBrowserRegion } from '../services/tmdb.js';
 import { loadCorsImage, extractDominantPalette } from '../services/media-assets.js';
 import { recordCurrentFetchToHistory } from '../services/storage.js';
 import { renderHistoryListUI } from '../ui/history.js';
@@ -89,17 +88,13 @@ export async function loadDemoPreset(key, isExplicit = false) {
   switchView('review');
 }
 
+// End of TMDB media controller.
 export async function loadRegionalNowPlayingMovies() {
   const regionInfo = detectBrowserRegion();
   const regionLabel = document.getElementById('trending-region-label');
   const chipsContainer = document.getElementById('home-trending-chips');
   if (!chipsContainer) return;
 
-  if (!hasTmdbAccess()) {
-    chipsContainer.innerHTML = '';
-    if (regionLabel?.parentElement) regionLabel.parentElement.classList.add('hidden');
-    return;
-  }
   if (regionLabel?.parentElement) regionLabel.parentElement.classList.remove('hidden');
 
   try {
@@ -121,7 +116,6 @@ export async function loadRegionalNowPlayingMovies() {
     });
   } catch (e) {}
 }
-
 export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview = false) {
   showToast('Loading TMDB artwork & credits...');
   try {
@@ -296,132 +290,6 @@ export async function loadTmdbMediaDetails(id, mediaType, preserveCustomReview =
     showToast(`Could not load TMDB details: ${err.message}`, true);
   }
 }
+// End of TMDB media controller.
 
-export async function loadPublicMediaDetails(item, preserveCustomReview = false) {
-  showToast('Loading TMDB details (No-API mode)...');
-  try {
-    const detail = await fetchPublicTmdbDetail(item);
-
-    const preservedReview = preserveCustomReview ? {
-      review: state.review,
-      detailedReview: state.detailedReview,
-      showDetailedReview: state.showDetailedReview,
-      rating: state.rating,
-      isLiked: state.isLiked,
-      watchedDate: state.watchedDate,
-      username: state.username,
-      isFromLetterboxd: state.isFromLetterboxd,
-      letterboxdUrl: state.letterboxdUrl,
-      showQrCode: state.showQrCode,
-      preservedPoster: state.posters?.[0] || null,
-      director: state.director,
-      writer: state.writer,
-      cast: state.cast,
-      genre: state.genre,
-      runtime: state.runtime
-    } : null;
-
-    resetMediaState();
-    state.hasSelectedMedia = true;
-    updateNavigationButtonsDisabledState();
-
-    if (preservedReview) {
-      Object.assign(state, {
-        review: preservedReview.review,
-        detailedReview: preservedReview.detailedReview,
-        showDetailedReview: preservedReview.showDetailedReview,
-        rating: preservedReview.rating,
-        isLiked: preservedReview.isLiked,
-        watchedDate: preservedReview.watchedDate,
-        username: preservedReview.username,
-        isFromLetterboxd: preservedReview.isFromLetterboxd,
-        letterboxdUrl: preservedReview.letterboxdUrl,
-        showQrCode: preservedReview.showQrCode
-      });
-      syncQrToggleVisibility();
-    } else {
-      state.isFromLetterboxd = false;
-      state.letterboxdUrl = '';
-      state.showQrCode = false;
-      syncQrToggleVisibility();
-    }
-
-    state.tmdbId = detail.id || item.id;
-    state.mediaType = detail.media_type || item.media_type || 'movie';
-    state.title = detail.title || detail.name || item.title || item.name || 'Untitled';
-    state.year = detail.release_year || item.release_year || '';
-    state.spine = state.year ? `#${state.year}` : `#${String(state.tmdbId).slice(-4)}`;
-    state.director = detail.director || preservedReview?.director || '';
-    state.writer = detail.writer || preservedReview?.writer || state.director;
-    state.dop = '';
-    state.music = '';
-    state.cast = (detail.credits?.cast || []).slice(0, 4).map(c => c.name).join(', ') || preservedReview?.cast || '';
-    state.genre = (detail.genres || []).slice(0, 3).map(g => g.name).join(' | ') || preservedReview?.genre || '';
-    if (detail.runtime) {
-      const h = Math.floor(detail.runtime / 60);
-      const m = detail.runtime % 60;
-      state.runtime = h > 0 ? `${h}h ${m}m` : `${m}m`;
-    } else {
-      state.runtime = preservedReview?.runtime || '';
-    }
-    state.medium = 'THEATER';
-    if (!preserveCustomReview && !state.isFromLetterboxd) {
-      if (typeof detail.vote_average === 'number' && detail.vote_average > 0) {
-        state.rating = Math.max(0.5, Math.min(5, Math.round((detail.vote_average / 2) * 2) / 2));
-      } else {
-        state.rating = 0;
-      }
-      state.review = buildRelevantMovieReview(state.title, state.director, state.cast, state.genre, state.mediaType, state.rating);
-      state.detailedReview = '';
-    }
-
-    const pUrls = Array.from(new Set([
-      ...(detail.all_posters || []),
-      detail.poster_url,
-      item.poster_url,
-      ...(preservedReview?.preservedPoster ? [preservedReview.preservedPoster] : [])
-    ].filter(Boolean)));
-
-    const bUrls = Array.from(new Set([
-      ...(detail.all_backdrops || []),
-      detail.backdrop_url,
-      ...pUrls
-    ].filter(Boolean)));
-
-    state.posters = pUrls.length > 0 ? pUrls : (preservedReview?.preservedPoster ? [preservedReview.preservedPoster] : []);
-    state.backdrops = bUrls.length > 0 ? bUrls : state.posters;
-    state._showAllImages = Array.from(new Set([...state.posters, ...state.backdrops]));
-    state.selectedPosterIndex = 0;
-    state.selectedBackdropIndex = 0;
-    state.logos = [];
-    state.selectedLogoIndex = 0;
-    state.logoImg = null;
-
-    const [pImg, bImg] = await Promise.all([
-      loadCorsImage(state.posters[0]),
-      loadCorsImage(state.backdrops[0] || state.posters[0])
-    ]);
-    state.posterImg = pImg;
-    state.backdropImg = bImg;
-
-    if (pImg) {
-      state.palette = extractDominantPalette(pImg, state.palette);
-      renderPaletteSwatchesUI();
-    }
-
-    syncArchetypeUI();
-    syncMediaTypeControls();
-    captureTvBaseState();
-    renderAssetPickerStrips();
-    syncReviewFormState();
-    recordCurrentFetchToHistory();
-    renderHistoryListUI();
-    switchView('review');
-    showToast(`Loaded "${state.title}" (No-API mode)`);
-    return { ok: true };
-  } catch (err) {
-    showToast(`Could not load title details: ${err.message}`, true);
-    return { ok: false, error: err.message };
-  }
-}
 

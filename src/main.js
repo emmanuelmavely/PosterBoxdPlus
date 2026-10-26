@@ -4,7 +4,6 @@ import { loadDemoPreset, loadRegionalNowPlayingMovies } from './controllers/medi
 import { renderHistoryListUI, initHistory } from './ui/history.js';
 import { configureNavigation, initNavigation, switchView } from './ui/navigation.js';
 import { initSearch } from './ui/search.js';
-import { initApiModal } from './ui/api-modal.js';
 import { initReviewForm } from './ui/review-form.js';
 import { initAssetControls } from './ui/assets.js';
 import { initDesignControls } from './ui/design-controls.js';
@@ -39,7 +38,6 @@ async function bootstrap() {
     initNavigation();
     initSearch();
     initHistory();
-    initApiModal();
     initReviewForm();
     initAssetControls();
     initDesignControls();
@@ -57,7 +55,10 @@ async function bootstrap() {
     }
 
     setSplashProgress(70, 'Connecting regional cinema database...');
-    await loadRegionalNowPlayingMovies();
+    await Promise.race([
+      loadRegionalNowPlayingMovies(),
+      new Promise((resolve) => setTimeout(resolve, 3500))
+    ]);
   } catch (error) {
     console.error('PosterBoxd startup recovered from an initialization error:', error);
     setSplashProgress(90, 'Starting with limited network features...');

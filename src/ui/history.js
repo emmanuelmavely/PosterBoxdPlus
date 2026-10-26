@@ -82,6 +82,8 @@ export function renderHistoryListUI() {
         watchedDate: item.watchedDate || state.watchedDate,
         review: item.review || '',
         detailedReview: item.detailedReview || '',
+        detailedReviewCharacterLimit: item.detailedReviewCharacterLimit || state.detailedReviewCharacterLimit,
+        detailedReviewCharacterLimits: item.detailedReviewCharacterLimits || state.detailedReviewCharacterLimits,
         showDetailedReview: item.showDetailedReview !== undefined ? item.showDetailedReview : true,
         isFromLetterboxd: Boolean(item.isFromLetterboxd),
         letterboxdUrl: item.letterboxdUrl || '',

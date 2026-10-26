@@ -124,7 +124,7 @@ export function renderCriterionPoster(ctx, w, h) {
       });
     }
 
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, colRightW, 3);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, colRightW);
     if (dLines.length > 0) {
       rightCursor += 16;
       const detPx = Math.round(21 * fs);

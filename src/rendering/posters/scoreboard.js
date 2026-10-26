@@ -122,7 +122,7 @@ export function renderScoreboardPoster(ctx, w, h) {
   const qLines = quoteText ? getWrappedLines(ctx, `“${quoteText}”`, innerW, 3) : [];
   const detPx = Math.round(23 * fs);
   ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-  const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW - 30, 3);
+  const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW - 30);
   const hasReviewBlock = qLines.length > 0 || dLines.length > 0;
   const revBlockH = hasReviewBlock ? qLines.length * (revPx + 10) + dLines.length * (detPx + 8) + 24 : 0;
 

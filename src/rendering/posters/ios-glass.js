@@ -100,7 +100,7 @@ export function renderIosGlassPoster(ctx, w, h) {
     const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, cardW - 100, 5) : [];
     const detPx = Math.round(22 * fs);
     ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, cardW - 110, 5);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, cardW - 110);
     const rH = lines.length * (revPx + 8) + dLines.length * (detPx + 6) + 20;
 
     drawMovableGroup(ctx, 'review', 'Glass Review', { x: cardMargin + 50, y: curY, w: cardW - 100, h: rH }, () => {

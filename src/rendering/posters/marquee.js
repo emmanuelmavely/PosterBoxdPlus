@@ -113,10 +113,10 @@ export function renderMarqueePoster(ctx, w, h) {
     ctx.fillText(getWrappedLines(ctx, topBanner, innerW - 60, 1)[0] || '', w / 2, mqY + 46);
 
     const cleanTitleUpper = String(state.title || '').toUpperCase();
-    const tLayout = computeAdaptiveTitleLayout(ctx, cleanTitleUpper, innerW - 70, Math.round(50 * fs * 1.3), '"Syne", sans-serif', '800', 2);
+     const tLayout = computeAdaptiveTitleLayout(ctx, cleanTitleUpper, innerW - 86, Math.round(46 * fs), '"Syne", sans-serif', '800', 2);
     const mode = state.marqueeTitleMode || (state.marqueeBulbMode ? 'bulb' : 'normal');
 
-    if (mode === 'bulb' && cleanTitleUpper.length <= 28) {
+     if (mode === 'bulb') {
       const startBulbY = tLayout.lines.length === 1 ? (mqY + 152) : (mqY + 116);
       drawBulbLitMarqueeTitle(ctx, tLayout.lines, w / 2, startBulbY, tLayout.fontPx, 8);
     } else if (mode === 'logo' && state.logoImg) {
@@ -187,7 +187,7 @@ export function renderMarqueePoster(ctx, w, h) {
       curY += revPx + 6;
       ctx.fillText(l, w / 2, curY);
     });
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW - 50, 2);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW - 50);
     if (dLines.length > 0 && curY < h - 135) {
       curY += 14;
       const detPx = Math.round(22 * state.fontScale);

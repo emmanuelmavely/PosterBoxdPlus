@@ -44,7 +44,7 @@ export function renderEditorialPoster(ctx, w, h) {
     cursorBottom -= Math.round(28 * state.sectionSpacing);
   }
 
-  const dLines = getDetailedReviewLines(ctx, state.detailedReview, textMaxW, 3);
+  const dLines = getDetailedReviewLines(ctx, state.detailedReview, textMaxW);
   if (dLines.length > 0) {
     const detPx = Math.round(23 * fs);
     const dH = dLines.length * (detPx + 7);

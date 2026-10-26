@@ -50,6 +50,8 @@ export function recordCurrentFetchToHistory() {
     watchedDate: state.watchedDate,
     review: state.review,
     detailedReview: state.detailedReview,
+    detailedReviewCharacterLimit: state.detailedReviewCharacterLimit,
+    detailedReviewCharacterLimits: state.detailedReviewCharacterLimits,
     showDetailedReview: state.showDetailedReview,
     isFromLetterboxd: state.isFromLetterboxd,
     letterboxdUrl: state.letterboxdUrl,

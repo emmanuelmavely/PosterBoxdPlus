@@ -263,7 +263,7 @@ export function renderFloatingTicketPoster(ctx, w, h) {
     const qLines = activeQuote ? getWrappedLines(ctx, `“${activeQuote}”`, quoteMaxW, 2) : [];
     const detPx = Math.round(21 * fs);
     ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, quoteMaxW, 2);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, quoteMaxW);
     const rH = qLines.length * (revPx + 8) + dLines.length * (detPx + 6) + 16;
 
     drawMovableGroup(ctx, 'review', 'Review & Notes', { x: (w - quoteMaxW) / 2, y: botY, w: quoteMaxW, h: rH }, () => {

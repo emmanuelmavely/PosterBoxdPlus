@@ -136,7 +136,7 @@ export function renderVipPassPoster(ctx, w, h) {
     const lines = state.review ? getWrappedLines(ctx, `“${state.review}”`, textMaxW, 5) : [];
     const detPx = Math.round(22 * fs);
     ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, textMaxW, 5);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, textMaxW);
     const rH = lines.length * (revPx + 8) + dLines.length * (detPx + 6) + 20;
 
     drawMovableGroup(ctx, 'review', 'VIP Review Quote', { x: innerPad, y: curY, w: textMaxW, h: rH }, () => {

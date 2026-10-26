@@ -5,12 +5,12 @@ export const CUSTOM_LOGO_SVG_DATA = `data:image/svg+xml;utf8,` + encodeURICompon
   </svg>
 `);
 
-export const APP_VERSION = 'v1.3.4';
-export const RELEASE_DATE = '2026-10-25';
+export const APP_VERSION = 'v1.3.9';
+export const RELEASE_DATE = '2026-10-26';
 export const CURRENT_RELEASE_NOTES = Object.freeze([
-  'The extended-review slider now controls the amount of text rendered on the live poster, not how much you can type.',
-  'The live poster truncates extended reviews at the selected limit and keeps the Letterboxd profile callout visible.',
-  'The “Full review on Letterboxd profile” ending is bold and accent-colored across every design.'
+  'Responsive header, sticky preview, and mobile safe-area spacing now adapt to the available viewport.',
+  'History uses natural page scrolling so long lists no longer create a nested scroll trap.',
+  'Keyboard focus, reduced-motion behavior, and mobile zoom support were improved without changing poster output.'
 ]);
 
 export const ARCHETYPE_NAMES = Object.freeze({
@@ -33,8 +33,31 @@ export const EXTENDED_REVIEW_ARCHETYPES = new Set(['polaroid', 'iosglass', 'vipp
 export const DEFAULT_REVIEW_CHARACTER_LIMIT = 220;
 export const EXTENDED_REVIEW_CHARACTER_LIMIT = 500;
 export const DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT = 500;
-export const MIN_DETAILED_REVIEW_CHARACTER_LIMIT = 220;
-export const MAX_DETAILED_REVIEW_CHARACTER_LIMIT = 2000;
+export const MIN_DETAILED_REVIEW_CHARACTER_LIMIT = 1;
+export const MAX_DETAILED_REVIEW_CHARACTER_LIMIT = 10000;
+
+export const DEFAULT_DETAILED_REVIEW_CHARACTER_LIMITS = Object.freeze({
+  floatingticket: 350,
+  classic: 350,
+  editorial: 350,
+  polaroid: 770,
+  criterion: 450,
+  ticket: 500,
+  iosglass: 500,
+  scoreboard: 500,
+  retro: 500,
+  marquee: 280,
+  vippass: 750,
+  design12: 350
+});
+
+export const DEFAULT_DETAILED_REVIEW_CHARACTER_LIMITS_BY_NUMBER = Object.freeze([
+  350, 350, 350, 770, 450, 500, 500, 500, 500, 280, 750, 350
+]);
+
+export function getDefaultDetailedReviewCharacterLimit(archetype) {
+  return DEFAULT_DETAILED_REVIEW_CHARACTER_LIMITS[archetype] || DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT;
+}
 
 export function getReviewCharacterLimit(archetype) {
   return EXTENDED_REVIEW_ARCHETYPES.has(archetype)

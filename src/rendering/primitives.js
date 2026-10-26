@@ -1,4 +1,5 @@
 import { state } from '../state.js';
+import { MAX_DETAILED_REVIEW_CHARACTER_LIMIT } from '../constants.js';
 import { renderRuntime } from './runtime.js';
 
 export function drawRoundedRectPath(context, x, y, width, height, radius) {
@@ -130,17 +131,17 @@ export function ensureVisibleAccentOnDark(hexColor, fallback = '#00E054') {
   return getHexLuminance(hexColor) < 0.14 ? fallback : hexColor;
 }
 
-export function getDetailedReviewLines(context, text, maxWidth, maxLines = 3) {
+export function getDetailedReviewLines(context, text, maxWidth, maxLines = Infinity) {
   if (!state.showDetailedReview || !text || text === state.review) return [];
   const cleanText = String(text).trim();
   if (!cleanText) return [];
-  const outputLimit = Math.max(1, Math.min(2000, Number(state.detailedReviewCharacterLimit) || 500));
+  const outputLimit = Math.max(1, Math.min(MAX_DETAILED_REVIEW_CHARACTER_LIMIT, Number(state.detailedReviewCharacterLimit) || 500));
   const limitedText = cleanText.slice(0, outputLimit).trim();
   const outputWasLimited = limitedText.length < cleanText.length;
   const words = limitedText.split(/\s+/);
   const lines = [];
   let current = '';
-  const suffix = ' ..... Full review on Letterboxd profile';
+  const suffix = ' ..... more on Letterboxd';
 
   const withSuffix = (line) => {
     let result = line.trim();
@@ -157,7 +158,7 @@ export function getDetailedReviewLines(context, text, maxWidth, maxLines = 3) {
     if (context.measureText(test).width <= maxWidth) {
       current = test;
     } else {
-      if (lines.length === maxLines - 1) {
+        if (lines.length >= maxLines - 1) {
         lines.push(withSuffix(current || word));
         return lines;
       }
@@ -180,27 +181,50 @@ export function getDetailedReviewLines(context, text, maxWidth, maxLines = 3) {
   return lines;
 }
 
+export function drawLetterboxdMark(context, x, centerY, size) {
+  const radius = Math.max(1.5, size * 0.22);
+  const gap = Math.max(1, size * 0.08);
+  const colors = ['#FF8000', '#00E054', '#40BCF4'];
+  colors.forEach((color, index) => {
+    context.beginPath();
+    context.arc(x + radius + index * (radius * 2 + gap), centerY, radius, 0, Math.PI * 2);
+    context.fillStyle = color;
+    context.fill();
+  });
+  return radius * 2 * 3 + gap * 2;
+}
+
 export function drawDetailedReviewLine(context, line, x, y, {
   align = 'left',
   boldFillStyle,
   fillStyle = context.fillStyle
 } = {}) {
   const text = String(line || '');
-  const marker = 'Full review on Letterboxd profile';
-  const markerIndex = text.toLowerCase().indexOf(marker.toLowerCase());
-  if (markerIndex < 0) {
+  const lowerText = text.toLowerCase();
+  const markerCandidates = ['more on letterboxd', 'full review on letterboxd profile'];
+  const marker = markerCandidates
+    .map(candidate => ({ candidate, index: lowerText.indexOf(candidate) }))
+    .filter(item => item.index >= 0)
+    .sort((a, b) => a.index - b.index)[0];
+  if (!marker) {
     context.fillText(text, x, y);
     return;
   }
 
-  const prefix = text.slice(0, markerIndex);
-  const suffix = text.slice(markerIndex);
+  const prefix = text.slice(0, marker.index);
   const regularFont = context.font;
-  const boldFont = regularFont.replace(/^\s*(100|200|300|400|500|600|700|800|900)\b/, '700');
+  const fontSizeMatch = regularFont.match(/(\d+(?:\.\d+)?)px/);
+  const fontSize = fontSizeMatch ? Number(fontSizeMatch[1]) : 20;
+  const ctaFont = `italic 400 ${fontSize}px "Instrument Serif", serif`;
   const prefixWidth = context.measureText(prefix).width;
-  context.font = boldFont;
-  const suffixWidth = context.measureText(suffix).width;
+  context.font = ctaFont;
+  const ctaText = 'more on';
+  const ctaWidth = context.measureText(ctaText).width;
   context.font = regularFont;
+  const markSize = Math.max(8, Math.round(fontSize * 0.72));
+  const markWidth = markSize * 1.1;
+  const markGap = Math.max(5, Math.round(fontSize * 0.28));
+  const suffixWidth = ctaWidth + markGap + markWidth;
 
   let startX = x;
   if (align === 'center') startX -= (prefixWidth + suffixWidth) / 2;
@@ -211,11 +235,13 @@ export function drawDetailedReviewLine(context, line, x, y, {
   context.fillStyle = fillStyle;
   context.font = regularFont;
   context.fillText(prefix, startX, y);
-  context.font = boldFont;
-  context.fillStyle = boldFillStyle || '#00E054';
-  context.shadowColor = 'rgba(0, 224, 84, 0.38)';
-  context.shadowBlur = 5;
-  context.fillText(suffix, startX + prefixWidth, y);
+  context.font = ctaFont;
+  const accent = boldFillStyle || '#00E054';
+  context.fillStyle = accent;
+  context.shadowColor = 'transparent';
+  context.shadowBlur = 0;
+  context.fillText(ctaText, startX + prefixWidth, y);
+  drawLetterboxdMark(context, startX + prefixWidth + ctaWidth + markGap, y - markSize * 0.34, markSize);
   context.restore();
 }
 
@@ -262,7 +288,7 @@ export function computeAdaptiveTitleLayout(context, text, maxWidth, baseFontPx, 
   let fontPx = Math.round(baseFontPx * scaleFactor);
   context.font = `${fontWeight} ${fontPx}px ${fontFamily}`;
   let lines = getWrappedLines(context, cleanText, maxWidth, maxLines);
-  while (fontPx > 24 && lines.some(line => context.measureText(line).width > maxWidth)) {
+  while (fontPx > 14 && (lines.some(line => context.measureText(line).width > maxWidth) || lines.some(line => line.endsWith('…')))) {
     fontPx -= 2;
     context.font = `${fontWeight} ${fontPx}px ${fontFamily}`;
     lines = getWrappedLines(context, cleanText, maxWidth, maxLines);

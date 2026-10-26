@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PosterBoxd — Cinema & TV Review Poster Generator</title>
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png">
@@ -145,8 +145,24 @@
     </div>
   </div>
 
+  <div id="studio-loading-overlay" class="hidden fixed inset-0 z-[90] bg-obsidian/95 backdrop-blur-md items-center justify-center p-6 text-center">
+    <div class="w-full max-w-sm rounded-2xl border border-lbgreen/30 bg-slatepanel/95 p-6 shadow-2xl space-y-4">
+      <div class="mx-auto w-12 h-12 rounded-2xl bg-lbgreen/15 border border-lbgreen/30 flex items-center justify-center text-lbgreen">
+        <i class="fa-solid fa-film text-xl fa-spin-pulse"></i>
+      </div>
+      <div>
+        <p class="text-[10px] font-mono uppercase tracking-widest text-lbgreen font-bold">Poster Studio</p>
+        <h2 class="font-display font-bold text-lg text-white mt-1">Preparing your live poster</h2>
+        <p id="studio-loading-message" class="text-xs text-gray-400 mt-2">Loading artwork, credits & poster studio...</p>
+      </div>
+      <div class="h-1 rounded-full bg-white/10 overflow-hidden">
+        <div class="h-full w-2/3 rounded-full bg-gradient-to-r from-lbgreen via-lbblue to-lbgreen animate-pulse"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- PERSISTENT TOP HEADER (Clean, Non-Overlapping) -->
-  <header class="min-h-16 py-2 bg-slatepanel/95 backdrop-blur-xl border-b border-white/10 px-3 sm:px-6 flex items-center justify-between gap-2 sticky top-0 z-40">
+  <header id="app-header" class="min-h-16 py-2 bg-slatepanel/95 backdrop-blur-xl border-b border-white/10 px-3 sm:px-6 flex items-center justify-between gap-2 sticky top-0 z-40">
     <!-- Custom Filmstrip-P SVG Logo + Brand -->
     <div class="flex items-center gap-2.5 cursor-pointer shrink-0 group" id="brand-home-trigger" title="Go to Search Home">
       <svg class="w-9 h-9 rounded-xl shadow-md transition-transform group-hover:scale-105 shrink-0" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
@@ -155,7 +171,7 @@
       </svg>
       <div class="flex items-center gap-1.5 hidden sm:flex">
         <span class="font-display font-extrabold text-base sm:text-lg tracking-tight text-white">PosterBoxd</span>
-        <button type="button" data-app-version class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-lbgreen/15 text-lbgreen border border-lbgreen/30 font-bold hover:bg-lbgreen/25 transition">v1.3.4</button>
+        <button type="button" data-app-version class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-lbgreen/15 text-lbgreen border border-lbgreen/30 font-bold hover:bg-lbgreen/25 transition">v1.3.9</button>
       </div>
     </div>
 
@@ -173,7 +189,7 @@
       <div id="header-search-results" class="hidden absolute left-0 right-0 top-full mt-2 bg-slatepanel border border-white/15 rounded-2xl shadow-2xl z-50 max-h-72 overflow-y-auto p-1.5 space-y-1 text-left"></div>
     </div>
 
-    <!-- Right Action: Install Button + History Button + TMDB Key Button -->
+    <!-- Right Action: Install Button + History Button -->
     <div class="flex items-center gap-2 shrink-0">
       <button id="install-pwa-btn" type="button" title="Install PosterBoxd App" aria-label="Install PosterBoxd App"
         class="hidden px-2.5 sm:px-3 h-10 rounded-xl bg-cardbg hover:bg-elevated border border-lbgreen/40 hover:border-lbgreen/80 items-center justify-center gap-1.5 text-xs font-semibold text-lbgreen transition shadow-md group">
@@ -186,44 +202,32 @@
         <span class="hidden sm:inline text-xs font-mono">History</span>
         <span id="header-history-count" class="text-[10px] font-mono bg-lbblue/20 text-lbblue px-1.5 py-0.5 rounded-full pointer-events-none">0</span>
       </button>
-      <button id="open-api-modal-btn" type="button" title="Configure TMDB API Key" aria-label="Configure TMDB API Key"
-        class="relative w-10 h-10 rounded-xl bg-cardbg hover:bg-elevated border border-white/15 flex items-center justify-center text-gray-200 hover:text-lbgreen transition shadow-md cursor-pointer group">
-        <svg class="w-4 h-4 text-gray-300 group-hover:text-lbgreen transition pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-        </svg>
-        <span id="api-status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 ring-2 ring-obsidian absolute -top-1 -right-1 pointer-events-none"></span>
-      </button>
     </div>
   </header>
 
-  <!-- TMDB fallback notice; hidden while the hosted edge proxy is available -->
-  <aside id="tmdb-persistent-banner" class="w-full bg-purple-500/10 border-b border-purple-500/20 px-3 sm:px-6 py-2 text-xs text-purple-200/90 flex items-center justify-between gap-2.5 backdrop-blur-sm z-30 transition-all" aria-label="TMDB Configuration Notice">
-    <div class="flex items-center gap-2 min-w-0">
-      <i class="fa-solid fa-flask text-purple-400 shrink-0 text-xs"></i>
-      <span class="truncate"><strong class="text-purple-300 font-semibold">TMDB edge proxy unavailable:</strong> Direct browser search is using the experimental public scraper. Add a personal TMDb key for official API access.</span>
-    </div>
-    <button type="button" id="banner-open-api-btn" class="shrink-0 px-2.5 py-1 rounded-lg bg-purple-400/20 hover:bg-purple-400/30 text-purple-300 font-semibold text-[11px] font-mono border border-purple-400/30 transition hover:scale-105">
-      <i class="fa-solid fa-key text-[10px] mr-1"></i>Add API Key
-    </button>
-  </aside>
 
-  <!-- Desktop context navigation: kept below the header so the home header stays quiet. -->
-  <nav id="breadcrumb-nav" aria-label="Breadcrumb navigation" class="hidden lg:block border-b border-white/5 bg-slatepanel/45">
-    <div class="w-full max-w-7xl mx-auto px-3 sm:px-6 py-2">
-      <div class="flex items-center gap-2 text-[11px] font-mono text-gray-500">
-        <button type="button" id="breadcrumb-home-btn" data-breadcrumb-target="home" class="breadcrumb-item text-gray-300 hover:text-white transition">Home</button>
-        <i class="fa-solid fa-chevron-right text-[9px] text-gray-600" aria-hidden="true"></i>
-        <button type="button" id="breadcrumb-review-btn" data-breadcrumb-target="review" class="breadcrumb-item hover:text-white transition">Review Form</button>
-        <i class="fa-solid fa-chevron-right text-[9px] text-gray-600" aria-hidden="true"></i>
-        <button type="button" id="breadcrumb-design-btn" data-breadcrumb-target="preview" class="breadcrumb-item hover:text-white transition">Poster Studio</button>
-        <i class="fa-solid fa-chevron-right text-[9px] text-gray-600" aria-hidden="true"></i>
-        <button type="button" id="breadcrumb-history-btn" data-breadcrumb-target="history" class="breadcrumb-item hover:text-white transition">History</button>
+  <!-- Persistent desktop tabs with icons. -->
+  <nav id="breadcrumb-nav" aria-label="Primary navigation" class="hidden lg:block sticky top-16 z-30 border-b border-white/5 bg-slatepanel/90 backdrop-blur-xl">
+    <div class="w-full max-w-7xl mx-auto px-3 sm:px-6">
+      <div class="desktop-tab-list flex items-center gap-1 py-1.5 text-[11px] font-mono">
+        <button type="button" id="breadcrumb-home-btn" data-breadcrumb-target="home" class="desktop-tab breadcrumb-item" title="Home">
+          <i class="fa-solid fa-house" aria-hidden="true"></i><span>Home</span>
+        </button>
+        <button type="button" id="breadcrumb-review-btn" data-breadcrumb-target="review" class="desktop-tab breadcrumb-item" title="Review Form">
+          <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i><span>Review Form</span>
+        </button>
+        <button type="button" id="breadcrumb-design-btn" data-breadcrumb-target="preview" class="desktop-tab breadcrumb-item" title="Poster Studio">
+          <i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Poster Studio</span>
+        </button>
+        <button type="button" id="breadcrumb-history-btn" data-breadcrumb-target="history" class="desktop-tab breadcrumb-item" title="History">
+          <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>History</span>
+        </button>
       </div>
     </div>
   </nav>
 
   <!-- VIEW 1: CLEAN GOOGLE-STYLE SEARCH HOME -->
-  <section id="view-home" class="flex-1 flex flex-col items-center justify-center px-4 py-10 max-w-2xl mx-auto w-full text-center">
+  <section id="view-home" class="app-view flex-1 flex flex-col items-center justify-center px-4 py-10 max-w-2xl mx-auto w-full text-center">
     <div class="mb-7 flex flex-col items-center space-y-3">
       <svg class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl shadow-2xl border border-white/10 mb-1" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
         <rect width="1024" height="1024" rx="220" fill="#1C1B1A"/>
@@ -276,7 +280,7 @@
   </section>
 
   <!-- VIEW 2: RATING, VENUE, MEDIUM & REVIEW SHEET -->
-  <section id="view-review" class="hidden flex-1 max-w-xl mx-auto w-full px-4 py-6 space-y-5">
+  <section id="view-review" class="app-view hidden flex-1 max-w-xl mx-auto w-full px-4 py-6 space-y-5">
     <!-- Selected Media Summary Banner -->
     <div class="bg-slatepanel p-3.5 rounded-2xl border border-white/10 flex items-center gap-3.5 shadow-lg">
       <img id="review-media-poster" alt="Poster thumbnail" class="w-14 h-20 object-cover rounded-xl border border-white/10 shrink-0 bg-obsidian" />
@@ -362,7 +366,7 @@
             <span class="text-[11px] font-mono text-lbgreen font-semibold">Show on Poster</span>
           </label>
         </div>
-          <textarea id="input-detailed-review" rows="3" placeholder="Longer thoughts or paragraph review (auto-adds '..... Full review on Letterboxd profile' when long)..."
+          <textarea id="input-detailed-review" rows="3" placeholder="Longer thoughts or paragraph review (auto-adds '..... more on Letterboxd' when long)..."
             class="w-full bg-obsidian border border-white/15 rounded-xl p-3 text-xs sm:text-sm text-gray-100 placeholder-gray-500 focus:outline-none focus:border-lbgreen leading-relaxed"></textarea>
           <div class="flex justify-end">
             <span id="detailed-review-char-count" class="text-[10px] font-mono text-gray-400">0 chars</span>
@@ -431,7 +435,7 @@
 
   <!-- VIEW 3: FINAL PREVIEW STAGE + EXPANDABLE SETTINGS DRAWER -->
   <!-- VIEW 3: FINAL PREVIEW STAGE + EXPANDABLE SETTINGS DRAWER -->
-  <main id="view-preview" class="hidden flex-1 flex flex-col items-center w-full max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-16 lg:pb-8 space-y-4">
+  <main id="view-preview" class="app-view hidden flex-1 flex flex-col items-center w-full max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-16 lg:pb-8 space-y-4">
 
     <!-- Top Stage Bar: Aspect Ratio Pills -->
     <div class="w-full flex items-center justify-between gap-2 bg-slatepanel/90 backdrop-blur px-3.5 py-2 rounded-2xl border border-white/10">
@@ -648,10 +652,14 @@
               <div>
                 <div class="flex justify-between text-xs mb-1">
                    <span class="text-gray-300">Live Poster Review Limit</span>
-                  <span id="val-detailed-review-limit" class="font-mono text-lbgreen">500 chars</span>
+                  <span class="flex items-center gap-1.5">
+                    <input id="input-detailed-review-limit" type="number" min="1" max="10000" step="1" value="500" aria-label="Live poster review character limit"
+                      class="w-20 bg-obsidian border border-lbgreen/30 rounded-md px-1.5 py-0.5 text-right font-mono text-lbgreen focus:outline-none focus:border-lbgreen" />
+                    <span class="font-mono text-lbgreen">chars</span>
+                  </span>
                 </div>
-                <input id="slider-detailed-review-limit" type="range" min="220" max="2000" step="20" value="500" />
-                 <p class="text-[10px] text-gray-500 mt-1">Controls how many characters from Detailed Review / Notes appear on the live poster. It does not limit what you can write here.</p>
+                <input id="slider-detailed-review-limit" type="range" min="1" max="5000" step="10" value="500" />
+                 <p class="text-[10px] text-gray-500 mt-1">Controls how many Detailed Review / Notes characters are rendered on the live poster. Type an exact value above; the slider is a quick control.</p>
               </div>
               <div id="photo-crop-container" class="pt-2 border-t border-white/10 transition-opacity">
                 <div class="flex items-center justify-between text-xs mb-2 font-mono text-gray-300">
@@ -707,7 +715,7 @@
   </main>
 
   <!-- VIEW 4: FETCH & POSTER HISTORY TAB -->
-  <section id="view-history" class="hidden flex-1 max-w-xl mx-auto w-full px-4 py-6 space-y-4">
+  <section id="view-history" class="app-view hidden flex-1 max-w-xl mx-auto w-full px-4 py-6 space-y-4">
     <div class="bg-slatepanel p-5 rounded-2xl border border-white/10 space-y-4 shadow-xl">
       <div class="flex items-center justify-between gap-2 border-b border-white/10 pb-3">
         <div class="flex items-center gap-2.5">
@@ -724,7 +732,7 @@
         </button>
       </div>
 
-      <div id="history-list-container" class="space-y-2.5 max-h-[65dvh] overflow-y-auto pr-1"></div>
+      <div id="history-list-container" class="space-y-2.5"></div>
     </div>
   </section>
 
@@ -733,7 +741,7 @@
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span class="font-display font-semibold text-gray-300">PosterBoxd</span>
-        <button type="button" data-app-version class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-gray-400 hover:text-white hover:bg-white/15 transition">v1.3.4</button>
+        <button type="button" data-app-version class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-gray-400 hover:text-white hover:bg-white/15 transition">v1.3.9</button>
         <span class="text-gray-600">&bull;</span>
         <a href="https://github.com/emmanuelmavely/PosterBoxdPlus" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition font-mono hover:underline inline-flex items-center gap-1">
           <i class="fa-brands fa-github text-xs"></i>
@@ -768,59 +776,6 @@
     </button>
   </nav>
 
-  <!-- TMDB API KEY MODAL -->
-  <div id="api-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="bg-slatepanel border border-white/15 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-lbblue/15 border border-lbblue/30 flex items-center justify-center text-lbblue">
-            <svg class="w-4 h-4 text-lbblue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-            </svg>
-          </div>
-          <div>
-            <h3 class="font-display font-bold text-base text-white">TMDB Connection</h3>
-            <p class="text-xs text-gray-400">The hosted edge proxy is used automatically; a personal key is optional.</p>
-          </div>
-        </div>
-        <button type="button" id="close-api-modal-btn" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <div class="space-y-2">
-        <label for="tmdb-key-input" class="text-xs font-mono uppercase text-gray-300 block">Optional TMDB v3 API Key or v4 Read Token</label>
-        <input id="tmdb-key-input" type="text" autocomplete="off" spellcheck="false" placeholder="Paste or type your TMDB API key..."
-          class="w-full bg-obsidian border border-white/20 rounded-xl px-3.5 py-2.5 text-sm text-white font-mono focus:outline-none focus:border-lbgreen focus:ring-2 focus:ring-lbgreen/20" />
-        <p id="api-modal-feedback" class="text-xs text-gray-400">
-          The app uses the hosted Cloudflare Worker by default, so no key is required in the browser. A personal key is stored locally only if you choose to add one.
-        </p>
-      </div>
-
-      <div class="bg-cardbg p-3 rounded-xl border border-white/10 text-xs text-gray-400 space-y-1">
-        <div class="font-semibold text-white">Want a personal fallback key?</div>
-        <p>Generate a free Developer key at <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" class="text-lbblue hover:underline">themoviedb.org/settings/api</a>. It is not needed when the PosterBoxd edge proxy is online.</p>
-      </div>
-
-      <div class="flex items-center justify-between gap-2 pt-2">
-        <button type="button" id="clear-api-key-btn" class="px-3 py-2 rounded-xl hover:bg-red-500/20 text-xs text-red-400 font-semibold transition">
-          Clear Key
-        </button>
-        <div class="flex items-center gap-2">
-          <button type="button" id="cancel-api-modal-btn" class="px-4 py-2 rounded-xl bg-cardbg hover:bg-elevated text-xs text-gray-200 font-semibold">
-            Close
-          </button>
-          <button type="button" id="save-api-key-btn" class="px-4 py-2 rounded-xl bg-lbgreen hover:bg-[#1ed760] text-obsidian font-bold text-xs flex items-center gap-1.5">
-            <i class="fa-solid fa-check"></i>
-            <span>Verify & Save</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- WHAT'S NEW MENU -->
   <div id="whats-new-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-slatepanel border border-lbgreen/35 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
@@ -831,8 +786,8 @@
           </div>
           <div>
             <p class="text-[10px] font-mono uppercase tracking-widest text-lbgreen font-bold">Current release</p>
-            <h3 class="font-display font-bold text-lg text-white">What’s New in <span id="whats-new-version">v1.3.4</span></h3>
-            <p class="text-[11px] font-mono text-gray-400">Released <span id="whats-new-date">2026-10-25</span></p>
+            <h3 class="font-display font-bold text-lg text-white">What’s New in <span id="whats-new-version">v1.3.9</span></h3>
+            <p class="text-[11px] font-mono text-gray-400">Released <span id="whats-new-date">2026-10-26</span></p>
           </div>
         </div>
         <button type="button" id="close-whats-new-btn" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition" aria-label="Close What's New">
@@ -868,46 +823,6 @@
       <button id="pwa-dismiss-update-btn" type="button" title="Dismiss" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
         <i class="fa-solid fa-xmark text-xs"></i>
       </button>
-    </div>
-  </div>
-
-  <!-- POPUP WARNING: PROCEEDING WITH LETTERBOXD FIND WITHOUT TMDB API KEY -->
-  <div id="tmdb-lb-warning-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md items-center justify-center p-4">
-    <div class="bg-slatepanel border border-amber-500/30 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 text-left animate-in fade-in zoom-in-95 duration-150">
-      <div class="flex items-start gap-3">
-        <div class="w-10 h-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center shrink-0 text-amber-400 text-lg">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-        </div>
-        <div class="flex-1 min-w-0">
-          <h3 class="font-display font-bold text-base text-white">TMDb API Key Not Configured</h3>
-          <p class="text-xs text-amber-300/80 font-mono mt-0.5">Proceeding with Letterboxd find</p>
-        </div>
-        <button type="button" id="close-lb-warning-modal-btn" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition">
-          <i class="fa-solid fa-xmark text-sm"></i>
-        </button>
-      </div>
-
-      <p class="text-xs text-gray-300 leading-relaxed">
-        Without a free TMDb API key, PosterBoxd can only import the basic review text, rating, and Letterboxd poster thumbnail.
-        <strong>Official cinema title logos, high-resolution backdrops, and cast/crew metadata will not be loaded</strong> and will be left completely empty.
-      </p>
-
-      <div class="bg-cardbg p-3 rounded-xl border border-white/10 text-xs text-gray-400 space-y-1">
-        <div class="font-semibold text-gray-200 flex items-center gap-1.5">
-          <i class="fa-solid fa-circle-info text-lbblue"></i> Want full studio artwork & credits?
-        </div>
-        <p>A free TMDb key takes 30 seconds to generate and unlocks high-res artwork, vector logos, and full credits.</p>
-      </div>
-
-      <div class="flex items-center justify-end gap-2 pt-2">
-        <button type="button" id="lb-warning-proceed-btn" class="px-4 py-2 rounded-xl bg-cardbg hover:bg-elevated border border-white/10 text-xs text-gray-300 hover:text-white font-semibold transition">
-          Proceed Without Key
-        </button>
-        <button type="button" id="lb-warning-add-key-btn" class="px-4 py-2 rounded-xl bg-lbgreen hover:bg-[#1ed760] text-obsidian font-bold text-xs flex items-center gap-1.5 transition">
-          <i class="fa-solid fa-key"></i>
-          <span>Add TMDb Key</span>
-        </button>
-      </div>
     </div>
   </div>
 

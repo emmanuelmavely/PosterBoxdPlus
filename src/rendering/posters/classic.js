@@ -106,7 +106,7 @@ export function renderClassicPoster(ctx, w, h) {
     const rLines = state.review ? getWrappedLines(ctx, `“${state.review}”`, maxW - 20, 3) : [];
     const detPx = Math.round(23 * fs);
     ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
-    const dLines = getDetailedReviewLines(ctx, state.detailedReview, maxW - 30, 3);
+    const dLines = getDetailedReviewLines(ctx, state.detailedReview, maxW - 30);
     const totalRevH = rLines.length * (revPx + 8) + (dLines.length ? dLines.length * (detPx + 7) + 22 : 0);
 
     drawMovableGroup(ctx, 'review', 'Review & Notes', { x: pad, y: curY, w: maxW, h: totalRevH }, () => {

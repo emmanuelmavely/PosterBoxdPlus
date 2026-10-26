@@ -1,15 +1,41 @@
 import { state } from '../state.js';
-import { tmdbFetch, hasTmdbAccess } from '../services/tmdb.js';
+import { tmdbFetch } from '../services/tmdb.js';
 import { fetchLetterboxdReview } from '../services/letterboxd.js';
-import { loadDemoPreset, loadTmdbMediaDetails, loadPublicMediaDetails } from '../controllers/media.js';
+import { loadDemoPreset, loadTmdbMediaDetails } from '../controllers/media.js';
 import { applyLetterboxdReviewData } from '../controllers/letterboxd-import.js';
-import { searchPublicTmdb } from '../services/tmdb-public-search.js';
-import { openApiModal } from './api-modal.js';
 
-function promptLetterboxdProceedWithoutTmdb(onProceed) {
-  // Non-API mode automatically matches and enriches Letterboxd reviews without an API key,
-  // so we proceed directly without a blocking warning modal.
-  onProceed();
+function setStudioLoading(visible, message = 'Loading artwork, credits & poster studio...') {
+  const overlay = document.getElementById('studio-loading-overlay');
+  const messageEl = document.getElementById('studio-loading-message');
+  if (!overlay) return;
+  if (messageEl) messageEl.textContent = message;
+  overlay.classList.toggle('hidden', !visible);
+  overlay.classList.toggle('flex', visible);
+}
+
+async function resolvePosterPreview(reviewData) {
+  if (reviewData?.posterImg && !reviewData.posterImg.includes('empty-poster')) return reviewData.posterImg;
+  if (!reviewData?.movieTitle) return '';
+  try {
+    const response = await tmdbFetch('/search/movie', {
+      query: reviewData.movieTitle,
+      year: String(reviewData.releaseYear || '').slice(0, 4)
+    });
+    const hit = response.results?.[0];
+    return hit?.poster_path ? `https://image.tmdb.org/t/p/w185${hit.poster_path}` : '';
+  } catch (error) { return ''; }
+}
+
+async function openLoadedPosterStudio(loadTask) {
+  setStudioLoading(true);
+  try {
+    const result = await loadTask();
+    if (result !== false && result?.ok !== false) {
+      document.getElementById('proceed-to-preview-btn')?.click();
+    }
+  } finally {
+    setStudioLoading(false);
+  }
 }
 
 export function initSearch() {
@@ -35,8 +61,8 @@ export function initSearch() {
           const mYear = parsedJson.movie?.year || parsedJson.releaseYear || '';
           const mUser = parsedJson.reviewer?.name || parsedJson.reviewer || 'user';
           const mRating = parsedJson.review?.ratingStars || parsedJson.rating || '';
-          const mText = (parsedJson.review?.paragraphs?.[0] || parsedJson.review || 'Letterboxd review import').substring(0, 110);
-          const mPoster = parsedJson.movie?.posterUrl || parsedJson.posterImg || '';
+           const mText = (parsedJson.review?.paragraphs?.[0] || parsedJson.review || 'Letterboxd review import').substring(0, 110);
+           const mPoster = parsedJson.movie?.posterUrl || parsedJson.posterImg || '';
 
           resultsEl.classList.remove('hidden');
           resultsEl.innerHTML = `
@@ -63,11 +89,9 @@ export function initSearch() {
               </button>
             </div>
           `;
-          document.getElementById('select-lb-json-hit')?.addEventListener('click', () => {
+          document.getElementById('select-lb-json-hit')?.addEventListener('click', async () => {
             resultsEl.classList.add('hidden');
-            promptLetterboxdProceedWithoutTmdb(async () => {
-              await applyLetterboxdReviewData(parsedJson);
-            });
+             await applyLetterboxdReviewData(parsedJson);
           });
           return;
         }
@@ -122,7 +146,7 @@ export function initSearch() {
         const excerpt = (reviewData.reviewLines && reviewData.reviewLines.length > 0)
           ? reviewData.reviewLines[0].substring(0, 110)
           : (reviewData.review ? reviewData.review.substring(0, 110) : 'Tap to import review & generate poster');
-        const posterSrc = reviewData.posterImg && !reviewData.posterImg.includes('empty-poster') ? reviewData.posterImg : '';
+         const posterSrc = await resolvePosterPreview(reviewData);
 
         resultsEl.innerHTML = `
           <div class="p-1 space-y-1">
@@ -149,11 +173,9 @@ export function initSearch() {
           </div>
         `;
 
-        document.getElementById('select-lb-review-hit')?.addEventListener('click', () => {
+        document.getElementById('select-lb-review-hit')?.addEventListener('click', async () => {
           resultsEl.classList.add('hidden');
-          promptLetterboxdProceedWithoutTmdb(async () => {
-            await applyLetterboxdReviewData(reviewData);
-          });
+          await openLoadedPosterStudio(() => applyLetterboxdReviewData(reviewData));
         });
         return;
       } else {
@@ -162,79 +184,7 @@ export function initSearch() {
       }
     }
 
-    // 3. TMDB Search (Hosted edge proxy or personal API key, otherwise public scraper)
-    if (!hasTmdbAccess()) {
-      resultsEl.classList.remove('hidden');
-      resultsEl.innerHTML = `
-        <div class="text-xs font-mono text-purple-300 py-3 text-center flex items-center justify-center gap-2">
-          <i class="fa-solid fa-flask fa-spin text-purple-400"></i>
-          <span>Searching TMDB (No-API mode)...</span>
-        </div>
-      `;
-
-      try {
-        const response = await searchPublicTmdb(q);
-        const results = (response.results || []).slice(0, 8);
-
-        if (results.length === 0) {
-          resultsEl.innerHTML = `
-            <div class="p-3 text-center space-y-1 text-gray-400 text-xs font-mono">
-              <div>No titles found for "${q}".</div>
-              <div class="text-[10px] text-gray-500">Try a different spelling or check proxy connection.</div>
-            </div>
-          `;
-          return;
-        }
-
-        resultsEl.innerHTML = `
-          <div class="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-purple-300/90 flex items-center justify-between border-b border-white/10 mb-1">
-            <span class="flex items-center gap-1.5"><i class="fa-solid fa-flask text-purple-400 text-[10px]"></i> No-API Search Matches</span>
-            <span class="text-[9px] text-gray-400 font-mono">${results.length} found</span>
-          </div>
-          ${results.map((item, index) => {
-            const title = item.title || item.name || 'Untitled';
-            const year = item.release_year || (item.release_date || item.first_air_date || '').substring(0, 4) || '—';
-            const poster = item.poster_url || (item.poster_path ? `https://image.tmdb.org/t/p/w185${item.poster_path}` : '');
-            return `
-              <button type="button" data-public-index="${index}"
-                class="w-full flex items-center gap-3 p-2 rounded-xl hover:bg-elevated text-left transition group">
-                ${poster ? `<img src="${poster}" class="w-9 h-13 object-cover rounded shrink-0 shadow" />` : `<div class="w-9 h-13 bg-obsidian border border-white/10 rounded flex items-center justify-center shrink-0 text-gray-500 text-[10px]">No Art</div>`}
-                <div class="flex-1 min-w-0">
-                  <div class="text-xs font-bold text-white truncate flex items-center gap-1.5">
-                    <span class="truncate">${title}</span>
-                    <span class="text-gray-400 font-mono text-[11px] font-normal">(${year})</span>
-                    <span class="text-[9px] font-mono px-1 py-0.2 rounded bg-purple-500/15 text-purple-300 font-semibold uppercase shrink-0">${item.media_type === 'tv' ? 'TV' : 'Movie'}</span>
-                  </div>
-                  <div class="text-[11px] text-gray-400 truncate mt-0.5">${item.overview || 'Tap to load into Poster Studio'}</div>
-                </div>
-              </button>
-            `;
-          }).join('')}
-        `;
-
-        resultsEl.querySelectorAll('[data-public-index]').forEach(btn => {
-          btn.addEventListener('click', async () => {
-            resultsEl.classList.add('hidden');
-            const item = results[Number(btn.dataset.publicIndex)];
-            if (item) {
-              await loadPublicMediaDetails(item);
-            }
-          });
-        });
-      } catch (err) {
-        resultsEl.innerHTML = `
-          <div class="p-3 text-center space-y-2">
-            <div class="text-xs text-red-400">Search error: ${err.message}</div>
-            <button type="button" id="public-search-open-api-btn" class="px-3 py-1.5 rounded-lg bg-lbgreen text-obsidian font-bold text-xs">
-              Add TMDb API Key
-            </button>
-          </div>
-        `;
-        document.getElementById('public-search-open-api-btn')?.addEventListener('click', openApiModal);
-      }
-      return;
-    }
-
+    // 3. TMDB Search through the hosted edge proxy.
     resultsEl.classList.remove('hidden');
     resultsEl.innerHTML = `<div class="text-xs font-mono text-gray-400 py-3 text-center"><i class="fa-solid fa-circle-notch fa-spin mr-1.5 text-lbgreen"></i>Searching TMDB...</div>`;
 
@@ -272,7 +222,7 @@ export function initSearch() {
       resultsEl.querySelectorAll('[data-sel-id]').forEach(btn => {
         btn.addEventListener('click', async () => {
           resultsEl.classList.add('hidden');
-          await loadTmdbMediaDetails(btn.dataset.selId, btn.dataset.selType);
+           await loadTmdbMediaDetails(btn.dataset.selId, btn.dataset.selType);
         });
       });
     } catch (err) {

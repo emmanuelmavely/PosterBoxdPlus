@@ -3,19 +3,38 @@ import {
   ARCHETYPE_NAMES,
   ARCHETYPE_KEYS,
   DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT,
+  getDefaultDetailedReviewCharacterLimit,
   getReviewCharacterLimit,
-  MAX_DETAILED_REVIEW_CHARACTER_LIMIT,
-  MIN_DETAILED_REVIEW_CHARACTER_LIMIT
+  MAX_DETAILED_REVIEW_CHARACTER_LIMIT
 } from '../constants.js';
 import { scheduleCanvasRender } from '../rendering/canvas-renderer.js';
 import { recordCurrentFetchToHistory } from '../services/storage.js';
 import { showToast } from './toast.js';
 
 const MOVIE_ONLY_ARCHETYPES = new Set(['ticket', 'marquee']);
+const DETAILED_REVIEW_LIMITS_STORAGE_KEY = 'posterboxd_detailed_review_limits_v2';
+
+function clampDetailedReviewLimit(value, archetype = state.archetype) {
+  const fallback = getDefaultDetailedReviewCharacterLimit(archetype) || DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT;
+  return Math.min(
+    MAX_DETAILED_REVIEW_CHARACTER_LIMIT,
+    Math.max(1, Number(value) || fallback)
+  );
+}
+
+function getDetailedReviewLimitForArchetype(archetype) {
+  const saved = state.detailedReviewCharacterLimits?.[archetype];
+  return clampDetailedReviewLimit(saved || getDefaultDetailedReviewCharacterLimit(archetype), archetype);
+}
+
+function persistDetailedReviewLimits() {
+  localStorage.setItem(DETAILED_REVIEW_LIMITS_STORAGE_KEY, JSON.stringify(state.detailedReviewCharacterLimits || {}));
+}
 
 export function syncArchetypeUI() {
   const isTv = state.mediaType === 'tv';
   if (isTv && MOVIE_ONLY_ARCHETYPES.has(state.archetype)) state.archetype = 'classic';
+  state.detailedReviewCharacterLimit = getDetailedReviewLimitForArchetype(state.archetype);
 
   document.querySelectorAll('.arch-select-btn').forEach((button) => {
     const hidden = isTv && button.dataset.movieOnly === 'true';
@@ -121,7 +140,6 @@ export function syncDesignControlsUI() {
     ['slider-blur', 'val-blur', state.backdropBlur, (value) => `${value}px`],
     ['slider-poster-scale', 'val-poster-scale', state.posterScale, (value) => `${value.toFixed(2)}x`],
     ['slider-font-scale', 'val-font-scale', state.fontScale, (value) => `${value.toFixed(2)}x`],
-    ['slider-detailed-review-limit', 'val-detailed-review-limit', state.detailedReviewCharacterLimit, (value) => `${value} chars`],
     ['slider-poster-offset-x', 'val-poster-offset-x', state.posterOffsetX, (value) => `${value > 0 ? `+${value}` : value}%`],
     ['slider-poster-offset-y', 'val-poster-offset-y', state.posterOffsetY, (value) => `${value > 0 ? `+${value}` : value}%`]
   ];
@@ -131,6 +149,8 @@ export function syncDesignControlsUI() {
     if (slider) slider.value = value;
     if (label) label.textContent = formatValue(Number(value));
   });
+  const detailedReviewLimitInput = document.getElementById('input-detailed-review-limit');
+  if (detailedReviewLimitInput) detailedReviewLimitInput.value = state.detailedReviewCharacterLimit;
 
   const checkboxState = [
     ['chk-gradient', state.gradientOverlay],
@@ -202,17 +222,26 @@ export function initDesignControls() {
   bindSlider('slider-poster-scale', 'val-poster-scale', 'posterScale', (value) => `${value.toFixed(2)}x`);
   bindSlider('slider-font-scale', 'val-font-scale', 'fontScale', (value) => `${value.toFixed(2)}x`);
   const detailedReviewLimitSlider = document.getElementById('slider-detailed-review-limit');
-  const detailedReviewLimitValue = document.getElementById('val-detailed-review-limit');
-  detailedReviewLimitSlider?.addEventListener('input', () => {
-    const number = Math.min(MAX_DETAILED_REVIEW_CHARACTER_LIMIT, Math.max(MIN_DETAILED_REVIEW_CHARACTER_LIMIT, parseInt(detailedReviewLimitSlider.value, 10)));
+  const detailedReviewLimitInput = document.getElementById('input-detailed-review-limit');
+  const setDetailedReviewOutputLimit = (rawValue) => {
+    const number = Math.min(MAX_DETAILED_REVIEW_CHARACTER_LIMIT, Math.max(1, parseInt(rawValue, 10) || DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT));
     state.detailedReviewCharacterLimit = number;
-    localStorage.setItem('posterboxd_detailed_review_limit', String(number));
-    if (detailedReviewLimitValue) detailedReviewLimitValue.textContent = `${number} chars`;
+    state.detailedReviewCharacterLimits = {
+      ...(state.detailedReviewCharacterLimits || {}),
+      [state.archetype]: number
+    };
+    persistDetailedReviewLimits();
+    if (detailedReviewLimitSlider) detailedReviewLimitSlider.value = Math.min(5000, number);
+    if (detailedReviewLimitInput) detailedReviewLimitInput.value = number;
     const detailedReviewCount = document.getElementById('detailed-review-char-count');
     if (detailedReviewCount) detailedReviewCount.textContent = `${(state.detailedReview || '').length} chars`;
     scheduleCanvasRender();
     recordCurrentFetchToHistory();
+  };
+  detailedReviewLimitSlider?.addEventListener('input', () => {
+    setDetailedReviewOutputLimit(detailedReviewLimitSlider.value);
   });
+  detailedReviewLimitInput?.addEventListener('change', () => setDetailedReviewOutputLimit(detailedReviewLimitInput.value));
   bindSlider('slider-poster-offset-x', 'val-poster-offset-x', 'posterOffsetX', (value) => `${value > 0 ? `+${value}` : value}%`);
   bindSlider('slider-poster-offset-y', 'val-poster-offset-y', 'posterOffsetY', (value) => `${value > 0 ? `+${value}` : value}%`);
 
@@ -292,7 +321,8 @@ export function initDesignControls() {
     state.backdropBlur = 14;
     state.posterScale = 1.0;
     state.fontScale = 1.0;
-    state.detailedReviewCharacterLimit = DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT;
+    state.detailedReviewCharacterLimits = {};
+    state.detailedReviewCharacterLimit = getDefaultDetailedReviewCharacterLimit(state.archetype);
     state.posterOffsetX = 0;
     state.posterOffsetY = 0;
 
@@ -317,10 +347,10 @@ export function initDesignControls() {
     if (fontScaleValue) fontScaleValue.textContent = '1.00x';
 
     const detailedReviewLimitSlider = document.getElementById('slider-detailed-review-limit');
-    const detailedReviewLimitValue = document.getElementById('val-detailed-review-limit');
-    if (detailedReviewLimitSlider) detailedReviewLimitSlider.value = DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT;
-    if (detailedReviewLimitValue) detailedReviewLimitValue.textContent = `${DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT} chars`;
-    localStorage.setItem('posterboxd_detailed_review_limit', String(DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT));
+    const defaultDetailedReviewLimit = getDefaultDetailedReviewCharacterLimit(state.archetype);
+    if (detailedReviewLimitSlider) detailedReviewLimitSlider.value = defaultDetailedReviewLimit;
+    if (detailedReviewLimitInput) detailedReviewLimitInput.value = defaultDetailedReviewLimit;
+    persistDetailedReviewLimits();
     const detailedReviewCount = document.getElementById('detailed-review-char-count');
     if (detailedReviewCount) detailedReviewCount.textContent = `${(state.detailedReview || '').length} chars`;
 
