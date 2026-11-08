@@ -21,11 +21,12 @@ export function renderScoreboardPoster(ctx, w, h) {
 
   const pad = 76;
   const innerW = w - pad * 2;
+  const isStory = h === 1920;
   const fs = Math.min(1.2, state.fontScale) * (h < 1500 ? 0.88 : 1.0);
 
   const thumbW = 220;
   const thumbH = 330;
-  const topY = 96;
+  const topY = isStory ? 160 : 96;
 
   drawMovableGroup(ctx, 'artwork', 'Poster Thumbnail', { x: pad, y: topY, w: thumbW, h: thumbH }, () => {
     if (state.posterImg) {
@@ -148,16 +149,16 @@ export function renderScoreboardPoster(ctx, w, h) {
     });
   }
 
-  const bottomSpecY = h - 140;
+  const bottomSpecY = isStory ? 1680 : (h - 140);
   if (quoteY + revBlockH < bottomSpecY - 30) {
     drawPaletteBar(ctx, w / 2, bottomSpecY, 340, 14, false, false);
   }
 
   if (state.showQrCode) {
-    drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: w - pad - 112, y: h - 196, w: 112, h: 112 }, () => {
-      drawPosterQrCode(ctx, w - pad - 112, h - 196, 112, false);
+    drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: w - pad - 112, y: isStory ? 1620 : (h - 196), w: 112, h: 112 }, () => {
+      drawPosterQrCode(ctx, w - pad - 112, isStory ? 1620 : (h - 196), 112, false);
     });
   }
 
-  drawFooterBrand(ctx, w / 2, h - 28, false);
+  drawFooterBrand(ctx, w / 2, isStory ? 1755 : h - 28, false);
 }

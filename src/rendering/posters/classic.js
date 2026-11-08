@@ -20,11 +20,12 @@ export function renderClassicPoster(ctx, w, h) {
   drawProcessedBackdrop(ctx, w, h, bgImg);
 
   const isCompact = h < 1500;
+  const isStory = h === 1920;
   const clampedArtScale = Math.min(1.18, Math.max(0.65, state.posterScale));
-  const posterH = Math.round((isCompact ? h * 0.38 : h * 0.43) * clampedArtScale);
+  const posterH = Math.round((isCompact ? h * 0.38 : (isStory ? 710 : h * 0.43)) * clampedArtScale);
   const posterW = Math.round(posterH * (2 / 3));
   const posterX = Math.round((w - posterW) / 2);
-  const posterY = Math.round(isCompact ? h * 0.05 : h * 0.065);
+  const posterY = Math.round(isCompact ? h * 0.05 : (isStory ? 165 : h * 0.065));
 
   drawMovableGroup(ctx, 'artwork', 'Poster Artwork', { x: posterX, y: posterY, w: posterW, h: posterH }, () => {
     if (state.posterImg) {
@@ -134,7 +135,7 @@ export function renderClassicPoster(ctx, w, h) {
     curY += totalRevH + Math.round(gap * 0.85);
   }
 
-  if (state.cast && curY < h - 220) {
+  if (state.cast && curY < (isStory ? 1640 : h - 220)) {
     const castPx = Math.round(22 * fs);
     drawMovableGroup(ctx, 'cast', 'Starring Cast', { x: pad, y: curY, w: maxW, h: castPx + 14 }, () => {
       ctx.font = `500 ${castPx}px "Plus Jakarta Sans", sans-serif`;
@@ -145,14 +146,14 @@ export function renderClassicPoster(ctx, w, h) {
     curY += castPx + Math.round(gap * 0.85);
   }
 
-  if (curY < h - 140) {
+  if (curY < (isStory ? 1680 : h - 140)) {
     drawPaletteBar(ctx, cx, curY, 360, 16, false, false);
   }
 
   if (state.showQrCode) {
-    drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: w - 168, y: h - 178, w: 108, h: 108 }, () => {
-      drawPosterQrCode(ctx, w - 168, h - 178, 108, false);
+    drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: w - 168, y: isStory ? 1630 : h - 178, w: 108, h: 108 }, () => {
+      drawPosterQrCode(ctx, w - 168, isStory ? 1630 : h - 178, 108, false);
     });
   }
-  drawFooterBrand(ctx, w / 2, h - 28, false);
+  drawFooterBrand(ctx, w / 2, isStory ? 1755 : h - 28, false);
 }

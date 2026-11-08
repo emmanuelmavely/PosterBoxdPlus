@@ -21,12 +21,13 @@ export function renderCriterionPoster(ctx, w, h) {
   const accentColor = ensureVisibleAccentOnDark(state.palette[0], '#00E054');
   const pad = 72;
   const innerW = w - pad * 2;
+  const isStory = h === 1920;
   const fs = Math.min(1.2, state.fontScale) * (h < 1500 ? 0.88 : 1.0);
 
   ctx.fillStyle = accentColor;
   ctx.fillRect(0, 0, w, 18);
 
-  let topY = 74;
+  let topY = isStory ? 165 : 74;
   ctx.font = '700 21px "JetBrains Mono", monospace';
   ctx.fillStyle = '#E5E7EB';
   ctx.textAlign = 'left';
@@ -153,11 +154,11 @@ export function renderCriterionPoster(ctx, w, h) {
   if (state.showQrCode) {
     const qrSize = 118;
     const qrX = Math.round(w / 2 - qrSize / 2);
-    const qrY = h - 220;
+    const qrY = isStory ? 1630 : (h - 220);
     drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: qrX, y: qrY, w: qrSize, h: qrSize }, () => {
       drawPosterQrCode(ctx, qrX, qrY, qrSize, false);
     });
   }
 
-  drawFooterBrand(ctx, w / 2, h - 28, false);
+  drawFooterBrand(ctx, w / 2, isStory ? 1755 : h - 28, false);
 }

@@ -97,6 +97,7 @@ export const state = {
   sectionSpacing: 1.0,
   footerScale: 1.0,
   isInteractiveEdit: false,
+  showSafeZoneGuide: false,
   selectedElementId: null,
   elementTransformsByArchetype: getStoredJson('posterboxd_transforms_v3', {}),
   hitBoxes: []

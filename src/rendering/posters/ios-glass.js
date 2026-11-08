@@ -17,14 +17,16 @@ export function renderIosGlassPoster(ctx, w, h) {
   const bgImg = state.backdropImg || state.posterImg;
   drawProcessedBackdrop(ctx, w, h, bgImg, Math.max(22, state.backdropBlur), Math.min(80, state.backdropBrightness + 10));
 
+  const isStory = h === 1920;
   const cardMargin = 68;
+  const cardMarginTop = isStory ? 160 : cardMargin;
   const cardW = w - cardMargin * 2;
-  const cardH = h - cardMargin * 2 - 84;
+  const cardH = isStory ? 1540 : (h - cardMargin * 2 - 84);
   const cx = w / 2;
 
   ctx.save();
-  drawRoundedRectPath(ctx, cardMargin, cardMargin, cardW, cardH, 48);
-  const glassGrad = ctx.createLinearGradient(cardMargin, cardMargin, cardW + cardMargin, cardH + cardMargin);
+  drawRoundedRectPath(ctx, cardMargin, cardMarginTop, cardW, cardH, 48);
+  const glassGrad = ctx.createLinearGradient(cardMargin, cardMarginTop, cardW + cardMargin, cardH + cardMarginTop);
   glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.20)');
   glassGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.09)');
   glassGrad.addColorStop(1, 'rgba(20, 22, 30, 0.52)');
@@ -38,7 +40,7 @@ export function renderIosGlassPoster(ctx, w, h) {
   ctx.stroke();
   ctx.restore();
 
-  const pillY = cardMargin + 38;
+  const pillY = cardMarginTop + 38;
   ctx.save();
   drawRoundedRectPath(ctx, cx - 190, pillY, 380, 44, 22);
   ctx.fillStyle = 'rgba(0, 0, 0, 0.38)';
@@ -125,7 +127,7 @@ export function renderIosGlassPoster(ctx, w, h) {
   }
 
   // Bottom Glass Metadata & Palette Dock
-  const dockY = cardMargin + cardH - 74;
+  const dockY = cardMarginTop + cardH - 74;
   drawPaletteBar(ctx, cx, dockY, 320, 12, false, false);
   if (state.cast || state.genre) {
     ctx.font = `500 ${Math.round(20 * fs)}px "Plus Jakarta Sans", sans-serif`;
@@ -135,5 +137,5 @@ export function renderIosGlassPoster(ctx, w, h) {
     ctx.fillText(getWrappedLines(ctx, bottomSpec, cardW - 120, 1)[0] || '', cx, dockY + 38);
   }
 
-  drawFooterBrand(ctx, cx, h - 26, false);
+  drawFooterBrand(ctx, cx, isStory ? 1755 : h - 26, false);
 }

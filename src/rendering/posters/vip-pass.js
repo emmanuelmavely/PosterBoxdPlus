@@ -20,9 +20,10 @@ export function renderVipPassPoster(ctx, w, h) {
   const mainBackdrop = state.backdropImg || state.posterImg;
   drawProcessedBackdrop(ctx, w, h, mainBackdrop, Math.max(12, state.backdropBlur - 4), Math.min(55, state.backdropBrightness));
 
+  const isStory = h === 1920;
   const passW = w - 150;
-  const passH = h - 210;
-  const px = 75, py = 72;
+  const passH = isStory ? 1540 : (h - 210);
+  const px = 75, py = isStory ? 160 : 72;
   const cx = w / 2;
 
   const rawAccent = state.palette[0] || '#00E054';
@@ -190,5 +191,5 @@ export function renderVipPassPoster(ctx, w, h) {
     ctx.fillText(`DATE: ${dateVal}`, px + passW - 48, metaY + 8);
   }
 
-  drawFooterBrand(ctx, w / 2, h - 22, false);
+  drawFooterBrand(ctx, w / 2, isStory ? 1755 : h - 22, false);
 }

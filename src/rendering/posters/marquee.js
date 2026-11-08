@@ -59,9 +59,10 @@ export function renderMarqueePoster(ctx, w, h) {
   const pad = 64;
   const innerW = w - pad * 2;
   const marqueeBaseFs = state.fontScale * 1.3 * (h < 1500 ? 0.88 : 1.0);
+  const isStory = h === 1920;
   const fs = Math.min(1.55, marqueeBaseFs);
 
-  const mqY = 60;
+  const mqY = isStory ? 160 : 60;
   const mqH = 290;
   const boxArtImg = state.backdropImg || state.posterImg;
 
@@ -151,7 +152,7 @@ export function renderMarqueePoster(ctx, w, h) {
   });
 
   const artY = mqY + mqH + 38;
-  const artH = Math.round((h < 1500 ? h * 0.40 : h * 0.44) * Math.min(1.08, state.posterScale));
+  const artH = Math.round((h < 1500 ? h * 0.40 : (isStory ? 700 : h * 0.44)) * Math.min(1.08, state.posterScale));
   const artW = Math.round(artH * (2 / 3));
   const artX = Math.round((w - artW) / 2);
   const artImg = state.posterImg || state.backdropImg;
@@ -188,13 +189,13 @@ export function renderMarqueePoster(ctx, w, h) {
       ctx.fillText(l, w / 2, curY);
     });
     const dLines = getDetailedReviewLines(ctx, state.detailedReview, innerW - 50);
-    if (dLines.length > 0 && curY < h - 135) {
+    if (dLines.length > 0 && curY < (isStory ? 1680 : h - 135)) {
       curY += 14;
       const detPx = Math.round(22 * state.fontScale);
       ctx.font = `400 ${detPx}px "Plus Jakarta Sans", sans-serif`;
       ctx.fillStyle = '#D1D5DB';
       dLines.forEach((dl) => {
-        if (curY + detPx < h - 105) {
+        if (curY + detPx < (isStory ? 1715 : h - 105)) {
           curY += detPx + 6;
           drawDetailedReviewLine(ctx, dl, w / 2, curY, { align: 'center' });
         }
@@ -202,5 +203,5 @@ export function renderMarqueePoster(ctx, w, h) {
     }
   }
 
-  drawFooterBrand(ctx, w / 2, h - 26, false);
+  drawFooterBrand(ctx, w / 2, isStory ? 1755 : h - 26, false);
 }

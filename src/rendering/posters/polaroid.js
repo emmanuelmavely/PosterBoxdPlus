@@ -20,21 +20,23 @@ export function renderPolaroidPoster(ctx, w, h) {
 
   const pad = 68;
   const isCompact = h < 1500;
+  const isStory = h === 1920;
+  const topPad = isStory ? 160 : pad;
   const artW = w - pad * 2;
-  const artH = Math.round((isCompact ? h * 0.46 : h * 0.50) * Math.min(1.08, state.posterScale));
+  const artH = Math.round((isCompact ? h * 0.46 : (isStory ? 730 : h * 0.50)) * Math.min(1.08, state.posterScale));
   const artImg = state.posterImg || state.backdropImg;
 
-  drawMovableGroup(ctx, 'artwork', 'Polaroid Artwork', { x: pad, y: pad, w: artW, h: artH }, () => {
+  drawMovableGroup(ctx, 'artwork', 'Polaroid Artwork', { x: pad, y: topPad, w: artW, h: artH }, () => {
     if (artImg) {
       ctx.save();
-      drawRoundedRectPath(ctx, pad, pad, artW, artH, Math.min(24, state.posterRadius));
+      drawRoundedRectPath(ctx, pad, topPad, artW, artH, Math.min(24, state.posterRadius));
       ctx.clip();
-      drawImageCover(ctx, artImg, pad, pad, artW, artH);
+      drawImageCover(ctx, artImg, pad, topPad, artW, artH);
       ctx.restore();
     }
   });
 
-  let curY = pad + artH + 22;
+  let curY = topPad + artH + 22;
   drawPaletteBar(ctx, pad + artW / 2, curY, artW, 16, false, true);
   curY += 32;
 
@@ -110,7 +112,7 @@ export function renderPolaroidPoster(ctx, w, h) {
     curY += rH + 16;
   }
 
-  const archiveY = h - 135;
+  const archiveY = isStory ? 1680 : (h - 135);
   // Left-aligned, slightly larger QR code positioned cleanly above the footer metadata thin line
   if (state.showQrCode) {
     const qrSize = 118;
@@ -135,5 +137,5 @@ export function renderPolaroidPoster(ctx, w, h) {
     ctx.fillText(getWrappedLines(ctx, metaLine, artW, 1)[0] || '', pad, archiveY + 24);
   });
 
-  drawFooterBrand(ctx, w / 2, h - 28, true);
+  drawFooterBrand(ctx, w / 2, isStory ? 1755 : h - 28, true);
 }

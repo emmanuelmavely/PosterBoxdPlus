@@ -64,3 +64,13 @@ export function getReviewCharacterLimit(archetype) {
     ? EXTENDED_REVIEW_CHARACTER_LIMIT
     : DEFAULT_REVIEW_CHARACTER_LIMIT;
 }
+
+export const STORY_SAFE_ZONE = Object.freeze({
+  width: 1080,
+  height: 1920,
+  dangerTop: 155,
+  dangerBottom: 155,
+  safeHeight: 1610,
+  safeTop: 155,
+  safeBottom: 1765
+});

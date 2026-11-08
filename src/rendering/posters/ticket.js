@@ -19,9 +19,10 @@ export function renderTicketPoster(ctx, w, h) {
   drawProcessedBackdrop(ctx, w, h, bgImg, Math.max(18, state.backdropBlur), Math.min(45, state.backdropBrightness));
 
   const marginX = 82;
-  const marginY = h < 1500 ? 64 : 88;
+  const isStory = h === 1920;
+  const marginY = isStory ? 160 : (h < 1500 ? 64 : 88);
   const ticketW = w - marginX * 2;
-  const ticketH = h - marginY * 2 - 70;
+  const ticketH = isStory ? 1540 : (h - marginY * 2 - 70);
   const tx = marginX, ty = marginY;
   const stubSplitY = ty + Math.round(ticketH * 0.77);
 
@@ -179,5 +180,5 @@ export function renderTicketPoster(ctx, w, h) {
   const serialLine = [state.year, state.genre ? state.genre.toUpperCase() : '', `${(state.rating || 0).toFixed(1)} ★`].filter(Boolean).join('   ·   ');
   ctx.fillText(getWrappedLines(ctx, serialLine, innerW, 1)[0] || '', innerPad + innerW / 2, barTop + barH + 30);
 
-  drawFooterBrand(ctx, w / 2, h - 22, false);
+  drawFooterBrand(ctx, w / 2, isStory ? 1755 : h - 22, false);
 }

@@ -135,6 +135,14 @@ export function syncDesignControlsUI() {
     button.classList.toggle('text-gray-300', !active);
   });
 
+  const safeZoneBtn = document.getElementById('toggle-safe-zone-btn');
+  if (safeZoneBtn) {
+    safeZoneBtn.classList.toggle('bg-pink-500/20', Boolean(state.showSafeZoneGuide));
+    safeZoneBtn.classList.toggle('text-pink-300', Boolean(state.showSafeZoneGuide));
+    safeZoneBtn.classList.toggle('border-pink-500/40', Boolean(state.showSafeZoneGuide));
+    safeZoneBtn.classList.toggle('text-gray-400', !state.showSafeZoneGuide);
+  }
+
   const sliderState = [
     ['slider-brightness', 'val-brightness', state.backdropBrightness, (value) => `${value}%`],
     ['slider-blur', 'val-blur', state.backdropBlur, (value) => `${value}px`],
@@ -204,6 +212,17 @@ export function initDesignControls() {
     });
   });
 
+  const safeZoneBtn = document.getElementById('toggle-safe-zone-btn');
+  safeZoneBtn?.addEventListener('click', () => {
+    state.showSafeZoneGuide = !state.showSafeZoneGuide;
+    safeZoneBtn.classList.toggle('bg-pink-500/20', state.showSafeZoneGuide);
+    safeZoneBtn.classList.toggle('text-pink-300', state.showSafeZoneGuide);
+    safeZoneBtn.classList.toggle('border-pink-500/40', state.showSafeZoneGuide);
+    safeZoneBtn.classList.toggle('text-gray-400', !state.showSafeZoneGuide);
+    scheduleCanvasRender();
+    showToast(state.showSafeZoneGuide ? 'Story Safe Zone (1080×1610) shown' : 'Safe Zone guide hidden');
+  });
+
   const bindSlider = (sliderId, valueId, stateKey, formatValue) => {
     const slider = document.getElementById(sliderId);
     const valueLabel = document.getElementById(valueId);
@@ -223,8 +242,8 @@ export function initDesignControls() {
   bindSlider('slider-font-scale', 'val-font-scale', 'fontScale', (value) => `${value.toFixed(2)}x`);
   const detailedReviewLimitSlider = document.getElementById('slider-detailed-review-limit');
   const detailedReviewLimitInput = document.getElementById('input-detailed-review-limit');
-  const setDetailedReviewOutputLimit = (rawValue) => {
-    const number = Math.min(MAX_DETAILED_REVIEW_CHARACTER_LIMIT, Math.max(1, parseInt(rawValue, 10) || DEFAULT_DETAILED_REVIEW_CHARACTER_LIMIT));
+  const setDetailedReviewOutputLimit = (rawLimit) => {
+    const number = clampDetailedReviewLimit(rawLimit, state.archetype);
     state.detailedReviewCharacterLimit = number;
     state.detailedReviewCharacterLimits = {
       ...(state.detailedReviewCharacterLimits || {}),

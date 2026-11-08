@@ -17,16 +17,17 @@ export function renderRetroPoster(ctx, w, h) {
 
   const pad = 68;
   const innerW = w - pad * 2;
+  const isStory = h === 1920;
   const fs = Math.min(1.18, state.fontScale) * (h < 1500 ? 0.88 : 1.0);
 
   const stripeColors = ['#D9381E', '#E86F2C', '#F2A93B', '#F7D070'];
   stripeColors.forEach((col, i) => {
     ctx.fillStyle = col;
-    ctx.fillRect(pad, 56 + i * 16, innerW, 12);
+    ctx.fillRect(pad, (isStory ? 158 : 56) + i * 14, innerW, 11);
   });
 
-  const frameY = 138;
-  const frameH = h - frameY - 125;
+  const frameY = isStory ? 225 : 138;
+  const frameH = isStory ? 1490 : (h - frameY - 125);
   ctx.save();
   drawRoundedRectPath(ctx, pad, frameY, innerW, frameH, 20);
   ctx.fillStyle = '#EFE6D5';
@@ -127,5 +128,5 @@ export function renderRetroPoster(ctx, w, h) {
     ctx.fillText(getWrappedLines(ctx, billingText, artW, 1)[0] || '', w / 2, billingY + 4);
   }
 
-  drawFooterBrand(ctx, w / 2, h - 24, false);
+  drawFooterBrand(ctx, w / 2, isStory ? 1755 : h - 24, false);
 }

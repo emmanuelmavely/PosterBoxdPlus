@@ -43,10 +43,12 @@ export function renderFloatingTicketPoster(ctx, w, h) {
   ctx.fillRect(0, 0, w, h);
   ctx.restore();
 
+  const isStory = h === 1920;
+  const topShift = isStory ? 104 : 0;
   const fs = Math.min(1.18, state.fontScale) * (h < 1500 ? 0.88 : 1.0);
   const cx = w / 2;
 
-  drawMovableGroup(ctx, 'title', 'Top Movie Header', { x: 80, y: 54, w: w - 160, h: 210 }, () => {
+  drawMovableGroup(ctx, 'title', 'Top Movie Header', { x: 80, y: 54 + topShift, w: w - 160, h: 210 }, () => {
     ctx.save();
     ctx.textAlign = 'center';
     ctx.font = `600 ${Math.round(18 * fs)}px "JetBrains Mono", monospace`;
@@ -59,7 +61,7 @@ export function renderFloatingTicketPoster(ctx, w, h) {
       dirHeader = `${state.episodeTitle} · ${state.director || state.year}`;
     }
     if (dirHeader) {
-      ctx.fillText(dirHeader, cx, 84);
+      ctx.fillText(dirHeader, cx, 84 + topShift);
     }
 
     if (state.useLogoImage && state.logoImg) {
@@ -68,7 +70,7 @@ export function renderFloatingTicketPoster(ctx, w, h) {
       const ratio = Math.min(maxLW / state.logoImg.width, maxLH / state.logoImg.height);
       const lw = Math.round(state.logoImg.width * ratio);
       const lh = Math.round(state.logoImg.height * ratio);
-      ctx.drawImage(state.logoImg, cx - lw / 2, 108, lw, lh);
+      ctx.drawImage(state.logoImg, cx - lw / 2, 108 + topShift, lw, lh);
     } else {
       const displayTitle = (state.title || '').toUpperCase();
       if (displayTitle) {
@@ -76,7 +78,7 @@ export function renderFloatingTicketPoster(ctx, w, h) {
         ctx.font = `400 ${tLayout.fontPx}px "Instrument Serif", serif`;
         ctx.fillStyle = '#FFFFFF';
         tLayout.lines.forEach((line, idx) => {
-          ctx.fillText(line, cx, 154 + idx * (tLayout.fontPx - 4));
+          ctx.fillText(line, cx, 154 + topShift + idx * (tLayout.fontPx - 4));
         });
       }
     }
@@ -84,8 +86,8 @@ export function renderFloatingTicketPoster(ctx, w, h) {
   });
 
   const ticketW = Math.round((w - 116) * Math.min(1.06, state.posterScale));
-  const ticketH = Math.round(h < 1500 ? 360 : 410);
-  const ticketY = Math.round(h * 0.43);
+  const ticketH = Math.round(h < 1500 ? 360 : (isStory ? 390 : 410));
+  const ticketY = Math.round(isStory ? 790 : h * 0.43);
 
   drawMovableGroup(ctx, 'artwork', 'Floating Vintage Ticket', { x: cx - ticketW / 2, y: ticketY, w: ticketW, h: ticketH }, () => {
     ctx.save();
@@ -291,13 +293,13 @@ export function renderFloatingTicketPoster(ctx, w, h) {
   if (state.showQrCode) {
     const qrSize = 116;
     const qrX = Math.round(cx - qrSize / 2);
-    const qrY = Math.min(botY + 6, h - 245);
+    const qrY = Math.min(botY + 6, isStory ? 1600 : h - 245);
     drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: qrX, y: qrY, w: qrSize, h: qrSize }, () => {
       drawPosterQrCode(ctx, qrX, qrY, qrSize, false);
     });
   }
 
-  const stripY = h - 102;
+  const stripY = isStory ? 1715 : (h - 102);
   ctx.save();
   ctx.font = `600 ${Math.round(19 * fs)}px "JetBrains Mono", monospace`;
   ctx.fillStyle = '#9CA3AF';
@@ -310,5 +312,5 @@ export function renderFloatingTicketPoster(ctx, w, h) {
   ctx.fillText(getWrappedLines(ctx, metaStrip, w - 100, 1)[0] || '', cx, stripY);
   ctx.restore();
 
-  drawFooterBrand(ctx, cx, h - 22, false);
+  drawFooterBrand(ctx, cx, isStory ? 1755 : (h - 22), false);
 }

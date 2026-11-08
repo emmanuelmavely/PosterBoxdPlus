@@ -20,18 +20,19 @@ export function renderEditorialPoster(ctx, w, h) {
   const maxW = w - leftX * 2;
   const hasQr = Boolean(state.showQrCode);
   const textMaxW = hasQr ? maxW - 130 : maxW;
+  const isStory = h === 1920;
   const fs = Math.min(1.22, state.fontScale) * (h < 1500 ? 0.88 : 1.0);
-  let cursorBottom = h - Math.round(135 * state.footerScale);
+  let cursorBottom = isStory ? (1710 - Math.round(20 * state.footerScale)) : (h - Math.round(135 * state.footerScale));
 
   if (state.medium) {
-    drawMovableGroup(ctx, 'medium', 'Format Badge', { x: w - leftX - 190, y: 76, w: 190, h: 56 }, () => {
-      drawMediumBadge(ctx, w - leftX - 95, 76, state.medium, false, fs);
+    drawMovableGroup(ctx, 'medium', 'Format Badge', { x: w - leftX - 190, y: isStory ? 165 : 76, w: 190, h: 56 }, () => {
+      drawMediumBadge(ctx, w - leftX - 95, isStory ? 165 : 76, state.medium, false, fs);
     });
   }
 
   if (hasQr) {
-    drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: w - leftX - 112, y: h - 252, w: 112, h: 112 }, () => {
-      drawPosterQrCode(ctx, w - leftX - 112, h - 252, 112, false);
+    drawMovableGroup(ctx, 'qrcode', 'Review QR Code', { x: w - leftX - 112, y: isStory ? 1600 : h - 252, w: 112, h: 112 }, () => {
+      drawPosterQrCode(ctx, w - leftX - 112, isStory ? 1600 : h - 252, 112, false);
     });
   }
 
@@ -135,5 +136,5 @@ export function renderEditorialPoster(ctx, w, h) {
     });
   }
 
-  drawFooterBrand(ctx, w / 2, h - 28, false);
+  drawFooterBrand(ctx, w / 2, isStory ? 1755 : h - 28, false);
 }

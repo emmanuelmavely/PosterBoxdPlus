@@ -2,6 +2,22 @@ import { state } from '../state.js';
 import { MAX_DETAILED_REVIEW_CHARACTER_LIMIT } from '../constants.js';
 import { renderRuntime } from './runtime.js';
 
+// --- Instagram Story Safe Zone ---
+// Full canvas for 9:16 is 1080×1920. The safe zone (Standard Organic Story)
+// is a centred 1080×1610 band: top inset 155 px, bottom inset 155 px.
+// Use getContentBounds() in every poster renderer so layout is kept within
+// the safe zone when the canvas is at story height (h === 1920).
+const STORY_CANVAS_H = 1920;
+export const STORY_SAFE_INSET = 155; // px inset from top AND bottom
+
+export function getContentBounds(h) {
+  if (h === STORY_CANVAS_H) {
+    return { top: STORY_SAFE_INSET, bottom: h - STORY_SAFE_INSET };
+  }
+  // For 4:5 (1350) and 2:3 (1800) no extra inset is needed.
+  return { top: 0, bottom: h };
+}
+
 export function drawRoundedRectPath(context, x, y, width, height, radius) {
   const safeRadius = Math.max(0, Math.min(radius, width / 2, height / 2));
   context.beginPath();
@@ -383,7 +399,9 @@ export function drawFooterBrand(context, centerX, bottomY, isLightMode = false) 
   context.textBaseline = 'middle';
   const fontSize = Math.round(19 * scale);
   const iconSize = Math.round(24 * scale);
-  const rowY = bottomY - Math.round(22 * scale);
+  const isStoryCanvas = context.canvas?.height === 1920 || state.aspectRatio === '9:16';
+  const effectiveBottomY = isStoryCanvas ? Math.min(bottomY, 1755) : bottomY;
+  const rowY = effectiveBottomY - Math.round(22 * scale);
   context.font = `700 ${fontSize}px "Syne", sans-serif`;
 
   const brandText = showPosterboxd ? 'POSTERBOXD' : '';
