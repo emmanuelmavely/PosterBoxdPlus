@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ES2022",
+    "checkJs": false,
+    "lib": ["DOM", "DOM.Iterable", "ES2022"]
+  },
+  "include": [
+    "src/**/*",
+    "index.html"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+

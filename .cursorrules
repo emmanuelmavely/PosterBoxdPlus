@@ -1,0 +1,17 @@
+# PosterBoxd — Cursor & AI Assistant Rules
+
+## Project Identity
+- **Stack**: Vanilla JavaScript ES Modules, HTML5 Canvas 2D, Tailwind CSS (CDN).
+- **Architecture**: 100% buildless SPA — NO bundlers (no Vite, Webpack, Babel), NO npm compile step.
+- **API**: Edge proxy in `worker/index.js` for TMDB API caching.
+
+## Critical Development Rules
+1. **Never add a build step**: All client code in `src/` must run directly in modern browsers using native ES Modules (`import`/`export`). Do not add build scripts, node-only modules, or bundler configs.
+2. **Instagram Story Safe Zone**:
+   - In 9:16 Story format (`h === 1920`), all content elements must stay inside the `1080 × 1610` safe area (`Y = 155` to `Y = 1765`).
+   - Backdrops and full-bleed ambient fills continue to fill the full `1080 × 1920` canvas.
+3. **Movable Elements**: Any newly added visual component must be wrapped inside `drawMovableGroup(ctx, id, label, baseBox, drawFn)` from `src/rendering/transforms.js` to ensure the interactive "Move & Resize" feature can manipulate it.
+4. **Footer Branding**: Use `drawFooterBrand(ctx, centerX, bottomY, isLightMode)` from `src/rendering/primitives.js` for bottom brand bars.
+5. **Local Development**: Run using a static HTTP server (e.g. `python -m http.server 8080` or `npx http-server -p 8080 -c-1`).
+6. **Version Bumping & Changelog**: Always bump semantic versioning (`APP_VERSION`, `RELEASE_DATE`, `CURRENT_RELEASE_NOTES` in `src/constants.js`, `index.html` badges, `README.md` badge) on each iteration, document changes in `CHANGELOG.md`, and generate a git commit.
+

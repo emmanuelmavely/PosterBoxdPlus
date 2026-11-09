@@ -1,0 +1,19 @@
+# PosterBoxd
+
+> A modern, browser-based review poster generator for cinema and television. Generates high-resolution posters (up to 1200×1800) using TMDB search or Letterboxd review links across 11 designer poster layouts. 100% client-side with zero build step.
+
+## Documentation & Architecture
+- [AGENTS.md](AGENTS.md): Universal AI agent developer guide and architecture map.
+- [README.md](README.md): Project overview, features, poster gallery, and local setup instructions.
+- [CHANGELOG.md](CHANGELOG.md): Version history and release notes.
+
+## Core Source Entry Points
+- [index.html](index.html): Main application markup, CDN assets, and poster canvas element.
+- [src/main.js](src/main.js): Application bootstrapping and subsystem initialization.
+- [src/state.js](src/state.js): Global state store.
+- [src/constants.js](src/constants.js): Character limits, poster archetypes, and Instagram Story Safe Zone specifications.
+- [src/rendering/canvas-renderer.js](src/rendering/canvas-renderer.js): Core 2D canvas rendering engine, aspect ratio scaling, and safe zone guidelines.
+- [src/rendering/primitives.js](src/rendering/primitives.js): Canvas drawing primitives (typography layout, badges, star ratings, palette bars, footer brand).
+- [src/rendering/posters/](src/rendering/posters/): 11 individual poster layout renderers.
+- [worker/index.js](worker/index.js): Cloudflare Worker edge proxy for TMDB API caching.
+

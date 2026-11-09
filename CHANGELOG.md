@@ -5,6 +5,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [v1.4.0] - 2026-11-09
+
+### Added
+- **Instagram Story Safe Zone Enforcement**: All 11 poster layouts (`floatingticket`, `classic`, `editorial`, `polaroid`, `criterion`, `ticket`, `iosglass`, `scoreboard`, `retro`, `marquee`, and `vippass`) now automatically constrain their content to the centered 1080×1610 px safe area (`Y = 155` to `Y = 1765`) in 9:16 aspect ratio, preventing profile headers and action bars from obscuring poster elements.
+- **Story Safe Zone Canvas Guide Overlay**: Added a dedicated toolbar button and guide toggle to display top/bottom danger zones and safe boundary guides during live preview and interactive Move & Resize editing.
+- **AI Agent Indexing & Architectural Standards**: Added comprehensive AI developer documentation and IDE settings (`AGENTS.md`, `CLAUDE.md`, `.cursorrules`, `.github/copilot-instructions.md`, `llms.txt`, and `jsconfig.json`).
+
+### Changed
+- **Footer Branding Safe Clamping**: `drawFooterBrand` now automatically clamps to `Y = 1755` when rendering at 9:16 (`1080 × 1920`) to prevent cutoffs on mobile story viewers.
+- **Development Workflow Rule**: Established rule requiring automatic semantic version bumps, release notes updates in `src/constants.js` and `CHANGELOG.md`, and clean commits on every iteration.
+
+---
+
 ## [v1.3.9] - 2026-10-26
 
 ### Changed

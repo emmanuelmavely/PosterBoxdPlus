@@ -5,12 +5,12 @@ export const CUSTOM_LOGO_SVG_DATA = `data:image/svg+xml;utf8,` + encodeURICompon
   </svg>
 `);
 
-export const APP_VERSION = 'v1.3.9';
-export const RELEASE_DATE = '2026-10-26';
+export const APP_VERSION = 'v1.4.0';
+export const RELEASE_DATE = '2026-11-09';
 export const CURRENT_RELEASE_NOTES = Object.freeze([
-  'Responsive header, sticky preview, and mobile safe-area spacing now adapt to the available viewport.',
-  'History uses natural page scrolling so long lists no longer create a nested scroll trap.',
-  'Keyboard focus, reduced-motion behavior, and mobile zoom support were improved without changing poster output.'
+  'Constrained all 11 poster layouts to strictly honor the 1080×1610 px Instagram Story safe zone in 9:16 aspect ratio.',
+  'Added Story Safe Zone guide overlay and toolbar toggle for both live preview and Move & Resize editing.',
+  'Standardized AI agent indexing and developer context configuration across the repository.'
 ]);
 
 export const ARCHETYPE_NAMES = Object.freeze({
