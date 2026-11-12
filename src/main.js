@@ -11,6 +11,7 @@ import { initCanvasInteractions } from './ui/canvas-interactions.js';
 import { initExportControls } from './ui/export-controls.js';
 import { initPwaInstall } from './ui/pwa-install.js';
 import { initWhatsNewMenu } from './ui/whats-new.js';
+import { initEditor } from './ui/editor.js';
 
 function setSplashProgress(pct, msg) {
   const bar = document.getElementById('splash-progress-bar');
@@ -42,6 +43,7 @@ async function bootstrap() {
     initAssetControls();
     initDesignControls();
     initCanvasInteractions();
+    initEditor({ onBack: () => switchView('review') });
     initExportControls();
     initPwaInstall();
     initWhatsNewMenu();

@@ -5,6 +5,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [v1.5.0] - 2026-11-12
+
+### Added
+- **iOS-Style Poster Editor**: The studio is now a full-screen editor with the poster pinned on top and one tool panel underneath (Style, Size, Artwork, Colour, Adjust, Details, Move). The page no longer scrolls while editing; on desktop the tools become a right-hand inspector.
+- **Live Style Thumbnails**: Every style button shows a miniature of the current poster rendered in that style.
+- **11 New Poster Styles (22 total)**: `brutalist`, `contactsheet`, `glassplayer`, `receipt`, `swissgrid`, `billboard`, `archivestub`, `spatial`, `glassstack`, `splitspread` and `archivepass`, ported from the DOM prototype to Canvas 2D with safe-zone support and movable groups.
+- **Square 1:1 Canvas** (1080×1080) alongside 9:16, 4:5 and 2:3. The detailed review is hidden at 1:1.
+- **Swipe to Change Style** on the poster, an ambient stage glow tinted from the palette, and the canvas ratio in the export filename.
+- **Local Dev Server** (`scripts/dev-server.mjs`): serves the app and proxies TMDB using a key in the git-ignored `.env.local`.
+
+### Changed
+- **Interface Restyle**: iOS system colours and font, grouped cards, switches instead of checkboxes, white-knob sliders with a filled track, and a full-width tab bar (Search, Review, Studio, History).
+- **Save on iOS** opens the share sheet ("Save Image") because blob downloads are unreliable in an installed web app.
+- **Move & Resize** is now the Move tool: opening it enables dragging, leaving it disables it.
+
+### Fixed
+- **Notch Overlap**: the header pads for the safe area when installed (`viewport-fit=cover`).
+- **Drag Positions Not Saved**: a duplicate release handler cleared the drag before it was persisted.
+- **Scroll Trap in Move Mode**: touching empty poster area no longer blocks page scrolling; `touchcancel` now releases a stuck drag.
+- **iOS Zoom on Focus** for the review-limit number field, and the update banner no longer covers the navigation.
+
+---
+
 ## [v1.4.0] - 2026-11-09
 
 ### Added

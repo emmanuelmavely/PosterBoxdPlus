@@ -2,7 +2,7 @@
 <html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>PosterBoxd — Cinema & TV Review Poster Generator</title>
   <link rel="icon" type="image/x-icon" href="./favicon.ico">
   <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png">
@@ -16,10 +16,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="PosterBoxd">
-  <meta name="theme-color" content="#0B0C0E">
+  <meta name="theme-color" content="#000000">
 
   <!-- SEO Meta -->
-  <meta name="description" content="Create stunning cinema review posters for any movie or TV series. Search TMDB, import Letterboxd reviews, pick from 11 designer poster styles, and export high-res PNGs — all free, no sign-up.">
+  <meta name="description" content="Create stunning cinema review posters for any movie or TV series. Search TMDB, import Letterboxd reviews, pick from 22 designer poster styles, and export high-res PNGs — all free, no sign-up.">
   <meta name="keywords" content="PosterBoxd, movie poster generator, Letterboxd poster, cinema review poster, film poster maker, TMDB, TV series poster, movie review art">
   <meta name="author" content="Emmanuel Mavely">
 
@@ -27,7 +27,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://emmanuelmavely.github.io/PosterBoxdPlus/">
   <meta property="og:title" content="PosterBoxd — Cinema & TV Review Poster Generator">
-  <meta property="og:description" content="Search any movie or TV series, import Letterboxd reviews, and craft beautiful cinema posters in 11 unique styles. Free and open-source.">
+  <meta property="og:description" content="Search any movie or TV series, import Letterboxd reviews, and craft beautiful cinema posters in 22 unique styles. Free and open-source.">
   <meta property="og:site_name" content="PosterBoxd">
   <meta property="og:image" content="https://emmanuelmavely.github.io/PosterBoxdPlus/assets/PosterBoxd-Banner.jpg">
   <meta property="og:image:secure_url" content="https://emmanuelmavely.github.io/PosterBoxdPlus/assets/PosterBoxd-Banner.jpg">
@@ -39,7 +39,7 @@
   <!-- Twitter / X Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="PosterBoxd — Cinema & TV Review Poster Generator">
-  <meta name="twitter:description" content="Create stunning cinema review posters for any movie or TV series. 11 premium styles, Letterboxd import, TMDB search — all free.">
+  <meta name="twitter:description" content="Create stunning cinema review posters for any movie or TV series. 22 premium styles, Letterboxd import, TMDB search — all free.">
   <meta name="twitter:image" content="https://emmanuelmavely.github.io/PosterBoxdPlus/assets/PosterBoxd-Banner.jpg">
 
   <!-- WebSite & WebApplication JSON-LD Schema -->
@@ -52,7 +52,7 @@
         "@id": "https://emmanuelmavely.github.io/PosterBoxdPlus/#website",
         "url": "https://emmanuelmavely.github.io/PosterBoxdPlus/",
         "name": "PosterBoxd",
-        "description": "Create stunning cinema review posters for any movie or TV series. Search TMDB, import Letterboxd reviews, pick from 11 designer styles, and export high-res PNGs.",
+        "description": "Create stunning cinema review posters for any movie or TV series. Search TMDB, import Letterboxd reviews, pick from 22 designer styles, and export high-res PNGs.",
         "inLanguage": "en-US",
         "author": {
           "@type": "Person",
@@ -80,7 +80,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <!-- QRCode Generator for Scannable Letterboxd Review QR Codes -->
@@ -93,19 +93,21 @@
       theme: {
         extend: {
           colors: {
-            obsidian: '#0B0C0E',
-            slatepanel: '#131519',
-            cardbg: '#1A1D24',
-            elevated: '#222631',
+            obsidian: '#000000',
+            slatepanel: '#1C1C1E',
+            cardbg: '#2C2C2E',
+            elevated: '#3A3A3C',
             lbgreen: '#00E054',
             lborange: '#FF8000',
             lbblue: '#40BCF4',
           },
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            display: ['"Syne"', 'sans-serif'],
+            // Interface type uses the platform font (San Francisco on iOS). The poster
+            // fonts below are still loaded because the canvas draws with them by name.
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"Inter"', '"Segoe UI"', 'Roboto', 'sans-serif'],
+            display: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"Inter"', '"Segoe UI"', 'Roboto', 'sans-serif'],
             serif: ['"Instrument Serif"', 'serif'],
-            mono: ['"JetBrains Mono"', 'monospace'],
+            mono: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"Inter"', '"Segoe UI"', 'Roboto', 'sans-serif'],
           }
         }
       }
@@ -171,7 +173,7 @@
       </svg>
       <div class="flex items-center gap-1.5 hidden sm:flex">
         <span class="font-display font-extrabold text-base sm:text-lg tracking-tight text-white">PosterBoxd</span>
-        <button type="button" data-app-version class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-lbgreen/15 text-lbgreen border border-lbgreen/30 font-bold hover:bg-lbgreen/25 transition">v1.4.0</button>
+        <button type="button" data-app-version class="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-lbgreen/15 text-lbgreen border border-lbgreen/30 font-bold hover:bg-lbgreen/25 transition">v1.5.0</button>
       </div>
     </div>
 
@@ -433,291 +435,199 @@
     </div>
   </section>
 
-  <!-- VIEW 3: FINAL PREVIEW STAGE + EXPANDABLE SETTINGS DRAWER -->
-  <!-- VIEW 3: FINAL PREVIEW STAGE + EXPANDABLE SETTINGS DRAWER -->
-  <main id="view-preview" class="app-view hidden flex-1 flex flex-col items-center w-full max-w-7xl mx-auto px-3 sm:px-6 pt-3 pb-16 lg:pb-8 space-y-4">
+  <!-- VIEW 3: POSTER EDITOR — poster pinned on top, tools underneath (iOS photo-editor layout) -->
+  <main id="view-preview" class="app-view hidden editor" aria-label="Poster editor">
 
-    <!-- Top Stage Bar: Aspect Ratio Pills -->
-    <div class="w-full flex items-center justify-between gap-2 bg-slatepanel/90 backdrop-blur px-3.5 py-2 rounded-2xl border border-white/10">
-      <span class="text-xs font-mono uppercase tracking-wider text-gray-400 font-semibold flex items-center gap-2">
-        <i class="fa-solid fa-crop text-lbgreen"></i> Canvas Ratio
-      </span>
+    <header class="editor-topbar">
+      <button type="button" id="editor-back-btn" class="editor-textbtn" aria-label="Back to review">
+        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i><span>Review</span>
+      </button>
+      <div class="editor-title">
+        <span id="editor-style-name" class="editor-title-main">Poster</span>
+        <span id="stage-dimensions-readout" class="editor-title-sub" aria-live="polite">Story 9:16 · 1080×1920 PNG</span>
+      </div>
+      <div class="editor-actions">
+        <button type="button" id="copy-poster-btn" class="editor-iconbtn" aria-label="Copy poster" title="Copy"><i class="fa-regular fa-copy" aria-hidden="true"></i></button>
+        <button type="button" id="share-poster-btn" class="editor-iconbtn" aria-label="Share poster" title="Share"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i></button>
+        <button type="button" id="download-poster-btn" class="editor-save">Save</button>
+      </div>
+    </header>
 
-      <div class="flex items-center gap-2">
-        <button type="button" id="toggle-safe-zone-btn" title="Toggle Instagram Story Safe Zone Guide (1080×1610)" class="px-2.5 py-1.5 rounded-xl text-[11px] font-mono font-semibold bg-obsidian hover:bg-white/10 border border-white/10 text-gray-400 hover:text-white transition flex items-center gap-1.5">
-          <i class="fa-brands fa-instagram text-pink-400 text-xs"></i>
-          <span>Story Safe Zone</span>
-        </button>
-        <div class="flex items-center gap-1 bg-obsidian p-1 rounded-xl border border-white/10">
-        <button type="button" data-ratio="9:16" class="ratio-pill active px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold bg-lbgreen text-obsidian transition">9:16</button>
-        <button type="button" data-ratio="4:5" class="ratio-pill px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold text-gray-300 hover:bg-white/10 transition">4:5</button>
-        <button type="button" data-ratio="2:3" class="ratio-pill px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold text-gray-300 hover:bg-white/10 transition">2:3</button>
+    <section id="desktop-poster-col" class="editor-stage" aria-label="Poster preview">
+      <div id="stage-ambient-glow" aria-hidden="true"></div>
+      <button type="button" id="prev-style-btn" class="stage-arrow stage-arrow-prev" aria-label="Previous poster style"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+      <canvas id="poster-canvas" width="1080" height="1920"></canvas>
+      <button type="button" id="next-style-btn" class="stage-arrow stage-arrow-next" aria-label="Next poster style"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+    </section>
+
+    <section class="editor-tray" aria-label="Editing tools">
+      <div class="editor-panels">
+
+        <!-- STYLE -->
+        <div class="editor-panel" data-editor-panel="style">
+          <div id="archetype-pill-strip" class="style-strip no-scrollbar">
+            <button type="button" data-archetype="floatingticket" class="arch-select-btn active" title="1. Vintage Ticket"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Vintage Ticket</span></button>
+            <button type="button" data-archetype="classic" class="arch-select-btn" title="2. Classic"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Classic</span></button>
+            <button type="button" data-archetype="editorial" class="arch-select-btn" title="3. Editorial"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Editorial</span></button>
+            <button type="button" data-archetype="polaroid" class="arch-select-btn" title="4. Polaroid"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Polaroid</span></button>
+            <button type="button" data-archetype="criterion" class="arch-select-btn" title="5. Criterion"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Criterion</span></button>
+            <button type="button" data-archetype="ticket" data-movie-only="true" class="arch-select-btn" title="6. Full Ticket"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Full Ticket</span></button>
+            <button type="button" data-archetype="iosglass" class="arch-select-btn" title="7. iOS Glass"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">iOS Glass</span></button>
+            <button type="button" data-archetype="scoreboard" class="arch-select-btn" title="8. Big Score"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Big Score</span></button>
+            <button type="button" data-archetype="retro" class="arch-select-btn" title="9. 70s Retro"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">70s Retro</span></button>
+            <button type="button" data-archetype="marquee" data-movie-only="true" class="arch-select-btn" title="10. Marquee"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Marquee</span></button>
+            <button type="button" data-archetype="vippass" class="arch-select-btn" title="11. VIP Pass"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">VIP Pass</span></button>
+            <button type="button" data-archetype="brutalist" class="arch-select-btn" title="12. Verdict Tape"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Verdict Tape</span></button>
+            <button type="button" data-archetype="contactsheet" class="arch-select-btn" title="13. Contact Sheet"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Contact Sheet</span></button>
+            <button type="button" data-archetype="glassplayer" class="arch-select-btn" title="14. Glass Player"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Glass Player</span></button>
+            <button type="button" data-archetype="receipt" class="arch-select-btn" title="15. Receipt"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Receipt</span></button>
+            <button type="button" data-archetype="swissgrid" class="arch-select-btn" title="16. Swiss Grid"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Swiss Grid</span></button>
+            <button type="button" data-archetype="billboard" class="arch-select-btn" title="17. Billboard"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Billboard</span></button>
+            <button type="button" data-archetype="archivestub" class="arch-select-btn" title="18. Archive Stub"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Archive Stub</span></button>
+            <button type="button" data-archetype="spatial" class="arch-select-btn" title="19. Spatial Window"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Spatial Window</span></button>
+            <button type="button" data-archetype="glassstack" class="arch-select-btn" title="20. Glass Stack"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Glass Stack</span></button>
+            <button type="button" data-archetype="splitspread" class="arch-select-btn" title="21. Split Spread"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Split Spread</span></button>
+            <button type="button" data-archetype="archivepass" class="arch-select-btn" title="22. Archive Pass"><canvas class="style-thumb" width="4" height="4" aria-hidden="true"></canvas><span class="style-name">Archive Pass</span></button>
+          </div>
+        </div>
+
+        <!-- SIZE -->
+        <div class="editor-panel hidden" data-editor-panel="size">
+          <div class="ios-segment" role="group" aria-label="Canvas ratio">
+            <button type="button" data-ratio="9:16" title="Story 9:16 · 1080×1920" class="ratio-pill active bg-lbgreen text-obsidian"><b>9:16</b><small>Story</small></button>
+            <button type="button" data-ratio="4:5" title="Instagram post 4:5 · 1080×1350" class="ratio-pill text-gray-300"><b>4:5</b><small>Post</small></button>
+            <button type="button" data-ratio="1:1" title="Square 1:1 · 1080×1080" class="ratio-pill text-gray-300"><b>1:1</b><small>Square</small></button>
+            <button type="button" data-ratio="2:3" title="Print poster 2:3 · 1200×1800" class="ratio-pill text-gray-300"><b>2:3</b><small>Print</small></button>
+          </div>
+          <div class="ios-list">
+            <button type="button" id="toggle-safe-zone-btn" class="ios-row ios-row-btn text-gray-400">
+              <span><i class="fa-brands fa-instagram text-pink-400" aria-hidden="true"></i> Show Story safe-zone guide</span>
+              <i class="fa-solid fa-eye" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- ARTWORK -->
+        <div class="editor-panel hidden" data-editor-panel="artwork">
+          <div class="ios-segment subtabs" role="tablist">
+            <button type="button" data-sub-target="poster" class="active">Poster <span id="poster-count-badge" class="seg-count"></span></button>
+            <button type="button" data-sub-target="backdrop">Backdrop <span id="backdrop-count-badge" class="seg-count"></span></button>
+            <button type="button" data-sub-target="logo">Title logo</button>
+          </div>
+          <div class="subpane" data-sub="poster"><div id="poster-picker-strip" class="asset-strip"></div></div>
+          <div class="subpane hidden" data-sub="backdrop"><div id="backdrop-picker-strip" class="asset-strip"></div></div>
+          <div class="subpane hidden" data-sub="logo">
+            <div class="ios-list">
+              <label class="ios-row"><span>Use the official logo for the title</span><input type="checkbox" id="toggle-use-logo" checked /></label>
+            </div>
+            <div id="logo-picker-strip" class="asset-strip"></div>
+          </div>
+        </div>
+
+        <!-- COLOUR -->
+        <div class="editor-panel hidden" data-editor-panel="colour">
+          <div class="panel-head"><span>Palette sampled from the artwork — tap a swatch to change it</span><button type="button" id="reextract-palette-btn" class="link-btn">Re-sample</button></div>
+          <div id="palette-swatch-bar" class="grid grid-cols-5 gap-2"></div>
+          <div class="ios-list">
+            <label class="ios-row"><span>Vignette fade</span><input type="checkbox" id="chk-gradient" checked /></label>
+            <label class="ios-row"><span>Film grain</span><input type="checkbox" id="chk-grain" checked /></label>
+          </div>
+        </div>
+
+        <!-- ADJUST -->
+        <div class="editor-panel hidden" data-editor-panel="adjust">
+          <div class="adjust-chips subtabs no-scrollbar" role="tablist">
+            <button type="button" data-sub-target="brightness" class="active">Brightness</button>
+            <button type="button" data-sub-target="blur">Blur</button>
+            <button type="button" data-sub-target="artscale">Art size</button>
+            <button type="button" data-sub-target="fontscale">Text size</button>
+            <button type="button" data-sub-target="cropx">Crop X</button>
+            <button type="button" data-sub-target="cropy">Crop Y</button>
+            <button type="button" id="reset-sliders-btn" class="chip-reset">Reset all</button>
+          </div>
+            <div class="subpane" data-sub="brightness">
+              <div class="adjust-readout"><span>Backdrop brightness</span><span class="adjust-value" id="val-brightness">55%</span></div>
+              <input id="slider-brightness" type="range" min="15" max="100" value="55" />
+            </div>
+            <div class="subpane hidden" data-sub="blur">
+              <div class="adjust-readout"><span>Backdrop blur</span><span class="adjust-value" id="val-blur">14px</span></div>
+              <input id="slider-blur" type="range" min="0" max="40" value="14" />
+            </div>
+            <div class="subpane hidden" data-sub="artscale">
+              <div class="adjust-readout"><span>Artwork size</span><span class="adjust-value" id="val-poster-scale">1.00x</span></div>
+              <input id="slider-poster-scale" type="range" min="0.65" max="1.35" step="0.05" value="1.00" />
+            </div>
+            <div class="subpane hidden" data-sub="fontscale">
+              <div class="adjust-readout"><span>Text size</span><span class="adjust-value" id="val-font-scale">1.00x</span></div>
+              <input id="slider-font-scale" type="range" min="0.75" max="1.35" step="0.05" value="1.00" />
+            </div>
+            <div id="photo-crop-container" class="contents">
+            <div class="subpane hidden" data-sub="cropx">
+              <div class="adjust-readout"><span>Photo crop — horizontal</span><span class="adjust-value" id="val-poster-offset-x">0%</span><button type="button" id="reset-photo-offsets-btn" class="link-btn">Centre</button></div>
+              <input id="slider-poster-offset-x" type="range" min="-100" max="100" step="2" value="0" />
+            </div>
+            <div class="subpane hidden" data-sub="cropy">
+              <div class="adjust-readout"><span>Photo crop — vertical</span><span class="adjust-value" id="val-poster-offset-y">0%</span></div>
+              <input id="slider-poster-offset-y" type="range" min="-100" max="100" step="2" value="0" />
+            </div>
+            </div>
+        </div>
+
+        <!-- DETAILS -->
+        <div class="editor-panel hidden" data-editor-panel="details">
+          <div id="marquee-mode-selector-row" class="hidden flex-col gap-1.5">
+            <span class="panel-label">Marquee title style</span>
+            <div class="ios-segment">
+              <button type="button" data-marquee-mode="normal" class="marquee-mode-btn text-gray-400">Plain text</button>
+              <button type="button" data-marquee-mode="bulb" class="marquee-mode-btn bg-amber-400/20 text-amber-300 font-bold">Bulbs</button>
+              <button type="button" data-marquee-mode="logo" class="marquee-mode-btn text-gray-400">Logo</button>
+            </div>
+          </div>
+          <span class="panel-label">Footer shows</span>
+          <div id="footer-choice-chips" class="flex flex-wrap gap-1.5">
+            <button type="button" data-footer-element="username" class="footer-chip">@Username</button>
+            <button type="button" data-footer-element="posterboxd" class="footer-chip">PosterBoxd</button>
+            <button type="button" data-footer-element="letterboxd" class="footer-chip">Letterboxd</button>
+            <button type="button" data-footer-element="venue" class="footer-chip">Venue / Logged</button>
+          </div>
+          <div class="ios-list">
+            <label id="qrcode-toggle-row" class="hidden ios-row"><span>Review QR code <code id="qr-url-preview" class="text-[11px] text-lbblue">letterboxd.com/...</code></span><input type="checkbox" id="chk-qrcode" checked /></label>
+            <div class="ios-row ios-row-stack">
+              <div class="adjust-readout"><span>Detailed review length on poster</span>
+                <span class="flex items-center gap-1.5"><input id="input-detailed-review-limit" type="number" min="1" max="10000" step="1" value="500" aria-label="Review character limit" class="limit-input" /><span class="text-gray-400">chars</span></span>
+              </div>
+              <input id="slider-detailed-review-limit" type="range" min="1" max="5000" step="10" value="500" />
+            </div>
+          </div>
+        </div>
+
+        <!-- MOVE -->
+        <div class="editor-panel hidden" data-editor-panel="move">
+          <div id="interactive-toolbar" class="hidden move-toolbar">
+            <div class="min-w-0">
+              <div id="selected-el-label" class="move-label">Tap a block on the poster</div>
+              <div class="move-hint">Drag to move · use − / + to resize</div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <button type="button" id="el-scale-down-btn" title="Shrink selected" aria-label="Shrink selected" class="round-btn"><i class="fa-solid fa-minus"></i></button>
+              <button type="button" id="el-scale-up-btn" title="Enlarge selected" aria-label="Enlarge selected" class="round-btn"><i class="fa-solid fa-plus"></i></button>
+              <button type="button" id="el-reset-single-btn" class="link-btn">Reset layout</button>
+            </div>
+          </div>
+          <button type="button" id="toggle-edit-mode-btn" class="hidden" tabindex="-1" aria-hidden="true"><span id="edit-mode-btn-text">Move &amp; Resize</span></button>
         </div>
       </div>
-    </div>
 
-    <!-- Quick Horizontal Archetype Pill Scroller -->
-    <div id="archetype-pill-strip" class="w-full flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-      <button type="button" data-archetype="floatingticket" class="arch-select-btn active shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-lbgreen text-obsidian transition">1. Vintage Ticket</button>
-      <button type="button" data-archetype="classic" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">2. Classic</button>
-      <button type="button" data-archetype="editorial" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">3. Editorial</button>
-      <button type="button" data-archetype="polaroid" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">4. Polaroid</button>
-      <button type="button" data-archetype="criterion" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">5. Criterion</button>
-      <button type="button" data-archetype="ticket" data-movie-only="true" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">6. Full Ticket</button>
-      <button type="button" data-archetype="iosglass" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">7. iOS Glass</button>
-      <button type="button" data-archetype="scoreboard" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">8. Big Score</button>
-      <button type="button" data-archetype="retro" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">9. 70s Retro</button>
-      <button type="button" data-archetype="marquee" data-movie-only="true" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">10. Marquee</button>
-      <button type="button" data-archetype="vippass" class="arch-select-btn shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-slatepanel border border-white/10 text-gray-300 hover:text-white transition">11. VIP Pass</button>
-    </div>
-
-    <!-- Responsive Desktop Split Layout: Settings & Tools on Left, Live Canvas on Right -->
-    <div id="desktop-studio-grid" class="w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-
-      <!-- LEFT COLUMN (DESKTOP): SETTINGS & EDIT CONTROLS -->
-      <div id="desktop-controls-col" class="order-2 lg:order-1 lg:col-span-6 xl:col-span-5 flex flex-col items-center w-full space-y-4">
-
-        <!-- Primary Export & Edit Bar -->
-        <div class="w-full bg-slatepanel p-3 rounded-2xl border border-white/10 flex flex-wrap items-center justify-between gap-2.5 shadow-2xl">
-          <button type="button" id="toggle-edit-mode-btn" class="px-3.5 py-2.5 rounded-xl border border-white/15 bg-obsidian hover:bg-elevated text-xs font-semibold text-gray-200 flex items-center gap-2 transition">
-            <i class="fa-solid fa-up-down-left-right text-lbgreen"></i>
-            <span id="edit-mode-btn-text">Move & Resize</span>
-          </button>
-
-          <div class="flex items-center gap-2">
-            <button type="button" id="copy-poster-btn" class="px-3.5 py-2.5 rounded-xl bg-cardbg hover:bg-elevated border border-white/15 text-xs font-semibold text-gray-200 flex items-center gap-1.5 transition">
-              <i class="fa-regular fa-copy text-lbblue"></i>
-              <span id="copy-btn-text">Copy</span>
-            </button>
-            <button type="button" id="share-poster-btn" class="px-3.5 py-2.5 rounded-xl bg-cardbg hover:bg-elevated border border-white/15 text-xs font-semibold text-gray-200 flex items-center gap-1.5 transition">
-              <i class="fa-solid fa-arrow-up-from-bracket text-lborange"></i>
-              <span>Share</span>
-            </button>
-            <button type="button" id="download-poster-btn" class="px-4 py-2.5 rounded-xl bg-lbgreen hover:bg-[#1ed760] text-obsidian font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-lbgreen/20 transition">
-              <i class="fa-solid fa-download"></i>
-              <span>Save PNG</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Interactive Direct Reorder & Positioning Toolbar -->
-        <div id="interactive-toolbar" class="hidden w-full bg-elevated border border-lbgreen/50 text-white rounded-2xl px-4 py-3 shadow-2xl flex items-center justify-between gap-3">
-          <div class="text-xs">
-            <div id="selected-el-label" class="font-bold text-lbgreen">Touch & Drag Elements on Poster</div>
-            <div class="text-[11px] text-gray-300 font-mono">Tap any block on the poster to move or scale</div>
-          </div>
-          <div class="flex items-center gap-1.5 shrink-0">
-            <button type="button" id="el-scale-down-btn" title="Shrink Selected" class="w-8 h-8 rounded-lg bg-obsidian hover:bg-white/15 flex items-center justify-center text-xs border border-white/10"><i class="fa-solid fa-minus"></i></button>
-            <button type="button" id="el-scale-up-btn" title="Enlarge Selected" class="w-8 h-8 rounded-lg bg-obsidian hover:bg-white/15 flex items-center justify-center text-xs border border-white/10"><i class="fa-solid fa-plus"></i></button>
-            <button type="button" id="el-reset-single-btn" class="px-2.5 h-8 rounded-lg bg-obsidian hover:bg-red-500/20 text-[11px] font-mono border border-white/10">Reset</button>
-          </div>
-        </div>
-
-        <!-- SETTINGS DRAWER (Accordion on mobile, auto-expanded side panel on desktop) -->
-        <div id="settings-drawer-wrapper" class="w-full">
-          <details id="settings-accordion" class="group bg-slatepanel rounded-2xl border border-white/10 overflow-hidden shadow-2xl" open>
-            <summary class="px-5 py-4 cursor-pointer flex items-center justify-between bg-cardbg/70 hover:bg-elevated/80 transition select-none lg:pointer-events-none">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-xl bg-lbgreen/15 border border-lbgreen/30 flex items-center justify-center text-lbgreen">
-                  <i class="fa-solid fa-sliders text-sm"></i>
-                </div>
-                <div class="text-left">
-                  <div class="font-display font-bold text-sm text-white">Poster Artwork & Visual Settings</div>
-                  <div class="text-[11px] text-gray-400">Customize images, colors, format badges & sliders</div>
-                </div>
-              </div>
-              <i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform duration-200 group-open:rotate-180 lg:hidden"></i>
-            </summary>
-
-        <div class="p-4 sm:p-5 space-y-5 border-t border-white/10">
-          <!-- Unified Foreground Poster / Card Image Picker (Contains BOTH Posters + Backdrops) -->
-          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-2.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-gray-200 font-semibold">
-                <i class="fa-solid fa-image text-lbgreen mr-1"></i>Foreground Poster Artwork (All Images)
-              </span>
-              <span id="poster-count-badge" class="text-[10px] font-mono text-gray-400">All Assets</span>
-            </div>
-            <p class="text-[11px] text-gray-400">Every poster and backdrop is shown here so you can mix and match freely.</p>
-            <div id="poster-picker-strip" class="flex gap-2 overflow-x-auto pb-1.5 pt-1"></div>
-          </div>
-
-          <!-- Unified Background / Backdrop Image Picker (Contains BOTH Backdrops + Posters) -->
-          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-2.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-gray-200 font-semibold">
-                <i class="fa-solid fa-panorama text-lbblue mr-1"></i>Background Still / Backdrop (All Images)
-              </span>
-              <span id="backdrop-count-badge" class="text-[10px] font-mono text-gray-400">All Assets</span>
-            </div>
-            <div id="backdrop-picker-strip" class="flex gap-2 overflow-x-auto pb-1.5 pt-1"></div>
-          </div>
-
-          <!-- Official Title Logo Picker -->
-          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-2.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-gray-200 font-semibold">Official Title Logos</span>
-              <label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer">
-                <input type="checkbox" id="toggle-use-logo" checked class="accent-lbgreen rounded" />
-                <span>Show Image Logo</span>
-              </label>
-            </div>
-            <div id="logo-picker-strip" class="flex gap-2 overflow-x-auto pb-1"></div>
-          </div>
-
-          <!-- 5-Color Swatch Bar -->
-          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-gray-200 font-semibold">5-Color Extracted Swatch</span>
-              <button type="button" id="reextract-palette-btn" class="text-[11px] font-mono text-lbblue hover:underline">Re-sample</button>
-            </div>
-            <div id="palette-swatch-bar" class="grid grid-cols-5 gap-2"></div>
-          </div>
-
-          <!-- Fine-Tune Visual Sliders -->
-          <div class="bg-cardbg p-4 rounded-xl border border-white/10 space-y-4">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-mono uppercase tracking-wider text-gray-200 font-semibold">Visual & Typography Sliders</span>
-              <button type="button" id="reset-sliders-btn" class="text-[11px] font-mono text-gray-400 hover:text-white">Reset Defaults</button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2.5">
-              <label class="flex items-center gap-2 text-xs text-gray-200 cursor-pointer bg-obsidian p-2.5 rounded-lg border border-white/10">
-                <input type="checkbox" id="chk-gradient" checked class="accent-lbgreen rounded" />
-                <span>Vignette Fade</span>
-              </label>
-              <label class="flex items-center gap-2 text-xs text-gray-200 cursor-pointer bg-obsidian p-2.5 rounded-lg border border-white/10">
-                <input type="checkbox" id="chk-grain" checked class="accent-lbgreen rounded" />
-                <span>Film Grain</span>
-              </label>
-              <label id="qrcode-toggle-row" class="hidden items-center justify-between gap-2 text-xs text-gray-200 cursor-pointer bg-obsidian p-2.5 rounded-lg border border-white/10 col-span-2">
-                <div class="flex items-center gap-2 min-w-0">
-                  <input type="checkbox" id="chk-qrcode" checked class="accent-lbgreen rounded shrink-0" />
-                  <span class="truncate">Show Review QR Code (<code id="qr-url-preview" class="text-[10px] text-lbblue">letterboxd.com/...</code>)</span>
-                </div>
-                <span class="text-[10px] font-mono text-gray-400 shrink-0">Transparent</span>
-              </label>
-              <!-- 10. Marquee Title Style Segmented Switch -->
-              <div id="marquee-mode-selector-row" class="hidden col-span-2 flex flex-col gap-1.5 bg-obsidian p-2.5 rounded-xl border border-white/10">
-                <span class="font-mono text-[11px] uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
-                  <i class="fa-solid fa-lightbulb"></i> 10. Marquee Title Style
-                </span>
-                <div class="grid grid-cols-3 gap-1 p-1 bg-cardbg rounded-lg border border-white/5 text-[11px] font-mono">
-                  <button type="button" data-marquee-mode="normal" class="marquee-mode-btn py-1.5 px-2 rounded-md transition text-center text-gray-400 hover:text-white">Normal text</button>
-                  <button type="button" data-marquee-mode="bulb" class="marquee-mode-btn py-1.5 px-2 rounded-md transition text-center bg-amber-400/20 text-amber-300 font-bold border border-amber-400/30">Bulb</button>
-                  <button type="button" data-marquee-mode="logo" class="marquee-mode-btn py-1.5 px-2 rounded-md transition text-center text-gray-400 hover:text-white">Logo artwork</button>
-                </div>
-              </div>
-
-              <!-- Poster Footer Elements Choice Chips (Multi-select) -->
-              <div class="col-span-2 space-y-2 bg-obsidian p-2.5 rounded-xl border border-white/10">
-                <div class="flex items-center justify-between text-xs">
-                  <span class="font-mono text-[11px] uppercase tracking-wider text-gray-300 font-semibold flex items-center gap-1.5">
-                    <i class="fa-solid fa-layer-group text-lbgreen"></i> Poster Footer Elements
-                  </span>
-                  <span class="text-[10px] font-mono text-gray-500">Multi-select</span>
-                </div>
-                <div id="footer-choice-chips" class="flex flex-wrap gap-1.5">
-                  <button type="button" data-footer-element="username" class="footer-chip px-2.5 py-1 rounded-lg text-[11px] font-mono border transition flex items-center gap-1 bg-lbgreen/15 text-lbgreen border-lbgreen/40 font-semibold"><i class="fa-solid fa-check text-[9px]"></i> @Username</button>
-                  <button type="button" data-footer-element="posterboxd" class="footer-chip px-2.5 py-1 rounded-lg text-[11px] font-mono border transition flex items-center gap-1 bg-lbgreen/15 text-lbgreen border-lbgreen/40 font-semibold"><i class="fa-solid fa-check text-[9px]"></i> PosterBoxd</button>
-                  <button type="button" data-footer-element="letterboxd" class="footer-chip px-2.5 py-1 rounded-lg text-[11px] font-mono border transition flex items-center gap-1 bg-lbgreen/15 text-lbgreen border-lbgreen/40 font-semibold"><i class="fa-solid fa-check text-[9px]"></i> Letterboxd</button>
-                  <button type="button" data-footer-element="venue" class="footer-chip px-2.5 py-1 rounded-lg text-[11px] font-mono border transition flex items-center gap-1 bg-lbgreen/15 text-lbgreen border-lbgreen/40 font-semibold"><i class="fa-solid fa-check text-[9px]"></i> Venue / Logged</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="space-y-3">
-              <div>
-                <div class="flex justify-between text-xs mb-1">
-                  <span class="text-gray-300">Backdrop Brightness</span>
-                  <span id="val-brightness" class="font-mono text-lbgreen">55%</span>
-                </div>
-                <input id="slider-brightness" type="range" min="15" max="100" value="55" />
-              </div>
-              <div>
-                <div class="flex justify-between text-xs mb-1">
-                  <span class="text-gray-300">Backdrop Blur</span>
-                  <span id="val-blur" class="font-mono text-lbgreen">14px</span>
-                </div>
-                <input id="slider-blur" type="range" min="0" max="40" value="14" />
-              </div>
-              <div>
-                <div class="flex justify-between text-xs mb-1">
-                  <span class="text-gray-300">Artwork Scale</span>
-                  <span id="val-poster-scale" class="font-mono text-lbgreen">1.00x</span>
-                </div>
-                <input id="slider-poster-scale" type="range" min="0.65" max="1.35" step="0.05" value="1.00" />
-              </div>
-              <div>
-                <div class="flex justify-between text-xs mb-1">
-                  <span class="text-gray-300">Typography Scale</span>
-                  <span id="val-font-scale" class="font-mono text-lbgreen">1.00x</span>
-                </div>
-                <input id="slider-font-scale" type="range" min="0.75" max="1.35" step="0.05" value="1.00" />
-              </div>
-              <div>
-                <div class="flex justify-between text-xs mb-1">
-                   <span class="text-gray-300">Live Poster Review Limit</span>
-                  <span class="flex items-center gap-1.5">
-                    <input id="input-detailed-review-limit" type="number" min="1" max="10000" step="1" value="500" aria-label="Live poster review character limit"
-                      class="w-20 bg-obsidian border border-lbgreen/30 rounded-md px-1.5 py-0.5 text-right font-mono text-lbgreen focus:outline-none focus:border-lbgreen" />
-                    <span class="font-mono text-lbgreen">chars</span>
-                  </span>
-                </div>
-                <input id="slider-detailed-review-limit" type="range" min="1" max="5000" step="10" value="500" />
-                 <p class="text-[10px] text-gray-500 mt-1">Controls how many Detailed Review / Notes characters are rendered on the live poster. Type an exact value above; the slider is a quick control.</p>
-              </div>
-              <div id="photo-crop-container" class="pt-2 border-t border-white/10 transition-opacity">
-                <div class="flex items-center justify-between text-xs mb-2 font-mono text-gray-300">
-                  <span class="flex items-center gap-1.5"><i class="fa-solid fa-arrows-up-down-left-right text-lbblue"></i>Photo Crop Offset Correction</span>
-                  <button type="button" id="reset-photo-offsets-btn" class="text-[10px] text-gray-400 hover:text-white transition">Center (0,0)</button>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                  <div>
-                    <div class="flex justify-between text-[11px] mb-1">
-                      <span class="text-gray-400">Horizontal (X)</span>
-                      <span id="val-poster-offset-x" class="font-mono text-lbblue">0%</span>
-                    </div>
-                    <input id="slider-poster-offset-x" type="range" min="-100" max="100" step="2" value="0" />
-                  </div>
-                  <div>
-                    <div class="flex justify-between text-[11px] mb-1">
-                      <span class="text-gray-400">Vertical (Y)</span>
-                      <span id="val-poster-offset-y" class="font-mono text-lbblue">0%</span>
-                    </div>
-                    <input id="slider-poster-offset-y" type="range" min="-100" max="100" step="2" value="0" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </details>
-    </div>
-  </div><!-- /#desktop-controls-col -->
-
-  <!-- RIGHT COLUMN (DESKTOP): LIVE POSTER CANVAS STAGE -->
-  <div id="desktop-poster-col" class="order-1 lg:order-2 lg:col-span-6 xl:col-span-7 flex flex-col items-center justify-center w-full lg:sticky lg:top-20">
-    <!-- POSTER CANVAS STAGE WITH FLOATING SIDE ARROWS -->
-    <div class="relative w-full flex items-center justify-center py-1">
-      <!-- Left Arrow -->
-      <button type="button" id="prev-style-btn" aria-label="Previous Poster Style"
-        class="absolute left-1 sm:left-4 z-20 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-obsidian/85 hover:bg-lbgreen text-white hover:text-obsidian border border-white/20 shadow-2xl flex items-center justify-center transition active:scale-90">
-        <i class="fa-solid fa-chevron-left text-base"></i>
-      </button>
-
-      <!-- Main Poster Canvas -->
-      <canvas id="poster-canvas" width="1080" height="1920"></canvas>
-
-      <!-- Right Arrow -->
-      <button type="button" id="next-style-btn" aria-label="Next Poster Style"
-        class="absolute right-1 sm:right-4 z-20 w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-obsidian/85 hover:bg-lbgreen text-white hover:text-obsidian border border-white/20 shadow-2xl flex items-center justify-center transition active:scale-90">
-        <i class="fa-solid fa-chevron-right text-base"></i>
-      </button>
-    </div>
-  </div><!-- /#desktop-poster-col -->
-
-</div><!-- /#desktop-studio-grid -->
+      <nav class="editor-tools no-scrollbar" role="tablist" aria-label="Editor tools">
+        <button type="button" role="tab" data-editor-tool="style" class="editor-tool active" aria-selected="true"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Style</span></button>
+        <button type="button" role="tab" data-editor-tool="size" class="editor-tool"><i class="fa-solid fa-crop-simple" aria-hidden="true"></i><span>Size</span></button>
+        <button type="button" role="tab" data-editor-tool="artwork" class="editor-tool"><i class="fa-solid fa-image" aria-hidden="true"></i><span>Artwork</span></button>
+        <button type="button" role="tab" data-editor-tool="colour" class="editor-tool"><i class="fa-solid fa-palette" aria-hidden="true"></i><span>Colour</span></button>
+        <button type="button" role="tab" data-editor-tool="adjust" class="editor-tool"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Adjust</span></button>
+        <button type="button" role="tab" data-editor-tool="details" class="editor-tool"><i class="fa-solid fa-layer-group" aria-hidden="true"></i><span>Details</span></button>
+        <button type="button" role="tab" data-editor-tool="move" class="editor-tool"><i class="fa-solid fa-up-down-left-right" aria-hidden="true"></i><span>Move</span></button>
+      </nav>
+    </section>
   </main>
 
   <!-- VIEW 4: FETCH & POSTER HISTORY TAB -->
@@ -747,7 +657,7 @@
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
       <div class="flex items-center gap-2">
         <span class="font-display font-semibold text-gray-300">PosterBoxd</span>
-        <button type="button" data-app-version class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-gray-400 hover:text-white hover:bg-white/15 transition">v1.4.0</button>
+        <button type="button" data-app-version class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-gray-400 hover:text-white hover:bg-white/15 transition">v1.5.0</button>
         <span class="text-gray-600">&bull;</span>
         <a href="https://github.com/emmanuelmavely/PosterBoxdPlus" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition font-mono hover:underline inline-flex items-center gap-1">
           <i class="fa-brands fa-github text-xs"></i>
@@ -762,24 +672,11 @@
   </footer>
 
   <!-- ANIMATED MOBILE-FIRST BOTTOM NAVIGATION BAR (Safe spacing, never overlaps controls) -->
-  <nav id="mobile-bottom-nav" aria-label="App Navigation"
-    class="bottom-nav-hidden fixed bottom-3 left-1/2 z-40 w-[94%] max-w-md bg-slatepanel/95 backdrop-blur-xl border border-white/15 rounded-2xl p-1.5 shadow-2xl transition-all duration-300 flex items-center justify-around">
-    <button type="button" data-nav-target="review" class="bottom-nav-btn flex-1 py-2 px-2 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold text-gray-400 hover:text-white transition">
-      <i class="fa-solid fa-pen-to-square text-sm"></i>
-      <span class="text-[11px]">Review</span>
-    </button>
-    <button type="button" data-nav-target="design" class="bottom-nav-btn active flex-1 py-2 px-2 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold bg-elevated text-lbgreen border border-lbgreen/30 transition">
-      <i class="fa-solid fa-wand-magic-sparkles text-sm"></i>
-      <span class="text-[11px]">Design</span>
-    </button>
-    <button type="button" data-nav-target="settings" class="bottom-nav-btn flex-1 py-2 px-2 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold text-gray-400 hover:text-white transition">
-      <i class="fa-solid fa-sliders text-sm"></i>
-      <span class="text-[11px]">Settings</span>
-    </button>
-    <button type="button" data-nav-target="history" class="bottom-nav-btn flex-1 py-2 px-2 rounded-xl flex flex-col items-center gap-1 text-xs font-semibold text-gray-400 hover:text-white transition">
-      <i class="fa-solid fa-clock-rotate-left text-sm"></i>
-      <span class="text-[11px]">History</span>
-    </button>
+  <nav id="mobile-bottom-nav" aria-label="App navigation" class="ios-tabbar">
+    <button type="button" data-nav-target="home" class="bottom-nav-btn"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span>Search</span></button>
+    <button type="button" data-nav-target="review" class="bottom-nav-btn"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i><span>Review</span></button>
+    <button type="button" data-nav-target="design" class="bottom-nav-btn"><i class="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i><span>Studio</span></button>
+    <button type="button" data-nav-target="history" class="bottom-nav-btn"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>History</span></button>
   </nav>
 
   <!-- WHAT'S NEW MENU -->
@@ -792,8 +689,8 @@
           </div>
           <div>
             <p class="text-[10px] font-mono uppercase tracking-widest text-lbgreen font-bold">Current release</p>
-            <h3 class="font-display font-bold text-lg text-white">What’s New in <span id="whats-new-version">v1.3.9</span></h3>
-            <p class="text-[11px] font-mono text-gray-400">Released <span id="whats-new-date">2026-10-26</span></p>
+            <h3 class="font-display font-bold text-lg text-white">What’s New in <span id="whats-new-version">v1.5.0</span></h3>
+            <p class="text-[11px] font-mono text-gray-400">Released <span id="whats-new-date">2026-11-12</span></p>
           </div>
         </div>
         <button type="button" id="close-whats-new-btn" class="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition" aria-label="Close What's New">
@@ -817,7 +714,7 @@
   </div>
 
   <!-- PWA UPDATE NOTIFICATION BANNER -->
-  <div id="pwa-update-banner" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slatepanel/95 backdrop-blur-md border border-lbgreen/40 shadow-2xl rounded-2xl px-4 py-2.5 items-center gap-3 text-xs text-white animate-in fade-in slide-in-from-bottom-3 duration-200">
+  <div id="pwa-update-banner" class="hidden fixed left-1/2 -translate-x-1/2 z-50 bg-slatepanel/95 backdrop-blur-md border border-lbgreen/40 shadow-2xl rounded-2xl px-4 py-2.5 items-center gap-3 text-xs text-white animate-in fade-in slide-in-from-bottom-3 duration-200">
     <div class="flex items-center gap-2 font-medium">
       <i class="fa-solid fa-sparkles text-lbgreen"></i>
       <span>New update available!</span>

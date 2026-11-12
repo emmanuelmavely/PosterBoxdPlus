@@ -3,6 +3,7 @@ import { getSavedHistory } from '../services/storage.js';
 import { scheduleCanvasRender } from '../rendering/canvas-renderer.js';
 import { showToast } from './toast.js';
 import { syncDesignControlsUI } from './design-controls.js';
+import { closeEditorModes, openEditorPanel } from './editor.js';
 
 let renderHistoryList = () => {};
 
@@ -58,7 +59,10 @@ export function switchView(viewName, openSettingsDrawer = false) {
     return;
   }
 
+  if (state.currentView === 'preview' && viewName !== 'preview') closeEditorModes();
   state.currentView = viewName;
+  // The editor is a full-screen sheet: page chrome is hidden and the page cannot scroll behind it.
+  document.body.classList.toggle('editor-open', viewName === 'preview');
   const homeView = document.getElementById('view-home');
   const reviewView = document.getElementById('view-review');
   const previewView = document.getElementById('view-preview');
@@ -82,42 +86,23 @@ export function switchView(viewName, openSettingsDrawer = false) {
     button.setAttribute('aria-current', isActive ? 'page' : 'false');
   });
 
-  if (viewName === 'home') {
-    headerSearch?.classList.add('hidden');
-    bottomNavigation?.classList.remove('bottom-nav-enter');
-    bottomNavigation?.classList.add('bottom-nav-hidden');
-  } else {
-    headerSearch?.classList.remove('hidden');
-    bottomNavigation?.classList.remove('bottom-nav-hidden');
-    bottomNavigation?.classList.add('bottom-nav-enter');
-  }
+  headerSearch?.classList.toggle('hidden', viewName === 'home');
+  bottomNavigation?.classList.remove('bottom-nav-hidden');
 
-  let activeTab = 'design';
-  if (viewName === 'review') activeTab = 'review';
-  else if (viewName === 'history') activeTab = 'history';
-  else if (openSettingsDrawer) activeTab = 'settings';
-
+  const activeTab = { home: 'home', review: 'review', history: 'history', preview: 'design' }[viewName] || 'home';
   document.querySelectorAll('.bottom-nav-btn').forEach((button) => {
     const isActive = button.dataset.navTarget === activeTab;
     button.classList.toggle('active', isActive);
-    button.classList.toggle('bg-elevated', isActive);
-    button.classList.toggle('text-lbgreen', isActive);
-    button.classList.toggle('border', isActive);
-    button.classList.toggle('border-lbgreen/30', isActive);
-    button.classList.toggle('text-gray-400', !isActive);
+    if (isActive) button.setAttribute('aria-current', 'page');
+    else button.removeAttribute('aria-current');
   });
 
   if (viewName === 'history') renderHistoryList();
 
   if (viewName === 'preview') {
     scheduleCanvasRender();
-    const settingsAccordion = document.getElementById('settings-accordion');
-    if (openSettingsDrawer && settingsAccordion) {
-      settingsAccordion.open = true;
-      setTimeout(() => settingsAccordion.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    openEditorPanel(openSettingsDrawer ? 'adjust' : 'style');
+    window.scrollTo({ top: 0 });
   } else {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -146,7 +131,8 @@ export function initNavigation() {
         showToast('Please search or select a film from History first');
         return;
       }
-      if (target === 'review') switchView('review', false);
+      if (target === 'home') switchView('home', false);
+      else if (target === 'review') switchView('review', false);
       else if (target === 'design') switchView('preview', false);
       else if (target === 'settings') switchView('preview', true);
       else if (target === 'history') switchView('history', false);

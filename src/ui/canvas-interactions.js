@@ -37,7 +37,7 @@ export function initCanvasInteractions() {
   };
 
   const onPointerDown = (clientX, clientY) => {
-    if (!state.isInteractiveEdit) return;
+    if (!state.isInteractiveEdit) return false;
     const point = getCanvasCoords(clientX, clientY);
     const hit = [...state.hitBoxes].reverse().find((box) =>
       point.x >= box.x && point.x <= box.x + box.w && point.y >= box.y && point.y <= box.y + box.h
@@ -50,6 +50,7 @@ export function initCanvasInteractions() {
       if (selectedElementLabel) selectedElementLabel.textContent = `Selected: ${hit.label}`;
       scheduleCanvasRender();
     }
+    return Boolean(hit);
   };
 
   const onPointerMove = (clientX, clientY) => {
@@ -63,12 +64,12 @@ export function initCanvasInteractions() {
 
   canvas.addEventListener('mousedown', (event) => onPointerDown(event.clientX, event.clientY));
   window.addEventListener('mousemove', (event) => onPointerMove(event.clientX, event.clientY));
-  window.addEventListener('mouseup', () => { draggingId = null; });
 
   canvas.addEventListener('touchstart', (event) => {
-    if (state.isInteractiveEdit && event.touches[0]) {
-      event.preventDefault();
-      onPointerDown(event.touches[0].clientX, event.touches[0].clientY);
+    // Only claim the gesture when a block is actually grabbed, so a touch on empty
+    // poster area still scrolls the page instead of trapping the user on the canvas.
+    if (state.isInteractiveEdit && event.touches.length === 1) {
+      if (onPointerDown(event.touches[0].clientX, event.touches[0].clientY)) event.preventDefault();
     }
   }, { passive: false });
 
@@ -78,8 +79,6 @@ export function initCanvasInteractions() {
       onPointerMove(event.touches[0].clientX, event.touches[0].clientY);
     }
   }, { passive: false });
-
-  canvas.addEventListener('touchend', () => { draggingId = null; });
 
   document.getElementById('el-scale-up-btn')?.addEventListener('click', () => {
     if (!state.selectedElementId) return;
@@ -106,14 +105,14 @@ export function initCanvasInteractions() {
     showToast('Current design element positions reset');
   });
 
-  // This second release pair is present in the original inline handlers. Keep it
-  // during extraction so the refactor does not silently alter drag-release behavior.
-  window.addEventListener('mouseup', () => {
+  // Release: persist the dragged position, then let go. touchcancel matters on phones:
+  // a system gesture (notification shade, app switcher, incoming call) ends the touch
+  // without a touchend, which otherwise leaves the block glued to the next touch.
+  const releaseDrag = () => {
     if (draggingId) saveTransformsToStorage();
     draggingId = null;
-  });
-  canvas.addEventListener('touchend', () => {
-    if (draggingId) saveTransformsToStorage();
-    draggingId = null;
-  });
+  };
+  window.addEventListener('mouseup', releaseDrag);
+  canvas.addEventListener('touchend', releaseDrag);
+  canvas.addEventListener('touchcancel', releaseDrag);
 }

@@ -152,7 +152,7 @@ export function renderMarqueePoster(ctx, w, h) {
   });
 
   const artY = mqY + mqH + 38;
-  const artH = Math.round((h < 1500 ? h * 0.40 : (isStory ? 700 : h * 0.44)) * Math.min(1.08, state.posterScale));
+  const artH = Math.round((h <= 1080 ? h * 0.32 : (h < 1500 ? h * 0.40 : (isStory ? 700 : h * 0.44))) * Math.min(1.08, state.posterScale));
   const artW = Math.round(artH * (2 / 3));
   const artX = Math.round((w - artW) / 2);
   const artImg = state.posterImg || state.backdropImg;

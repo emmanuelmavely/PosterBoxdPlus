@@ -1,4 +1,4 @@
-const CACHE_NAME = 'posterboxd-v1.3.9';
+const CACHE_NAME = 'posterboxd-v1.5.0';
 
 const STATIC_PRECACHE = [
   './',

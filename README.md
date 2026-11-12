@@ -7,7 +7,7 @@
 <img src="./assets/PosterBoxd-Banner.jpg" alt="PosterBoxd Banner" width="100%" style="border-radius: 14px; margin: 12px 0 16px 0;" />
 
 [![Live on GitHub Pages](https://img.shields.io/badge/Live_Site-posterboxd.com-00E054?style=flat-square&logo=githubpages&logoColor=white)](https://posterboxd.com/)
-[![Version](https://img.shields.io/badge/version-v1.4.0-00E054?style=flat-square)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-v1.5.0-00E054?style=flat-square)](CHANGELOG.md)
 [![Deploy to GitHub Pages](https://github.com/emmanuelmavely/PosterBoxdPlus/actions/workflows/static.yml/badge.svg)](https://github.com/emmanuelmavely/PosterBoxdPlus/actions/workflows/static.yml)
 ![JavaScript](https://img.shields.io/badge/JavaScript-ES_Modules-F7DF1E?logo=javascript&logoColor=black)
 ![No build step](https://img.shields.io/badge/build-none-00E054)
@@ -118,7 +118,9 @@ Here are sample high-resolution posters generated across different archetypes:
 - **Context-Aware Scannable QR Codes:** On-poster QR code linking directly to the authentic Letterboxd review, automatically scoped and visible only when importing from a review URL.
 
 ### Visual Design & Customization
-- **11 Curated Poster Styles:** From vintage admission tickets and classic Criterion editions to editorial layouts, retro grindhouse bills, cinema marquees, and glassmorphism cards.
+- **22 Curated Poster Styles:** From vintage admission tickets and classic Criterion editions to editorial layouts, retro grindhouse bills, cinema marquees, glass cards, receipts, contact sheets and magazine spreads.
+- **iOS-Style Editor:** The poster stays pinned on screen while the tools (Style, Size, Artwork, Colour, Adjust, Details, Move) sit underneath; each style shows a live thumbnail of your own poster.
+- **Four Canvas Sizes:** Story 9:16, Instagram post 4:5, square 1:1 and print 2:3.
 - **Cinema Marquee Bulb Illumination:** Toggle between illuminated retro incandescent lightbulbs and vector typography, with a 1.3× scaled main marquee title.
 - **Adaptive Palette Color Theming:** Automatic 5-swatch palette sampling from the artwork to dynamically theme accents, ticket stubs, and header bylines with high contrast.
 - **3 Export Aspect Ratios:** 9:16 (Stories/Reels 1080×1920), 4:5 (Instagram portrait 1080×1350), and 2:3 (Classic cinema 1200×1800).
@@ -147,6 +149,17 @@ Here are sample high-resolution posters generated across different archetypes:
 | 9 | **70s Retro Grindhouse** | Distressed warm vintage palette with retro film typography | Movies & TV |
 | 10 | **Movie Theater Marquee** | Retro illuminated cinema marquee sign bill | Movies |
 | 11 | **VIP Screening Pass** | Lanyard badge with barcode and security pass aesthetics | Movies & TV |
+| 12 | **Brutalist Verdict Tape** | Black-and-white key art with a slanted accent band carrying the one-liner | Movies & TV |
+| 13 | **35mm Contact Sheet** | Three film frames beside proof-sheet notes | Movies & TV |
+| 14 | **Glass Media Player** | Frosted "now playing" card with a runtime progress bar | Movies & TV |
+| 15 | **Thermal Cinema Receipt** | Till receipt with monochrome still, itemised credits and barcode | Movies & TV |
+| 16 | **Swiss Archival Grid** | Scene still above a strict two-column type grid | Movies & TV |
+| 17 | **Press Billboard** | Full-bleed key art with a pull quote and title block | Movies & TV |
+| 18 | **35mm Archive Stub** | Rounded still, perforation line, quote and barcode | Movies & TV |
+| 19 | **Spatial Glass Window** | Floating app window with hero banner, cast, crew and review | Movies & TV |
+| 20 | **Glass Widget Stack** | Lock-screen style widgets stacked over the key art | Movies & TV |
+| 21 | **Split-Tone Spread** | Magazine spread: poster beside a glass review panel | Movies & TV |
+| 22 | **Instant-Photo Archive Pass** | Cream photo card on a dark field with barcode | Movies & TV |
 
 ---
 
@@ -227,8 +240,8 @@ The Worker only accepts `GET` and CORS preflight requests from PosterBoxd and lo
    - Or paste a Letterboxd review URL (e.g. `https://letterboxd.com/user/film/title/` or `https://boxd.it/gUpRkb`).
    - Or click any trending now-playing chip or demo preset.
 3. **Customize Your Review:** Add your rating, heart like status, theater medium, custom tags, and review text in the Review Form.
-4. **Style the Poster:** Switch between the 11 poster archetypes, toggle aspect ratios, adjust backdrop blur/opacity, and choose alternate posters or backdrops.
-5. **Interactive Drag & Resize:** Click **Move & Resize** to reposition or rescale text blocks, ratings, or artwork hitboxes directly on the canvas.
+4. **Style the Poster:** Switch between the 22 poster archetypes, toggle aspect ratios, adjust backdrop blur/opacity, and choose alternate posters or backdrops.
+5. **Interactive Drag & Resize:** Open the **Move** tool to reposition or rescale text blocks, ratings, or artwork hitboxes directly on the canvas.
 6. **Export:** Click **Save PNG** to download, **Copy** to copy to clipboard, or **Share** to send via mobile share sheets.
 
 ---

@@ -147,8 +147,28 @@ export function ensureVisibleAccentOnDark(hexColor, fallback = '#00E054') {
   return getHexLuminance(hexColor) < 0.14 ? fallback : hexColor;
 }
 
+// The most colourful palette entry. The dominant colour (palette[0]) is often a
+// near-black, which makes a poor accent; this never returns a plain grey when a
+// colour is available.
+export function getVividPaletteColor(fallback = '#00E054') {
+  let best = '';
+  let bestScore = 40;
+  (state.palette || []).forEach((hex) => {
+    const match = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+    if (!match) return;
+    const value = parseInt(match[1], 16);
+    const r = value >> 16, g = (value >> 8) & 255, b = value & 255;
+    const max = Math.max(r, g, b);
+    const score = (max - Math.min(r, g, b)) * (0.35 + max / 255);
+    if (score > bestScore) { bestScore = score; best = `#${match[1].toUpperCase()}`; }
+  });
+  return best || fallback;
+}
+
 export function getDetailedReviewLines(context, text, maxWidth, maxLines = Infinity) {
   if (!state.showDetailedReview || !text || text === state.review) return [];
+  // The square canvas only has room for the one-line review.
+  if (context.canvas && context.canvas.height <= 1080) return [];
   const cleanText = String(text).trim();
   if (!cleanText) return [];
   const outputLimit = Math.max(1, Math.min(MAX_DETAILED_REVIEW_CHARACTER_LIMIT, Number(state.detailedReviewCharacterLimit) || 500));

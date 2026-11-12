@@ -14,6 +14,6 @@
 - [src/constants.js](src/constants.js): Character limits, poster archetypes, and Instagram Story Safe Zone specifications.
 - [src/rendering/canvas-renderer.js](src/rendering/canvas-renderer.js): Core 2D canvas rendering engine, aspect ratio scaling, and safe zone guidelines.
 - [src/rendering/primitives.js](src/rendering/primitives.js): Canvas drawing primitives (typography layout, badges, star ratings, palette bars, footer brand).
-- [src/rendering/posters/](src/rendering/posters/): 11 individual poster layout renderers.
+- [src/rendering/posters/](src/rendering/posters/): 22 individual poster layout renderers.
 - [worker/index.js](worker/index.js): Cloudflare Worker edge proxy for TMDB API caching.
 

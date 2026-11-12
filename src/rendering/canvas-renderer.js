@@ -1,9 +1,71 @@
 import { state } from '../state.js';
-import { drawRoundedRectPath } from './primitives.js';
+import { drawRoundedRectPath, getVividPaletteColor } from './primitives.js';
 import { POSTER_RENDERERS } from './posters.js';
 import { renderRuntime } from './runtime.js';
 
 let renderPending = false;
+const afterRenderListeners = [];
+let thumbnailSource = null;
+
+export function addAfterRenderListener(listener) {
+  if (typeof listener === 'function') afterRenderListeners.push(listener);
+}
+
+// Draws one style at full size off-screen and scales it into `targetCanvas`.
+// Used for the style thumbnails; it never touches the visible poster or its hit boxes.
+export function renderArchetypeInto(targetCanvas, archetype, pixelHeight = 176) {
+  const renderPoster = POSTER_RENDERERS[archetype];
+  if (!targetCanvas || !renderPoster) return;
+  const ratioKey = CANVAS_SIZES[state.aspectRatio] ? state.aspectRatio : '9:16';
+  const { w, h } = CANVAS_SIZES[ratioKey];
+  if (!thumbnailSource) thumbnailSource = document.createElement('canvas');
+  if (thumbnailSource.width !== w || thumbnailSource.height !== h) {
+    thumbnailSource.width = w;
+    thumbnailSource.height = h;
+  }
+  const ctx = thumbnailSource.getContext('2d');
+  const saved = { archetype: state.archetype, hitBoxes: state.hitBoxes };
+  ctx.clearRect(0, 0, w, h);
+  state.archetype = archetype;
+  state.hitBoxes = [];
+  try {
+    renderPoster(ctx, w, h);
+  } catch (error) {
+    console.error(`Thumbnail render error for "${archetype}":`, error);
+  } finally {
+    state.archetype = saved.archetype;
+    state.hitBoxes = saved.hitBoxes;
+  }
+  const targetH = pixelHeight;
+  const targetW = Math.round(pixelHeight * (w / h));
+  if (targetCanvas.width !== targetW || targetCanvas.height !== targetH) {
+    targetCanvas.width = targetW;
+    targetCanvas.height = targetH;
+  }
+  const targetCtx = targetCanvas.getContext('2d');
+  targetCtx.imageSmoothingQuality = 'high';
+  targetCtx.clearRect(0, 0, targetW, targetH);
+  targetCtx.drawImage(thumbnailSource, 0, 0, targetW, targetH);
+}
+
+export const CANVAS_SIZES = Object.freeze({
+  '9:16': { w: 1080, h: 1920, label: 'Story' },
+  '4:5': { w: 1080, h: 1350, label: 'Instagram post' },
+  '1:1': { w: 1080, h: 1080, label: 'Square' },
+  '2:3': { w: 1200, h: 1800, label: 'Print poster' }
+});
+
+function syncStageChrome(ratioKey, targetW, targetH) {
+  const glow = document.getElementById('stage-ambient-glow');
+  const glowColor = getVividPaletteColor('');
+  if (glow && glowColor && glow.dataset.color !== glowColor) {
+    glow.dataset.color = glowColor;
+    glow.style.backgroundColor = glowColor;
+  }
+  const readout = document.getElementById('stage-dimensions-readout');
+  const text = `${CANVAS_SIZES[ratioKey].label} ${ratioKey} · ${targetW}×${targetH} PNG`;
+  if (readout && readout.textContent !== text) readout.textContent = text;
+}
 
 export function scheduleCanvasRender() {
   if (renderPending) return;
@@ -18,14 +80,15 @@ export function renderPosterToCanvas() {
   const canvas = document.getElementById('poster-canvas');
   if (!canvas) return;
 
-  let targetW = 1080, targetH = 1920;
-  if (state.aspectRatio === '4:5') { targetW = 1080; targetH = 1350; }
-  else if (state.aspectRatio === '2:3') { targetW = 1200; targetH = 1800; }
+  const ratioKey = CANVAS_SIZES[state.aspectRatio] ? state.aspectRatio : '9:16';
+  const { w: targetW, h: targetH } = CANVAS_SIZES[ratioKey];
 
   if (canvas.width !== targetW || canvas.height !== targetH) {
     canvas.width = targetW;
     canvas.height = targetH;
   }
+
+  syncStageChrome(ratioKey, targetW, targetH);
 
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, targetW, targetH);
@@ -66,6 +129,14 @@ export function renderPosterToCanvas() {
       ctx.restore();
     });
   }
+
+  afterRenderListeners.forEach((listener) => {
+    try {
+      listener();
+    } catch (error) {
+      console.error('After-render listener failed:', error);
+    }
+  });
 }
 
 function drawStorySafeZoneGuides(ctx, targetW, targetH) {

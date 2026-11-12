@@ -46,7 +46,7 @@ PosterBoxdPlus/
     │   ├── runtime.js          # Grain pattern generation & brand SVG caching
     │   ├── transforms.js       # Interactive movable groups, hitboxes, and element offsets
     │   ├── qr-code.js          # QR code rendering utility
-    │   └── posters/            # 11 distinct poster style renderers
+    │   └── posters/            # 22 poster style renderers (11 originals listed below + studio series)
     │       ├── floating-ticket.js # 1. Floating Vintage Ticket
     │       ├── classic.js         # 2. Classic Centered
     │       ├── editorial.js       # 3. Full-Bleed Editorial

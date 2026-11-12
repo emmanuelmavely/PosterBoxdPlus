@@ -309,7 +309,8 @@ export function renderFloatingTicketPoster(ctx, w, h) {
     state.genre ? state.genre.toUpperCase() : '',
     (state.runtime || state.medium) ? [state.runtime, state.medium].filter(Boolean).join(' · ').toUpperCase() : ''
   ].filter(Boolean).join('     •     ');
-  ctx.fillText(getWrappedLines(ctx, metaStrip, w - 100, 1)[0] || '', cx, stripY);
+  // On the short square canvas a two-line quote reaches this row; the quote wins.
+  if (botY <= stripY - 4) ctx.fillText(getWrappedLines(ctx, metaStrip, w - 100, 1)[0] || '', cx, stripY);
   ctx.restore();
 
   drawFooterBrand(ctx, cx, isStory ? 1755 : (h - 22), false);

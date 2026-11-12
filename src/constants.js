@@ -5,26 +5,37 @@ export const CUSTOM_LOGO_SVG_DATA = `data:image/svg+xml;utf8,` + encodeURICompon
   </svg>
 `);
 
-export const APP_VERSION = 'v1.4.0';
-export const RELEASE_DATE = '2026-11-09';
+export const APP_VERSION = 'v1.5.0';
+export const RELEASE_DATE = '2026-11-12';
 export const CURRENT_RELEASE_NOTES = Object.freeze([
-  'Constrained all 11 poster layouts to strictly honor the 1080×1610 px Instagram Story safe zone in 9:16 aspect ratio.',
-  'Added Story Safe Zone guide overlay and toolbar toggle for both live preview and Move & Resize editing.',
-  'Standardized AI agent indexing and developer context configuration across the repository.'
+  'New iOS-style poster editor: the poster stays pinned while Style, Size, Artwork, Colour, Adjust, Details and Move tools sit underneath.',
+  '11 new poster styles (22 in total), each with a live thumbnail of your own poster, plus a square 1:1 canvas.',
+  'Mobile fixes: notch-safe header, drag positions now save, finger-sized controls, and Save opens the share sheet on iPhone.'
 ]);
 
 export const ARCHETYPE_NAMES = Object.freeze({
-  floatingticket: '1 / 11 · Floating Vintage Ticket',
-  classic: '2 / 11 · Classic Centered',
-  editorial: '3 / 11 · Full-Bleed Editorial',
-  polaroid: '4 / 11 · Polaroid Gallery Frame',
-  criterion: '5 / 11 · Criterion Arthouse Split',
-  ticket: '6 / 11 · Full Cinema Ticket Stub',
-  iosglass: '7 / 11 · Apple iOS Glass Card',
-  scoreboard: '8 / 11 · Big Score & One-Liner',
-  retro: '9 / 11 · 70s Retro Grindhouse',
-  marquee: '10 / 11 · Movie Theater Marquee',
-  vippass: '11 / 11 · VIP Screening Pass'
+  floatingticket: '1 / 22 · Floating Vintage Ticket',
+  classic: '2 / 22 · Classic Centered',
+  editorial: '3 / 22 · Full-Bleed Editorial',
+  polaroid: '4 / 22 · Polaroid Gallery Frame',
+  criterion: '5 / 22 · Criterion Arthouse Split',
+  ticket: '6 / 22 · Full Cinema Ticket Stub',
+  iosglass: '7 / 22 · Apple iOS Glass Card',
+  scoreboard: '8 / 22 · Big Score & One-Liner',
+  retro: '9 / 22 · 70s Retro Grindhouse',
+  marquee: '10 / 22 · Movie Theater Marquee',
+  vippass: '11 / 22 · VIP Screening Pass',
+  brutalist: '12 / 22 · Brutalist Verdict Tape',
+  contactsheet: '13 / 22 · 35mm Contact Sheet',
+  glassplayer: '14 / 22 · Glass Media Player',
+  receipt: '15 / 22 · Thermal Cinema Receipt',
+  swissgrid: '16 / 22 · Swiss Archival Grid',
+  billboard: '17 / 22 · Press Billboard',
+  archivestub: '18 / 22 · 35mm Archive Stub',
+  spatial: '19 / 22 · Spatial Glass Window',
+  glassstack: '20 / 22 · Glass Widget Stack',
+  splitspread: '21 / 22 · Split-Tone Spread',
+  archivepass: '22 / 22 · Instant-Photo Archive Pass'
 });
 
 export const ARCHETYPE_KEYS = Object.keys(ARCHETYPE_NAMES);
@@ -48,6 +59,17 @@ export const DEFAULT_DETAILED_REVIEW_CHARACTER_LIMITS = Object.freeze({
   retro: 500,
   marquee: 280,
   vippass: 750,
+  brutalist: 350,
+  contactsheet: 350,
+  glassplayer: 400,
+  receipt: 450,
+  swissgrid: 350,
+  billboard: 350,
+  archivestub: 350,
+  spatial: 350,
+  glassstack: 350,
+  splitspread: 350,
+  archivepass: 350,
   design12: 350
 });
 

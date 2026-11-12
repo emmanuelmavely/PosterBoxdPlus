@@ -16,13 +16,16 @@ No build step exists. To run locally, start any static web server:
 - `npx http-server -p 8080 -c-1`
 Then open `http://localhost:8080`.
 
+For live TMDB data on localhost, put `TMDB_API_KEY=...` in the git-ignored `.env.local` and run `node scripts/dev-server.mjs` (http://localhost:8123).
+
 ## Architecture & Code Map
 - `src/main.js`: Bootstraps views, services, UI controls, and loads fonts.
 - `src/state.js`: Single reactive store holding active media, review, palette, and poster customization settings.
 - `src/constants.js`: System limits, archetype names, and `STORY_SAFE_ZONE` (1080×1610 safe area).
-- `src/rendering/canvas-renderer.js`: Main render loop, handles canvas dimensions (9:16, 4:5, 2:3), film grain, interactive hitboxes, and safe zone guidelines.
+- `src/rendering/canvas-renderer.js`: Main render loop, handles canvas dimensions (9:16, 4:5, 1:1, 2:3), style thumbnails, film grain, interactive hitboxes, and safe zone guidelines.
 - `src/rendering/primitives.js`: Drawing helpers (typography fitting, badges, stars, palettes, footer branding).
-- `src/rendering/posters/`: 11 poster style renderers (`floating-ticket.js`, `classic.js`, `editorial.js`, `polaroid.js`, `criterion.js`, `ticket.js`, `ios-glass.js`, `scoreboard.js`, `retro.js`, `marquee.js`, `vip-pass.js`).
+- `src/rendering/posters/`: 22 poster style renderers (`floating-ticket.js`, `classic.js`, `editorial.js`, `polaroid.js`, `criterion.js`, `ticket.js`, `ios-glass.js`, `scoreboard.js`, `retro.js`, `marquee.js`, `vip-pass.js`, plus `brutalist.js`, `contact-sheet.js`, `glass-player.js`, `receipt.js`, `studio-editorial.js`, `studio-glass.js`; shared helpers in `studio-shared.js`).
+- `src/ui/editor.js`: iOS-style editor shell (tool tabs, sub-tabs, style thumbnails, swipe).
 - `src/ui/`: UI controller modules for search, design sliders, review form, asset pickers, and export.
 
 ## Key Rules

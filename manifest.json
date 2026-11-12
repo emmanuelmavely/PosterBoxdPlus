@@ -1,7 +1,7 @@
 {
   "name": "PosterBoxd — Cinema & TV Review Poster Generator",
   "short_name": "PosterBoxd",
-  "description": "Create stunning cinema review posters for any movie or TV series. Search TMDB, import Letterboxd reviews, pick from 11 designer styles, and export high-res PNGs.",
+  "description": "Create stunning cinema review posters for any movie or TV series. Search TMDB, import Letterboxd reviews, pick from 22 designer styles, and export high-res PNGs.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

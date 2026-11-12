@@ -52,7 +52,8 @@ export function renderIosGlassPoster(ctx, w, h) {
   ctx.restore();
 
   const isCompact = h < 1500;
-  const artH = Math.round((isCompact ? cardH * 0.41 : cardH * 0.45) * Math.min(1.12, state.posterScale));
+  const isSquare = h <= 1080;
+  const artH = Math.round((isSquare ? cardH * 0.33 : (isCompact ? cardH * 0.41 : cardH * 0.45)) * Math.min(1.12, state.posterScale));
   const artW = Math.round(artH * (2 / 3));
   const artX = Math.round(cx - artW / 2);
   const artY = pillY + 66;
